@@ -185,7 +185,7 @@ function Home() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-        <SectionTitle eyebrow="Recém-chegados" title="Novidades" to="/colecoes/novidades" />
+        <SectionTitle eyebrow="Recém-chegados" title="Novidades" to="/colecoes" />
         <div className="mt-8">
           <ProductGrid products={novelties.slice(0, 4)} />
         </div>
@@ -233,7 +233,7 @@ function SectionTitle({
 }: {
   eyebrow: string;
   title: string;
-  to?: "/perfumes" | "/colecoes" | "/marcas" | "/colecoes/novidades";
+  to?: "/perfumes" | "/colecoes" | "/marcas";
 }) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-3">
