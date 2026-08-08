@@ -69,25 +69,25 @@ export type Product = {
 const SELECT = "*, brands(name, slug)";
 
 export type CatalogFilters = {
-  productTypes?: string[];
-  genders?: string[];
-  origins?: string[];
-  brandSlugs?: string[];
-  families?: string[];
-  categorySlugs?: string[];
-  skinTypes?: string[];
-  goals?: string[];
-  finishes?: string[];
-  longevity?: string[];
-  sillage?: string[];
-  maxPrice?: number;
-  minPrice?: number;
-  onlyOffers?: boolean;
-  inStock?: boolean;
-  minRating?: number;
-  search?: string;
-  collectionSlug?: string;
-  sort?: string;
+  productTypes?: string[] | undefined;
+  genders?: string[] | undefined;
+  origins?: string[] | undefined;
+  brandSlugs?: string[] | undefined;
+  families?: string[] | undefined;
+  categorySlugs?: string[] | undefined;
+  skinTypes?: string[] | undefined;
+  goals?: string[] | undefined;
+  finishes?: string[] | undefined;
+  longevity?: string[] | undefined;
+  sillage?: string[] | undefined;
+  maxPrice?: number | undefined;
+  minPrice?: number | undefined;
+  onlyOffers?: boolean | undefined;
+  inStock?: boolean | undefined;
+  minRating?: number | undefined;
+  search?: string | undefined;
+  collectionSlug?: string | undefined;
+  sort?: string | undefined;
 };
 
 export async function fetchProducts(filters: CatalogFilters = {}): Promise<Product[]> {

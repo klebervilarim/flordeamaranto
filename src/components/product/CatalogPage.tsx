@@ -178,7 +178,7 @@ export function CatalogPage({
           min={50}
           max={900}
           step={50}
-          onValueChange={([v]) => setMaxPrice(v)}
+          onValueChange={(v) => setMaxPrice(v[0] ?? 900)}
         />
         <p className="mt-2 text-sm">{maxPrice >= 900 ? "Qualquer preço" : `até ${brl(maxPrice)}`}</p>
       </div>
