@@ -10,33 +10,128 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CorpoEBanhoRouteImport } from './routes/corpo-e-banho'
+import { Route as CosmeticosRouteImport } from './routes/cosmeticos'
+import { Route as MaquiagemRouteImport } from './routes/maquiagem'
+import { Route as OfertasRouteImport } from './routes/ofertas'
+import { Route as SkincareRouteImport } from './routes/skincare'
+import { Route as PerfumesIndexRouteImport } from './routes/perfumes.index'
+import { Route as PerfumesFiltroRouteImport } from './routes/perfumes.$filtro'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CorpoEBanhoRoute = CorpoEBanhoRouteImport.update({
+  id: '/corpo-e-banho',
+  path: '/corpo-e-banho',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CosmeticosRoute = CosmeticosRouteImport.update({
+  id: '/cosmeticos',
+  path: '/cosmeticos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MaquiagemRoute = MaquiagemRouteImport.update({
+  id: '/maquiagem',
+  path: '/maquiagem',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OfertasRoute = OfertasRouteImport.update({
+  id: '/ofertas',
+  path: '/ofertas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SkincareRoute = SkincareRouteImport.update({
+  id: '/skincare',
+  path: '/skincare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerfumesIndexRoute = PerfumesIndexRouteImport.update({
+  id: '/perfumes/',
+  path: '/perfumes/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerfumesFiltroRoute = PerfumesFiltroRouteImport.update({
+  id: '/perfumes/$filtro',
+  path: '/perfumes/$filtro',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/corpo-e-banho': typeof CorpoEBanhoRoute
+  '/cosmeticos': typeof CosmeticosRoute
+  '/maquiagem': typeof MaquiagemRoute
+  '/ofertas': typeof OfertasRoute
+  '/skincare': typeof SkincareRoute
+  '/perfumes/$filtro': typeof PerfumesFiltroRoute
+  '/perfumes/': typeof PerfumesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/corpo-e-banho': typeof CorpoEBanhoRoute
+  '/cosmeticos': typeof CosmeticosRoute
+  '/maquiagem': typeof MaquiagemRoute
+  '/ofertas': typeof OfertasRoute
+  '/skincare': typeof SkincareRoute
+  '/perfumes/$filtro': typeof PerfumesFiltroRoute
+  '/perfumes': typeof PerfumesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/corpo-e-banho': typeof CorpoEBanhoRoute
+  '/cosmeticos': typeof CosmeticosRoute
+  '/maquiagem': typeof MaquiagemRoute
+  '/ofertas': typeof OfertasRoute
+  '/skincare': typeof SkincareRoute
+  '/perfumes/$filtro': typeof PerfumesFiltroRoute
+  '/perfumes/': typeof PerfumesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/corpo-e-banho'
+    | '/cosmeticos'
+    | '/maquiagem'
+    | '/ofertas'
+    | '/skincare'
+    | '/perfumes/$filtro'
+    | '/perfumes/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/corpo-e-banho'
+    | '/cosmeticos'
+    | '/maquiagem'
+    | '/ofertas'
+    | '/skincare'
+    | '/perfumes/$filtro'
+    | '/perfumes'
+  id:
+    | '__root__'
+    | '/'
+    | '/corpo-e-banho'
+    | '/cosmeticos'
+    | '/maquiagem'
+    | '/ofertas'
+    | '/skincare'
+    | '/perfumes/$filtro'
+    | '/perfumes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CorpoEBanhoRoute: typeof CorpoEBanhoRoute
+  CosmeticosRoute: typeof CosmeticosRoute
+  MaquiagemRoute: typeof MaquiagemRoute
+  OfertasRoute: typeof OfertasRoute
+  SkincareRoute: typeof SkincareRoute
+  PerfumesFiltroRoute: typeof PerfumesFiltroRoute
+  PerfumesIndexRoute: typeof PerfumesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +143,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/corpo-e-banho': {
+      id: '/corpo-e-banho'
+      path: '/corpo-e-banho'
+      fullPath: '/corpo-e-banho'
+      preLoaderRoute: typeof CorpoEBanhoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cosmeticos': {
+      id: '/cosmeticos'
+      path: '/cosmeticos'
+      fullPath: '/cosmeticos'
+      preLoaderRoute: typeof CosmeticosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maquiagem': {
+      id: '/maquiagem'
+      path: '/maquiagem'
+      fullPath: '/maquiagem'
+      preLoaderRoute: typeof MaquiagemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ofertas': {
+      id: '/ofertas'
+      path: '/ofertas'
+      fullPath: '/ofertas'
+      preLoaderRoute: typeof OfertasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/skincare': {
+      id: '/skincare'
+      path: '/skincare'
+      fullPath: '/skincare'
+      preLoaderRoute: typeof SkincareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfumes/': {
+      id: '/perfumes/'
+      path: '/perfumes'
+      fullPath: '/perfumes/'
+      preLoaderRoute: typeof PerfumesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfumes/$filtro': {
+      id: '/perfumes/$filtro'
+      path: '/perfumes/$filtro'
+      fullPath: '/perfumes/$filtro'
+      preLoaderRoute: typeof PerfumesFiltroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CorpoEBanhoRoute: CorpoEBanhoRoute,
+  CosmeticosRoute: CosmeticosRoute,
+  MaquiagemRoute: MaquiagemRoute,
+  OfertasRoute: OfertasRoute,
+  SkincareRoute: SkincareRoute,
+  PerfumesFiltroRoute: PerfumesFiltroRoute,
+  PerfumesIndexRoute: PerfumesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
