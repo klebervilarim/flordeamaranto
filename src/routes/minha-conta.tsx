@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/minha-conta")({
@@ -71,13 +70,6 @@ function AccountPage() {
     }
   };
 
-  const google = async () => {
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) toast.error("Não foi possível entrar com Google");
-  };
-
   return (
     <div className="mx-auto max-w-md px-4 py-16 sm:px-6">
       <div className="rule-gold" />
@@ -115,10 +107,6 @@ function AccountPage() {
           {mode === "in" ? "Entrar" : "Criar conta"}
         </Button>
       </form>
-
-      <Button variant="outlineInk" size="xl" className="mt-3 w-full" onClick={() => void google()}>
-        Continuar com Google
-      </Button>
 
       <button
         className="mt-6 w-full text-xs tracking-[0.14em] text-muted-foreground uppercase hover:text-gold"

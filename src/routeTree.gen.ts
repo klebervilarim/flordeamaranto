@@ -18,6 +18,7 @@ import { Route as CorpoEBanhoRouteImport } from './routes/corpo-e-banho'
 import { Route as CosmeticosRouteImport } from './routes/cosmeticos'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as MaquiagemRouteImport } from './routes/maquiagem'
+import { Route as MinhaContaRouteImport } from './routes/minha-conta'
 import { Route as OfertasRouteImport } from './routes/ofertas'
 import { Route as QuizRouteImport } from './routes/quiz'
 import { Route as SkincareRouteImport } from './routes/skincare'
@@ -72,6 +73,11 @@ const FavoritosRoute = FavoritosRouteImport.update({
 const MaquiagemRoute = MaquiagemRouteImport.update({
   id: '/maquiagem',
   path: '/maquiagem',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MinhaContaRoute = MinhaContaRouteImport.update({
+  id: '/minha-conta',
+  path: '/minha-conta',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OfertasRoute = OfertasRouteImport.update({
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/cosmeticos': typeof CosmeticosRoute
   '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
+  '/minha-conta': typeof MinhaContaRoute
   '/ofertas': typeof OfertasRoute
   '/quiz': typeof QuizRoute
   '/skincare': typeof SkincareRoute
@@ -156,6 +163,7 @@ export interface FileRoutesByTo {
   '/cosmeticos': typeof CosmeticosRoute
   '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
+  '/minha-conta': typeof MinhaContaRoute
   '/ofertas': typeof OfertasRoute
   '/quiz': typeof QuizRoute
   '/skincare': typeof SkincareRoute
@@ -178,6 +186,7 @@ export interface FileRoutesById {
   '/cosmeticos': typeof CosmeticosRoute
   '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
+  '/minha-conta': typeof MinhaContaRoute
   '/ofertas': typeof OfertasRoute
   '/quiz': typeof QuizRoute
   '/skincare': typeof SkincareRoute
@@ -201,6 +210,7 @@ export interface FileRouteTypes {
     | '/cosmeticos'
     | '/favoritos'
     | '/maquiagem'
+    | '/minha-conta'
     | '/ofertas'
     | '/quiz'
     | '/skincare'
@@ -222,6 +232,7 @@ export interface FileRouteTypes {
     | '/cosmeticos'
     | '/favoritos'
     | '/maquiagem'
+    | '/minha-conta'
     | '/ofertas'
     | '/quiz'
     | '/skincare'
@@ -243,6 +254,7 @@ export interface FileRouteTypes {
     | '/cosmeticos'
     | '/favoritos'
     | '/maquiagem'
+    | '/minha-conta'
     | '/ofertas'
     | '/quiz'
     | '/skincare'
@@ -265,6 +277,7 @@ export interface RootRouteChildren {
   CosmeticosRoute: typeof CosmeticosRoute
   FavoritosRoute: typeof FavoritosRoute
   MaquiagemRoute: typeof MaquiagemRoute
+  MinhaContaRoute: typeof MinhaContaRoute
   OfertasRoute: typeof OfertasRoute
   QuizRoute: typeof QuizRoute
   SkincareRoute: typeof SkincareRoute
@@ -340,6 +353,13 @@ declare module '@tanstack/react-router' {
       path: '/maquiagem'
       fullPath: '/maquiagem'
       preLoaderRoute: typeof MaquiagemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/minha-conta': {
+      id: '/minha-conta'
+      path: '/minha-conta'
+      fullPath: '/minha-conta'
+      preLoaderRoute: typeof MinhaContaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ofertas': {
@@ -425,6 +445,7 @@ const rootRouteChildren: RootRouteChildren = {
   CosmeticosRoute: CosmeticosRoute,
   FavoritosRoute: FavoritosRoute,
   MaquiagemRoute: MaquiagemRoute,
+  MinhaContaRoute: MinhaContaRoute,
   OfertasRoute: OfertasRoute,
   QuizRoute: QuizRoute,
   SkincareRoute: SkincareRoute,
