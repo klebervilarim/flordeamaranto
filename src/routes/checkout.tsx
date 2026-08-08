@@ -51,6 +51,20 @@ function CheckoutPage() {
   const discount = payment === "pix" ? subtotal * 0.05 : 0;
   const total = subtotal + shipping - discount;
 
+  if (!user) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-24 text-center">
+        <h1 className="font-display text-4xl">Entre para finalizar</h1>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Você precisa estar conectado para concluir o pedido.
+        </p>
+        <Button asChild variant="gold" size="xl" className="mt-8">
+          <Link to="/minha-conta">Entrar ou criar conta</Link>
+        </Button>
+      </div>
+    );
+  }
+
   if (lines.length === 0) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-24 text-center">
