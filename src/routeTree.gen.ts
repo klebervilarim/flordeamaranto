@@ -10,13 +10,16 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BlogRouteImport } from './routes/blog'
 import { Route as BuscaRouteImport } from './routes/busca'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
+import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CorpoEBanhoRouteImport } from './routes/corpo-e-banho'
 import { Route as CosmeticosRouteImport } from './routes/cosmeticos'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as MaquiagemRouteImport } from './routes/maquiagem'
 import { Route as OfertasRouteImport } from './routes/ofertas'
+import { Route as QuizRouteImport } from './routes/quiz'
 import { Route as SkincareRouteImport } from './routes/skincare'
 import { Route as ColecoesIndexRouteImport } from './routes/colecoes.index'
 import { Route as ColecoesSlugRouteImport } from './routes/colecoes.$slug'
@@ -31,6 +34,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BuscaRoute = BuscaRouteImport.update({
   id: '/busca',
   path: '/busca',
@@ -39,6 +47,11 @@ const BuscaRoute = BuscaRouteImport.update({
 const CarrinhoRoute = CarrinhoRouteImport.update({
   id: '/carrinho',
   path: '/carrinho',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CorpoEBanhoRoute = CorpoEBanhoRouteImport.update({
@@ -64,6 +77,11 @@ const MaquiagemRoute = MaquiagemRouteImport.update({
 const OfertasRoute = OfertasRouteImport.update({
   id: '/ofertas',
   path: '/ofertas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuizRoute = QuizRouteImport.update({
+  id: '/quiz',
+  path: '/quiz',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SkincareRoute = SkincareRouteImport.update({
@@ -109,13 +127,16 @@ const ProdutoSlugRoute = ProdutoSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/blog': typeof BlogRoute
   '/busca': typeof BuscaRoute
   '/carrinho': typeof CarrinhoRoute
+  '/checkout': typeof CheckoutRoute
   '/corpo-e-banho': typeof CorpoEBanhoRoute
   '/cosmeticos': typeof CosmeticosRoute
   '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
   '/ofertas': typeof OfertasRoute
+  '/quiz': typeof QuizRoute
   '/skincare': typeof SkincareRoute
   '/colecoes/$slug': typeof ColecoesSlugRoute
   '/marcas/$slug': typeof MarcasSlugRoute
@@ -127,13 +148,16 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/blog': typeof BlogRoute
   '/busca': typeof BuscaRoute
   '/carrinho': typeof CarrinhoRoute
+  '/checkout': typeof CheckoutRoute
   '/corpo-e-banho': typeof CorpoEBanhoRoute
   '/cosmeticos': typeof CosmeticosRoute
   '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
   '/ofertas': typeof OfertasRoute
+  '/quiz': typeof QuizRoute
   '/skincare': typeof SkincareRoute
   '/colecoes/$slug': typeof ColecoesSlugRoute
   '/marcas/$slug': typeof MarcasSlugRoute
@@ -146,13 +170,16 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/blog': typeof BlogRoute
   '/busca': typeof BuscaRoute
   '/carrinho': typeof CarrinhoRoute
+  '/checkout': typeof CheckoutRoute
   '/corpo-e-banho': typeof CorpoEBanhoRoute
   '/cosmeticos': typeof CosmeticosRoute
   '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
   '/ofertas': typeof OfertasRoute
+  '/quiz': typeof QuizRoute
   '/skincare': typeof SkincareRoute
   '/colecoes/$slug': typeof ColecoesSlugRoute
   '/marcas/$slug': typeof MarcasSlugRoute
@@ -166,13 +193,16 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/blog'
     | '/busca'
     | '/carrinho'
+    | '/checkout'
     | '/corpo-e-banho'
     | '/cosmeticos'
     | '/favoritos'
     | '/maquiagem'
     | '/ofertas'
+    | '/quiz'
     | '/skincare'
     | '/colecoes/$slug'
     | '/marcas/$slug'
@@ -184,13 +214,16 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/blog'
     | '/busca'
     | '/carrinho'
+    | '/checkout'
     | '/corpo-e-banho'
     | '/cosmeticos'
     | '/favoritos'
     | '/maquiagem'
     | '/ofertas'
+    | '/quiz'
     | '/skincare'
     | '/colecoes/$slug'
     | '/marcas/$slug'
@@ -202,13 +235,16 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/blog'
     | '/busca'
     | '/carrinho'
+    | '/checkout'
     | '/corpo-e-banho'
     | '/cosmeticos'
     | '/favoritos'
     | '/maquiagem'
     | '/ofertas'
+    | '/quiz'
     | '/skincare'
     | '/colecoes/$slug'
     | '/marcas/$slug'
@@ -221,13 +257,16 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BlogRoute: typeof BlogRoute
   BuscaRoute: typeof BuscaRoute
   CarrinhoRoute: typeof CarrinhoRoute
+  CheckoutRoute: typeof CheckoutRoute
   CorpoEBanhoRoute: typeof CorpoEBanhoRoute
   CosmeticosRoute: typeof CosmeticosRoute
   FavoritosRoute: typeof FavoritosRoute
   MaquiagemRoute: typeof MaquiagemRoute
   OfertasRoute: typeof OfertasRoute
+  QuizRoute: typeof QuizRoute
   SkincareRoute: typeof SkincareRoute
   ColecoesSlugRoute: typeof ColecoesSlugRoute
   MarcasSlugRoute: typeof MarcasSlugRoute
@@ -247,6 +286,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/busca': {
       id: '/busca'
       path: '/busca'
@@ -259,6 +305,13 @@ declare module '@tanstack/react-router' {
       path: '/carrinho'
       fullPath: '/carrinho'
       preLoaderRoute: typeof CarrinhoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/corpo-e-banho': {
@@ -294,6 +347,13 @@ declare module '@tanstack/react-router' {
       path: '/ofertas'
       fullPath: '/ofertas'
       preLoaderRoute: typeof OfertasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quiz': {
+      id: '/quiz'
+      path: '/quiz'
+      fullPath: '/quiz'
+      preLoaderRoute: typeof QuizRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/skincare': {
@@ -357,13 +417,16 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BlogRoute: BlogRoute,
   BuscaRoute: BuscaRoute,
   CarrinhoRoute: CarrinhoRoute,
+  CheckoutRoute: CheckoutRoute,
   CorpoEBanhoRoute: CorpoEBanhoRoute,
   CosmeticosRoute: CosmeticosRoute,
   FavoritosRoute: FavoritosRoute,
   MaquiagemRoute: MaquiagemRoute,
   OfertasRoute: OfertasRoute,
+  QuizRoute: QuizRoute,
   SkincareRoute: SkincareRoute,
   ColecoesSlugRoute: ColecoesSlugRoute,
   MarcasSlugRoute: MarcasSlugRoute,

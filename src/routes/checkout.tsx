@@ -216,9 +216,9 @@ function Field({
 }: {
   name: string;
   label: string;
-  type?: string;
-  defaultValue?: string;
-  error?: string;
+  type?: string | undefined;
+  defaultValue?: string | undefined;
+  error?: string | undefined;
 }) {
   return (
     <div>
