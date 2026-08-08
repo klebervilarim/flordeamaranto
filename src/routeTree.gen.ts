@@ -18,6 +18,10 @@ import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as MaquiagemRouteImport } from './routes/maquiagem'
 import { Route as OfertasRouteImport } from './routes/ofertas'
 import { Route as SkincareRouteImport } from './routes/skincare'
+import { Route as ColecoesIndexRouteImport } from './routes/colecoes.index'
+import { Route as ColecoesSlugRouteImport } from './routes/colecoes.$slug'
+import { Route as MarcasIndexRouteImport } from './routes/marcas.index'
+import { Route as MarcasSlugRouteImport } from './routes/marcas.$slug'
 import { Route as PerfumesIndexRouteImport } from './routes/perfumes.index'
 import { Route as PerfumesFiltroRouteImport } from './routes/perfumes.$filtro'
 import { Route as ProdutoSlugRouteImport } from './routes/produto.$slug'
@@ -67,6 +71,26 @@ const SkincareRoute = SkincareRouteImport.update({
   path: '/skincare',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ColecoesIndexRoute = ColecoesIndexRouteImport.update({
+  id: '/colecoes/',
+  path: '/colecoes/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ColecoesSlugRoute = ColecoesSlugRouteImport.update({
+  id: '/colecoes/$slug',
+  path: '/colecoes/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarcasIndexRoute = MarcasIndexRouteImport.update({
+  id: '/marcas/',
+  path: '/marcas/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarcasSlugRoute = MarcasSlugRouteImport.update({
+  id: '/marcas/$slug',
+  path: '/marcas/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PerfumesIndexRoute = PerfumesIndexRouteImport.update({
   id: '/perfumes/',
   path: '/perfumes/',
@@ -93,8 +117,12 @@ export interface FileRoutesByFullPath {
   '/maquiagem': typeof MaquiagemRoute
   '/ofertas': typeof OfertasRoute
   '/skincare': typeof SkincareRoute
+  '/colecoes/$slug': typeof ColecoesSlugRoute
+  '/marcas/$slug': typeof MarcasSlugRoute
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
   '/produto/$slug': typeof ProdutoSlugRoute
+  '/colecoes/': typeof ColecoesIndexRoute
+  '/marcas/': typeof MarcasIndexRoute
   '/perfumes/': typeof PerfumesIndexRoute
 }
 export interface FileRoutesByTo {
@@ -107,8 +135,12 @@ export interface FileRoutesByTo {
   '/maquiagem': typeof MaquiagemRoute
   '/ofertas': typeof OfertasRoute
   '/skincare': typeof SkincareRoute
+  '/colecoes/$slug': typeof ColecoesSlugRoute
+  '/marcas/$slug': typeof MarcasSlugRoute
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
   '/produto/$slug': typeof ProdutoSlugRoute
+  '/colecoes': typeof ColecoesIndexRoute
+  '/marcas': typeof MarcasIndexRoute
   '/perfumes': typeof PerfumesIndexRoute
 }
 export interface FileRoutesById {
@@ -122,8 +154,12 @@ export interface FileRoutesById {
   '/maquiagem': typeof MaquiagemRoute
   '/ofertas': typeof OfertasRoute
   '/skincare': typeof SkincareRoute
+  '/colecoes/$slug': typeof ColecoesSlugRoute
+  '/marcas/$slug': typeof MarcasSlugRoute
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
   '/produto/$slug': typeof ProdutoSlugRoute
+  '/colecoes/': typeof ColecoesIndexRoute
+  '/marcas/': typeof MarcasIndexRoute
   '/perfumes/': typeof PerfumesIndexRoute
 }
 export interface FileRouteTypes {
@@ -138,8 +174,12 @@ export interface FileRouteTypes {
     | '/maquiagem'
     | '/ofertas'
     | '/skincare'
+    | '/colecoes/$slug'
+    | '/marcas/$slug'
     | '/perfumes/$filtro'
     | '/produto/$slug'
+    | '/colecoes/'
+    | '/marcas/'
     | '/perfumes/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -152,8 +192,12 @@ export interface FileRouteTypes {
     | '/maquiagem'
     | '/ofertas'
     | '/skincare'
+    | '/colecoes/$slug'
+    | '/marcas/$slug'
     | '/perfumes/$filtro'
     | '/produto/$slug'
+    | '/colecoes'
+    | '/marcas'
     | '/perfumes'
   id:
     | '__root__'
@@ -166,8 +210,12 @@ export interface FileRouteTypes {
     | '/maquiagem'
     | '/ofertas'
     | '/skincare'
+    | '/colecoes/$slug'
+    | '/marcas/$slug'
     | '/perfumes/$filtro'
     | '/produto/$slug'
+    | '/colecoes/'
+    | '/marcas/'
     | '/perfumes/'
   fileRoutesById: FileRoutesById
 }
@@ -181,8 +229,12 @@ export interface RootRouteChildren {
   MaquiagemRoute: typeof MaquiagemRoute
   OfertasRoute: typeof OfertasRoute
   SkincareRoute: typeof SkincareRoute
+  ColecoesSlugRoute: typeof ColecoesSlugRoute
+  MarcasSlugRoute: typeof MarcasSlugRoute
   PerfumesFiltroRoute: typeof PerfumesFiltroRoute
   ProdutoSlugRoute: typeof ProdutoSlugRoute
+  ColecoesIndexRoute: typeof ColecoesIndexRoute
+  MarcasIndexRoute: typeof MarcasIndexRoute
   PerfumesIndexRoute: typeof PerfumesIndexRoute
 }
 
@@ -251,6 +303,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SkincareRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/colecoes/': {
+      id: '/colecoes/'
+      path: '/colecoes'
+      fullPath: '/colecoes/'
+      preLoaderRoute: typeof ColecoesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/colecoes/$slug': {
+      id: '/colecoes/$slug'
+      path: '/colecoes/$slug'
+      fullPath: '/colecoes/$slug'
+      preLoaderRoute: typeof ColecoesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marcas/': {
+      id: '/marcas/'
+      path: '/marcas'
+      fullPath: '/marcas/'
+      preLoaderRoute: typeof MarcasIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marcas/$slug': {
+      id: '/marcas/$slug'
+      path: '/marcas/$slug'
+      fullPath: '/marcas/$slug'
+      preLoaderRoute: typeof MarcasSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/perfumes/': {
       id: '/perfumes/'
       path: '/perfumes'
@@ -285,8 +365,12 @@ const rootRouteChildren: RootRouteChildren = {
   MaquiagemRoute: MaquiagemRoute,
   OfertasRoute: OfertasRoute,
   SkincareRoute: SkincareRoute,
+  ColecoesSlugRoute: ColecoesSlugRoute,
+  MarcasSlugRoute: MarcasSlugRoute,
   PerfumesFiltroRoute: PerfumesFiltroRoute,
   ProdutoSlugRoute: ProdutoSlugRoute,
+  ColecoesIndexRoute: ColecoesIndexRoute,
+  MarcasIndexRoute: MarcasIndexRoute,
   PerfumesIndexRoute: PerfumesIndexRoute,
 }
 export const routeTree = rootRouteImport
