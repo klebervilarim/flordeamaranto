@@ -10,17 +10,31 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BuscaRouteImport } from './routes/busca'
+import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as CorpoEBanhoRouteImport } from './routes/corpo-e-banho'
 import { Route as CosmeticosRouteImport } from './routes/cosmeticos'
+import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as MaquiagemRouteImport } from './routes/maquiagem'
 import { Route as OfertasRouteImport } from './routes/ofertas'
 import { Route as SkincareRouteImport } from './routes/skincare'
 import { Route as PerfumesIndexRouteImport } from './routes/perfumes.index'
 import { Route as PerfumesFiltroRouteImport } from './routes/perfumes.$filtro'
+import { Route as ProdutoSlugRouteImport } from './routes/produto.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BuscaRoute = BuscaRouteImport.update({
+  id: '/busca',
+  path: '/busca',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarrinhoRoute = CarrinhoRouteImport.update({
+  id: '/carrinho',
+  path: '/carrinho',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CorpoEBanhoRoute = CorpoEBanhoRouteImport.update({
@@ -31,6 +45,11 @@ const CorpoEBanhoRoute = CorpoEBanhoRouteImport.update({
 const CosmeticosRoute = CosmeticosRouteImport.update({
   id: '/cosmeticos',
   path: '/cosmeticos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavoritosRoute = FavoritosRouteImport.update({
+  id: '/favoritos',
+  path: '/favoritos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MaquiagemRoute = MaquiagemRouteImport.update({
@@ -58,79 +77,112 @@ const PerfumesFiltroRoute = PerfumesFiltroRouteImport.update({
   path: '/perfumes/$filtro',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProdutoSlugRoute = ProdutoSlugRouteImport.update({
+  id: '/produto/$slug',
+  path: '/produto/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/busca': typeof BuscaRoute
+  '/carrinho': typeof CarrinhoRoute
   '/corpo-e-banho': typeof CorpoEBanhoRoute
   '/cosmeticos': typeof CosmeticosRoute
+  '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
   '/ofertas': typeof OfertasRoute
   '/skincare': typeof SkincareRoute
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
+  '/produto/$slug': typeof ProdutoSlugRoute
   '/perfumes/': typeof PerfumesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/busca': typeof BuscaRoute
+  '/carrinho': typeof CarrinhoRoute
   '/corpo-e-banho': typeof CorpoEBanhoRoute
   '/cosmeticos': typeof CosmeticosRoute
+  '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
   '/ofertas': typeof OfertasRoute
   '/skincare': typeof SkincareRoute
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
+  '/produto/$slug': typeof ProdutoSlugRoute
   '/perfumes': typeof PerfumesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/busca': typeof BuscaRoute
+  '/carrinho': typeof CarrinhoRoute
   '/corpo-e-banho': typeof CorpoEBanhoRoute
   '/cosmeticos': typeof CosmeticosRoute
+  '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
   '/ofertas': typeof OfertasRoute
   '/skincare': typeof SkincareRoute
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
+  '/produto/$slug': typeof ProdutoSlugRoute
   '/perfumes/': typeof PerfumesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/busca'
+    | '/carrinho'
     | '/corpo-e-banho'
     | '/cosmeticos'
+    | '/favoritos'
     | '/maquiagem'
     | '/ofertas'
     | '/skincare'
     | '/perfumes/$filtro'
+    | '/produto/$slug'
     | '/perfumes/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/busca'
+    | '/carrinho'
     | '/corpo-e-banho'
     | '/cosmeticos'
+    | '/favoritos'
     | '/maquiagem'
     | '/ofertas'
     | '/skincare'
     | '/perfumes/$filtro'
+    | '/produto/$slug'
     | '/perfumes'
   id:
     | '__root__'
     | '/'
+    | '/busca'
+    | '/carrinho'
     | '/corpo-e-banho'
     | '/cosmeticos'
+    | '/favoritos'
     | '/maquiagem'
     | '/ofertas'
     | '/skincare'
     | '/perfumes/$filtro'
+    | '/produto/$slug'
     | '/perfumes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BuscaRoute: typeof BuscaRoute
+  CarrinhoRoute: typeof CarrinhoRoute
   CorpoEBanhoRoute: typeof CorpoEBanhoRoute
   CosmeticosRoute: typeof CosmeticosRoute
+  FavoritosRoute: typeof FavoritosRoute
   MaquiagemRoute: typeof MaquiagemRoute
   OfertasRoute: typeof OfertasRoute
   SkincareRoute: typeof SkincareRoute
   PerfumesFiltroRoute: typeof PerfumesFiltroRoute
+  ProdutoSlugRoute: typeof ProdutoSlugRoute
   PerfumesIndexRoute: typeof PerfumesIndexRoute
 }
 
@@ -141,6 +193,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/busca': {
+      id: '/busca'
+      path: '/busca'
+      fullPath: '/busca'
+      preLoaderRoute: typeof BuscaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/carrinho': {
+      id: '/carrinho'
+      path: '/carrinho'
+      fullPath: '/carrinho'
+      preLoaderRoute: typeof CarrinhoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/corpo-e-banho': {
@@ -155,6 +221,13 @@ declare module '@tanstack/react-router' {
       path: '/cosmeticos'
       fullPath: '/cosmeticos'
       preLoaderRoute: typeof CosmeticosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favoritos': {
+      id: '/favoritos'
+      path: '/favoritos'
+      fullPath: '/favoritos'
+      preLoaderRoute: typeof FavoritosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/maquiagem': {
@@ -192,17 +265,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PerfumesFiltroRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/produto/$slug': {
+      id: '/produto/$slug'
+      path: '/produto/$slug'
+      fullPath: '/produto/$slug'
+      preLoaderRoute: typeof ProdutoSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BuscaRoute: BuscaRoute,
+  CarrinhoRoute: CarrinhoRoute,
   CorpoEBanhoRoute: CorpoEBanhoRoute,
   CosmeticosRoute: CosmeticosRoute,
+  FavoritosRoute: FavoritosRoute,
   MaquiagemRoute: MaquiagemRoute,
   OfertasRoute: OfertasRoute,
   SkincareRoute: SkincareRoute,
   PerfumesFiltroRoute: PerfumesFiltroRoute,
+  ProdutoSlugRoute: ProdutoSlugRoute,
   PerfumesIndexRoute: PerfumesIndexRoute,
 }
 export const routeTree = rootRouteImport
