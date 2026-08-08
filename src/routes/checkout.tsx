@@ -79,7 +79,7 @@ function CheckoutPage() {
       const { data: order, error } = await supabase
         .from("orders")
         .insert({
-          user_id: user?.id ?? null,
+          ...(user?.id ? { user_id: user.id } : {}),
           customer_name: d.name,
           customer_email: d.email,
           customer_phone: d.phone,
