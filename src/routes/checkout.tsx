@@ -79,11 +79,11 @@ function CheckoutPage() {
       const { data: order, error } = await supabase
         .from("orders")
         .insert({
-          ...(user?.id ? { user_id: user.id } : {}),
-          customer_name: d.name,
-          customer_email: d.email,
-          customer_phone: d.phone,
+          user_id: user!.id,
           shipping_address: {
+            name: d.name,
+            email: d.email,
+            phone: d.phone,
             zip: d.zip,
             street: d.street,
             number: d.number,
@@ -92,7 +92,7 @@ function CheckoutPage() {
           },
           payment_method: payment,
           subtotal,
-          shipping_cost: shipping,
+          shipping,
           discount,
           total,
           status: "pending",
