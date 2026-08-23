@@ -10,13 +10,13 @@ import { fetchBrands, fetchCollections, fetchProducts } from "@/lib/catalog";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Oud Royale — Perfumes Árabes, Beleza e Autocuidado" },
+      { title: "Flor de Amaranto — Perfumes Árabes, Beleza e Autocuidado" },
       {
         name: "description",
         content:
           "Encontre a fragrância que combina com você. Perfumes árabes, de nicho e importados, skincare, cosméticos e maquiagem com curadoria premium.",
       },
-      { property: "og:title", content: "Oud Royale — Perfumaria & Beleza Premium" },
+      { property: "og:title", content: "Flor de Amaranto — Cosméticos e Beleza" },
       {
         property: "og:description",
         content: "Perfumes, beleza e autocuidado selecionados para transformar sua experiência.",

@@ -50,14 +50,14 @@ export const Route = createFileRoute("/perfumes/$filtro")({
   },
   head: ({ params, loaderData }) => {
     if (!loaderData) {
-      return { meta: [{ title: "Indisponível | Oud Royale" }, { name: "robots", content: "noindex" }] };
+      return { meta: [{ title: "Indisponível | Flor de Amaranto" }, { name: "robots", content: "noindex" }] };
     }
     const { title, subtitle } = loaderData.preset;
     return {
       meta: [
-        { title: `${title} | Oud Royale` },
+        { title: `${title} | Flor de Amaranto` },
         { name: "description", content: subtitle },
-        { property: "og:title", content: `${title} | Oud Royale` },
+        { property: "og:title", content: `${title} | Flor de Amaranto` },
         { property: "og:description", content: subtitle },
         { property: "og:url", content: `/perfumes/${params.filtro}` },
       ],

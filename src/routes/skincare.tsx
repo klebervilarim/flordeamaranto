@@ -4,13 +4,13 @@ import { CatalogPage } from "@/components/product/CatalogPage";
 export const Route = createFileRoute("/skincare")({
   head: () => ({
     meta: [
-      { title: "Skincare — Séruns, Hidratantes e Proteção | Oud Royale" },
+      { title: "Skincare — Séruns, Hidratantes e Proteção | Flor de Amaranto" },
       {
         name: "description",
         content:
           "Skincare por tipo de pele e objetivo: hidratação, anti-idade, controle de oleosidade, acne e proteção.",
       },
-      { property: "og:title", content: "Skincare | Oud Royale" },
+      { property: "og:title", content: "Skincare | Flor de Amaranto" },
       { property: "og:description", content: "Rotina completa de cuidados para a pele." },
       { property: "og:url", content: "/skincare" },
     ],

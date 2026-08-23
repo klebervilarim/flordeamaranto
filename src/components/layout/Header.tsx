@@ -62,7 +62,7 @@ export function Header() {
             </SheetTrigger>
             <SheetContent side="left" className="w-[86vw] max-w-sm border-0 bg-ink p-0">
               <div className="flex h-full flex-col overflow-y-auto p-6 text-ink-foreground">
-                <span className="font-display text-2xl tracking-[0.24em]">OUD ROYALE</span>
+                <span className="font-display text-2xl tracking-[0.24em]">FLOR DE AMARANTO</span>
                 <nav className="mt-8 flex flex-col gap-1">
                   {NAV.map((item) => (
                     <Link
@@ -97,7 +97,7 @@ export function Header() {
         <div className="flex min-w-0 justify-center lg:justify-start">
           <Link to="/" className="min-w-0 text-center lg:text-left">
             <span className="font-display block truncate text-xl tracking-[0.3em] sm:text-2xl">
-              OUD ROYALE
+              FLOR DE AMARANTO
             </span>
             <span className="hidden text-[0.6rem] tracking-[0.32em] text-gold uppercase sm:block">
               Perfumaria & Beleza

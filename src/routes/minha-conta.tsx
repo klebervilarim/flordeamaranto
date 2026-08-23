@@ -10,9 +10,9 @@ import { useAuth } from "@/hooks/useAuth";
 export const Route = createFileRoute("/minha-conta")({
   head: () => ({
     meta: [
-      { title: "Minha conta | Oud Royale" },
+      { title: "Minha conta | Flor de Amaranto" },
       { name: "description", content: "Acesse sua conta para ver pedidos, favoritos e endereços." },
-      { property: "og:title", content: "Minha conta | Oud Royale" },
+      { property: "og:title", content: "Minha conta | Flor de Amaranto" },
       { property: "og:description", content: "Pedidos, favoritos e dados pessoais." },
       { property: "og:url", content: "/minha-conta" },
       { name: "robots", content: "noindex" },

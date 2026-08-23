@@ -8,9 +8,9 @@ import { brl, installments } from "@/lib/format";
 export const Route = createFileRoute("/carrinho")({
   head: () => ({
     meta: [
-      { title: "Sacola de compras | Oud Royale" },
+      { title: "Sacola de compras | Flor de Amaranto" },
       { name: "description", content: "Revise os itens da sua sacola e finalize sua compra." },
-      { property: "og:title", content: "Sacola | Oud Royale" },
+      { property: "og:title", content: "Sacola | Flor de Amaranto" },
       { property: "og:description", content: "Revise seus itens e finalize a compra." },
       { property: "og:url", content: "/carrinho" },
       { name: "robots", content: "noindex" },

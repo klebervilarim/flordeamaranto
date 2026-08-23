@@ -3,7 +3,7 @@ import { MessageCircle } from "lucide-react";
 export function WhatsAppButton({ productName }: { productName?: string }) {
   const message = productName
     ? `Olá! Tenho interesse no produto ${productName}.`
-    : "Olá! Gostaria de saber mais sobre os produtos da Oud Royale.";
+    : "Olá! Gostaria de saber mais sobre os produtos da Flor de Amaranto.";
 
   return (
     <a

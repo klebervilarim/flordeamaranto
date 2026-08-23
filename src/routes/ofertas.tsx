@@ -4,12 +4,12 @@ import { CatalogPage } from "@/components/product/CatalogPage";
 export const Route = createFileRoute("/ofertas")({
   head: () => ({
     meta: [
-      { title: "Ofertas — Perfumes e Beleza com Desconto | Oud Royale" },
+      { title: "Ofertas — Perfumes e Beleza com Desconto | Flor de Amaranto" },
       {
         name: "description",
         content: "Descontos especiais em perfumes árabes, skincare, maquiagem e corpo & banho.",
       },
-      { property: "og:title", content: "Ofertas | Oud Royale" },
+      { property: "og:title", content: "Ofertas | Flor de Amaranto" },
       { property: "og:description", content: "Preços especiais por tempo limitado." },
       { property: "og:url", content: "/ofertas" },
     ],

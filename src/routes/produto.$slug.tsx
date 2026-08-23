@@ -20,16 +20,16 @@ export const Route = createFileRoute("/produto/$slug")({
   head: ({ params, loaderData }) => {
     if (!loaderData) {
       return {
-        meta: [{ title: "Produto indisponível | Oud Royale" }, { name: "robots", content: "noindex" }],
+        meta: [{ title: "Produto indisponível | Flor de Amaranto" }, { name: "robots", content: "noindex" }],
       };
     }
     const p = loaderData.product;
-    const desc = p.short_description ?? `${p.name} disponível na Oud Royale.`;
+    const desc = p.short_description ?? `${p.name} disponível na Flor de Amaranto.`;
     return {
       meta: [
-        { title: `${p.name} | Oud Royale` },
+        { title: `${p.name} | Flor de Amaranto` },
         { name: "description", content: desc.slice(0, 155) },
-        { property: "og:title", content: `${p.name} | Oud Royale` },
+        { property: "og:title", content: `${p.name} | Flor de Amaranto` },
         { property: "og:description", content: desc.slice(0, 155) },
         { property: "og:type", content: "product" },
         { property: "og:url", content: `/produto/${params.slug}` },

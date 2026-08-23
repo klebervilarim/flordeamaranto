@@ -14,9 +14,9 @@ import { brl } from "@/lib/format";
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
-      { title: "Checkout | Oud Royale" },
-      { name: "description", content: "Finalize seu pedido com segurança na Oud Royale." },
-      { property: "og:title", content: "Checkout | Oud Royale" },
+      { title: "Checkout | Flor de Amaranto" },
+      { name: "description", content: "Finalize seu pedido com segurança na Flor de Amaranto." },
+      { property: "og:title", content: "Checkout | Flor de Amaranto" },
       { property: "og:description", content: "Finalize seu pedido com segurança." },
       { property: "og:url", content: "/checkout" },
       { name: "robots", content: "noindex" },

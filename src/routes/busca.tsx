@@ -14,9 +14,9 @@ export const Route = createFileRoute("/busca")({
     typeof search['q'] === "string" && search['q'] ? { q: search['q'] } : {},
   head: () => ({
     meta: [
-      { title: "Buscar produtos | Oud Royale" },
+      { title: "Buscar produtos | Flor de Amaranto" },
       { name: "description", content: "Busque perfumes, skincare, maquiagem e mais no catálogo." },
-      { property: "og:title", content: "Busca | Oud Royale" },
+      { property: "og:title", content: "Busca | Flor de Amaranto" },
       { property: "og:description", content: "Encontre rapidamente o que procura." },
       { property: "og:url", content: "/busca" },
       { name: "robots", content: "noindex" },

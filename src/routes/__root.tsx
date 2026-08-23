@@ -85,13 +85,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Oud Royale — Perfumaria & Beleza Premium" },
+      { title: "Flor de Amaranto — Cosméticos e Beleza" },
       {
         name: "description",
         content:
           "Perfumes árabes, de nicho, importados e nacionais, além de skincare, cosméticos e maquiagem.",
       },
-      { property: "og:site_name", content: "Oud Royale" },
+      { property: "og:site_name", content: "Flor de Amaranto" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
