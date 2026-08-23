@@ -147,14 +147,14 @@ export function Header() {
       </div>
 
       {searchOpen && (
-        <form onSubmit={submitSearch} className="border-t border-ink-foreground/10 px-4 py-3 sm:px-6">
+        <form onSubmit={submitSearch} className="border-t border-border px-4 py-3 sm:px-6">
           <div className="mx-auto flex max-w-3xl gap-2">
             <Input
               autoFocus
               value={term}
               onChange={(e) => setTerm(e.target.value)}
               placeholder="Busque por marca, nota, família olfativa..."
-              className="border-ink-foreground/20 bg-transparent text-ink-foreground placeholder:text-ink-foreground/40"
+              className="border-input bg-transparent text-foreground placeholder:text-muted-foreground"
             />
             <Button type="submit" variant="gold">
               Buscar
@@ -163,7 +163,7 @@ export function Header() {
         </form>
       )}
 
-      <nav className="hidden border-t border-ink-foreground/10 lg:block">
+      <nav className="hidden border-t border-border lg:block">
         <div className="mx-auto flex max-w-7xl items-center justify-center gap-8 px-6 py-3">
           {NAV.map((item) => (
             <Link
