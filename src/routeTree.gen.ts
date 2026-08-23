@@ -17,13 +17,18 @@ import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CorpoEBanhoRouteImport } from './routes/corpo-e-banho'
 import { Route as CosmeticosRouteImport } from './routes/cosmeticos'
+import { Route as EntregaEFreteRouteImport } from './routes/entrega-e-frete'
 import { Route as EstoqueRouteImport } from './routes/estoque'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as MaquiagemRouteImport } from './routes/maquiagem'
 import { Route as MinhaContaRouteImport } from './routes/minha-conta'
 import { Route as OfertasRouteImport } from './routes/ofertas'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as QuizRouteImport } from './routes/quiz'
 import { Route as SkincareRouteImport } from './routes/skincare'
+import { Route as SobreRouteImport } from './routes/sobre'
+import { Route as TermosDeUsoRouteImport } from './routes/termos-de-uso'
+import { Route as TrocasEDevolucoesRouteImport } from './routes/trocas-e-devolucoes'
 import { Route as ColecoesIndexRouteImport } from './routes/colecoes.index'
 import { Route as ColecoesSlugRouteImport } from './routes/colecoes.$slug'
 import { Route as EstoqueIndexRouteImport } from './routes/estoque.index'
@@ -75,6 +80,11 @@ const CosmeticosRoute = CosmeticosRouteImport.update({
   path: '/cosmeticos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EntregaEFreteRoute = EntregaEFreteRouteImport.update({
+  id: '/entrega-e-frete',
+  path: '/entrega-e-frete',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EstoqueRoute = EstoqueRouteImport.update({
   id: '/estoque',
   path: '/estoque',
@@ -100,6 +110,11 @@ const OfertasRoute = OfertasRouteImport.update({
   path: '/ofertas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QuizRoute = QuizRouteImport.update({
   id: '/quiz',
   path: '/quiz',
@@ -108,6 +123,21 @@ const QuizRoute = QuizRouteImport.update({
 const SkincareRoute = SkincareRouteImport.update({
   id: '/skincare',
   path: '/skincare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SobreRoute = SobreRouteImport.update({
+  id: '/sobre',
+  path: '/sobre',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermosDeUsoRoute = TermosDeUsoRouteImport.update({
+  id: '/termos-de-uso',
+  path: '/termos-de-uso',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrocasEDevolucoesRoute = TrocasEDevolucoesRouteImport.update({
+  id: '/trocas-e-devolucoes',
+  path: '/trocas-e-devolucoes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ColecoesIndexRoute = ColecoesIndexRouteImport.update({
@@ -171,13 +201,18 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/corpo-e-banho': typeof CorpoEBanhoRoute
   '/cosmeticos': typeof CosmeticosRoute
+  '/entrega-e-frete': typeof EntregaEFreteRoute
   '/estoque': typeof EstoqueRouteWithChildren
   '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
   '/minha-conta': typeof MinhaContaRoute
   '/ofertas': typeof OfertasRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/quiz': typeof QuizRoute
   '/skincare': typeof SkincareRoute
+  '/sobre': typeof SobreRoute
+  '/termos-de-uso': typeof TermosDeUsoRoute
+  '/trocas-e-devolucoes': typeof TrocasEDevolucoesRoute
   '/colecoes/$slug': typeof ColecoesSlugRoute
   '/marcas/$slug': typeof MarcasSlugRoute
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
@@ -198,12 +233,17 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/corpo-e-banho': typeof CorpoEBanhoRoute
   '/cosmeticos': typeof CosmeticosRoute
+  '/entrega-e-frete': typeof EntregaEFreteRoute
   '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
   '/minha-conta': typeof MinhaContaRoute
   '/ofertas': typeof OfertasRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/quiz': typeof QuizRoute
   '/skincare': typeof SkincareRoute
+  '/sobre': typeof SobreRoute
+  '/termos-de-uso': typeof TermosDeUsoRoute
+  '/trocas-e-devolucoes': typeof TrocasEDevolucoesRoute
   '/colecoes/$slug': typeof ColecoesSlugRoute
   '/marcas/$slug': typeof MarcasSlugRoute
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
@@ -225,13 +265,18 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/corpo-e-banho': typeof CorpoEBanhoRoute
   '/cosmeticos': typeof CosmeticosRoute
+  '/entrega-e-frete': typeof EntregaEFreteRoute
   '/estoque': typeof EstoqueRouteWithChildren
   '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
   '/minha-conta': typeof MinhaContaRoute
   '/ofertas': typeof OfertasRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/quiz': typeof QuizRoute
   '/skincare': typeof SkincareRoute
+  '/sobre': typeof SobreRoute
+  '/termos-de-uso': typeof TermosDeUsoRoute
+  '/trocas-e-devolucoes': typeof TrocasEDevolucoesRoute
   '/colecoes/$slug': typeof ColecoesSlugRoute
   '/marcas/$slug': typeof MarcasSlugRoute
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
@@ -254,13 +299,18 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/corpo-e-banho'
     | '/cosmeticos'
+    | '/entrega-e-frete'
     | '/estoque'
     | '/favoritos'
     | '/maquiagem'
     | '/minha-conta'
     | '/ofertas'
+    | '/privacidade'
     | '/quiz'
     | '/skincare'
+    | '/sobre'
+    | '/termos-de-uso'
+    | '/trocas-e-devolucoes'
     | '/colecoes/$slug'
     | '/marcas/$slug'
     | '/perfumes/$filtro'
@@ -281,12 +331,17 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/corpo-e-banho'
     | '/cosmeticos'
+    | '/entrega-e-frete'
     | '/favoritos'
     | '/maquiagem'
     | '/minha-conta'
     | '/ofertas'
+    | '/privacidade'
     | '/quiz'
     | '/skincare'
+    | '/sobre'
+    | '/termos-de-uso'
+    | '/trocas-e-devolucoes'
     | '/colecoes/$slug'
     | '/marcas/$slug'
     | '/perfumes/$filtro'
@@ -307,13 +362,18 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/corpo-e-banho'
     | '/cosmeticos'
+    | '/entrega-e-frete'
     | '/estoque'
     | '/favoritos'
     | '/maquiagem'
     | '/minha-conta'
     | '/ofertas'
+    | '/privacidade'
     | '/quiz'
     | '/skincare'
+    | '/sobre'
+    | '/termos-de-uso'
+    | '/trocas-e-devolucoes'
     | '/colecoes/$slug'
     | '/marcas/$slug'
     | '/perfumes/$filtro'
@@ -335,13 +395,18 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   CorpoEBanhoRoute: typeof CorpoEBanhoRoute
   CosmeticosRoute: typeof CosmeticosRoute
+  EntregaEFreteRoute: typeof EntregaEFreteRoute
   EstoqueRoute: typeof EstoqueRouteWithChildren
   FavoritosRoute: typeof FavoritosRoute
   MaquiagemRoute: typeof MaquiagemRoute
   MinhaContaRoute: typeof MinhaContaRoute
   OfertasRoute: typeof OfertasRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
   QuizRoute: typeof QuizRoute
   SkincareRoute: typeof SkincareRoute
+  SobreRoute: typeof SobreRoute
+  TermosDeUsoRoute: typeof TermosDeUsoRoute
+  TrocasEDevolucoesRoute: typeof TrocasEDevolucoesRoute
   ColecoesSlugRoute: typeof ColecoesSlugRoute
   MarcasSlugRoute: typeof MarcasSlugRoute
   PerfumesFiltroRoute: typeof PerfumesFiltroRoute
@@ -410,6 +475,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CosmeticosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/entrega-e-frete': {
+      id: '/entrega-e-frete'
+      path: '/entrega-e-frete'
+      fullPath: '/entrega-e-frete'
+      preLoaderRoute: typeof EntregaEFreteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/estoque': {
       id: '/estoque'
       path: '/estoque'
@@ -445,6 +517,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OfertasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/quiz': {
       id: '/quiz'
       path: '/quiz'
@@ -457,6 +536,27 @@ declare module '@tanstack/react-router' {
       path: '/skincare'
       fullPath: '/skincare'
       preLoaderRoute: typeof SkincareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sobre': {
+      id: '/sobre'
+      path: '/sobre'
+      fullPath: '/sobre'
+      preLoaderRoute: typeof SobreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/termos-de-uso': {
+      id: '/termos-de-uso'
+      path: '/termos-de-uso'
+      fullPath: '/termos-de-uso'
+      preLoaderRoute: typeof TermosDeUsoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trocas-e-devolucoes': {
+      id: '/trocas-e-devolucoes'
+      path: '/trocas-e-devolucoes'
+      fullPath: '/trocas-e-devolucoes'
+      preLoaderRoute: typeof TrocasEDevolucoesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/colecoes/': {
@@ -554,13 +654,18 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   CorpoEBanhoRoute: CorpoEBanhoRoute,
   CosmeticosRoute: CosmeticosRoute,
+  EntregaEFreteRoute: EntregaEFreteRoute,
   EstoqueRoute: EstoqueRouteWithChildren,
   FavoritosRoute: FavoritosRoute,
   MaquiagemRoute: MaquiagemRoute,
   MinhaContaRoute: MinhaContaRoute,
   OfertasRoute: OfertasRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
   QuizRoute: QuizRoute,
   SkincareRoute: SkincareRoute,
+  SobreRoute: SobreRoute,
+  TermosDeUsoRoute: TermosDeUsoRoute,
+  TrocasEDevolucoesRoute: TrocasEDevolucoesRoute,
   ColecoesSlugRoute: ColecoesSlugRoute,
   MarcasSlugRoute: MarcasSlugRoute,
   PerfumesFiltroRoute: PerfumesFiltroRoute,
