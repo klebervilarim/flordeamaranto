@@ -43,7 +43,7 @@ export type StockItem = {
 export const listStock = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<StockItem[]> => {
-    await assertStockAccess(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId);
     const { data, error } = await context.supabase
       .from("products")
       .select(
@@ -70,7 +70,7 @@ export const updateStockItem = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    await assertStockAccess(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId);
     const patch: Database["public"]["Tables"]["products"]["Update"] = {};
     if (data.stock != null) patch["stock"] = data.stock;
     if (data.price != null) patch["price"] = data.price;
@@ -90,7 +90,7 @@ export type StockBrand = { id: string; name: string };
 export const listStockBrands = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<StockBrand[]> => {
-    await assertStockAccess(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId);
     const { data, error } = await context.supabase
       .from("brands")
       .select("id, name")
@@ -131,7 +131,7 @@ export const getStockProduct = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<StockProductDetail> => {
-    await assertStockAccess(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId);
     const { data: row, error } = await context.supabase
       .from("products")
       .select(
@@ -172,7 +172,7 @@ export const updateProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => productUpdateSchema.parse(input))
   .handler(async ({ data, context }) => {
-    await assertStockAccess(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId);
     const patch: Database["public"]["Tables"]["products"]["Update"] = {
       name: data.name,
       sku: data.sku,
@@ -214,7 +214,7 @@ export const uploadProductImage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => imageUploadSchema.parse(input))
   .handler(async ({ data, context }) => {
-    await assertStockAccess(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId);
     if (!data.contentType.startsWith("image/")) throw new Error("Envie um arquivo de imagem.");
     const ext = (data.fileName.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
     const key = `${data.productId}/${Date.now()}.${ext}`;
