@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
+import emblemAsset from "@/assets/emblem-flor-de-amaranto.png.asset.json";
 
 const NAV = [
   { label: "Home", to: "/" },
@@ -44,7 +45,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-ink text-ink-foreground">
+    <header className="sticky top-0 z-50 border-b border-border bg-background/95 text-foreground backdrop-blur">
       <div className="bg-gradient-gold py-1.5 text-center text-[0.68rem] tracking-[0.2em] uppercase text-gold-foreground">
         Frete grátis acima de R$ 399 · 3x sem juros
       </div>
@@ -60,16 +61,19 @@ export function Header() {
                 <Menu className="h-5 w-5" />
               </button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[86vw] max-w-sm border-0 bg-ink p-0">
-              <div className="flex h-full flex-col overflow-y-auto p-6 text-ink-foreground">
-                <span className="font-display text-2xl tracking-[0.24em]">FLOR DE AMARANTO</span>
+            <SheetContent side="left" className="w-[86vw] max-w-sm border-0 bg-background p-0">
+              <div className="flex h-full flex-col overflow-y-auto p-6 text-foreground">
+                <div className="flex items-center gap-3">
+                  <img src={emblemAsset.url} alt="Flor de Amaranto" className="h-12 w-auto" />
+                  <span className="font-display text-xl tracking-[0.18em]">FLOR DE AMARANTO</span>
+                </div>
                 <nav className="mt-8 flex flex-col gap-1">
                   {NAV.map((item) => (
                     <Link
                       key={item.to}
                       to={item.to}
                       onClick={() => setMenuOpen(false)}
-                      className="border-b border-ink-foreground/10 py-3 text-sm tracking-[0.12em] uppercase"
+                      className="border-b border-border py-3 text-sm tracking-[0.12em] uppercase"
                     >
                       {item.label}
                     </Link>
@@ -83,7 +87,7 @@ export function Header() {
                       to={item.to as never}
                       {...(item.params ? { params: item.params as never } : {})}
                       onClick={() => setMenuOpen(false)}
-                      className="text-sm text-ink-foreground/70"
+                      className="text-sm text-muted-foreground"
                     >
                       {item.label}
                     </Link>
@@ -95,12 +99,19 @@ export function Header() {
         </div>
 
         <div className="flex min-w-0 justify-center lg:justify-start">
-          <Link to="/" className="min-w-0 text-center lg:text-left">
-            <span className="font-display block truncate text-xl tracking-[0.3em] sm:text-2xl">
-              FLOR DE AMARANTO
-            </span>
-            <span className="hidden text-[0.6rem] tracking-[0.32em] text-gold uppercase sm:block">
-              Perfumaria & Beleza
+          <Link to="/" className="flex min-w-0 items-center gap-2.5">
+            <img
+              src={emblemAsset.url}
+              alt="Flor de Amaranto — Cosméticos e Beleza"
+              className="h-10 w-auto shrink-0 sm:h-12"
+            />
+            <span className="min-w-0 text-center lg:text-left">
+              <span className="font-display block truncate text-lg tracking-[0.16em] text-primary sm:text-xl">
+                FLOR DE AMARANTO
+              </span>
+              <span className="hidden text-[0.6rem] tracking-[0.32em] text-gold uppercase sm:block">
+                Cosméticos e Beleza
+              </span>
             </span>
           </Link>
         </div>
