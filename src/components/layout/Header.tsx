@@ -18,13 +18,15 @@ const NAV = [
   { label: "Ofertas", to: "/ofertas" },
 ] as const;
 
-const SUB = [
-  { label: "Perfumes Árabes", to: "/perfumes/arabes" },
-  { label: "Nicho", to: "/perfumes/nicho" },
-  { label: "Importados", to: "/perfumes/importados" },
-  { label: "Nacionais", to: "/perfumes/nacionais" },
+type SubLink = { label: string; to: string; params?: { filtro: string } };
+
+const SUB: SubLink[] = [
+  { label: "Perfumes Árabes", to: "/perfumes/$filtro", params: { filtro: "arabes" } },
+  { label: "Nicho", to: "/perfumes/$filtro", params: { filtro: "nicho" } },
+  { label: "Importados", to: "/perfumes/$filtro", params: { filtro: "importados" } },
+  { label: "Nacionais", to: "/perfumes/$filtro", params: { filtro: "nacionais" } },
   { label: "Quiz de fragrância", to: "/quiz" },
-] as const;
+];
 
 export function Header() {
   const { count } = useCart();
@@ -77,8 +79,9 @@ export function Header() {
                 <nav className="mt-3 flex flex-col gap-2">
                   {SUB.map((item) => (
                     <Link
-                      key={item.to}
-                      to={item.to}
+                      key={item.label}
+                      to={item.to as never}
+                      {...(item.params ? { params: item.params as never } : {})}
                       onClick={() => setMenuOpen(false)}
                       className="text-sm text-ink-foreground/70"
                     >
