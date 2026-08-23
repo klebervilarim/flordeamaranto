@@ -4,13 +4,13 @@ import { CatalogPage } from "@/components/product/CatalogPage";
 export const Route = createFileRoute("/perfumes/")({
   head: () => ({
     meta: [
-      { title: "Perfumes — Árabes, Nicho, Importados | Oud Royale" },
+      { title: "Perfumes — Árabes, Nicho, Importados | Flor de Amaranto" },
       {
         name: "description",
         content:
           "Catálogo completo de perfumes com filtros por gênero, origem, marca, família olfativa, fixação e projeção.",
       },
-      { property: "og:title", content: "Perfumes | Oud Royale" },
+      { property: "og:title", content: "Perfumes | Flor de Amaranto" },
       { property: "og:description", content: "Perfumes árabes, de nicho, importados e nacionais." },
       { property: "og:url", content: "/perfumes" },
     ],

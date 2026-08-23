@@ -8,12 +8,12 @@ import { fetchProducts } from "@/lib/catalog";
 export const Route = createFileRoute("/quiz")({
   head: () => ({
     meta: [
-      { title: "Quiz — Descubra seu perfume ideal | Oud Royale" },
+      { title: "Quiz — Descubra seu perfume ideal | Flor de Amaranto" },
       {
         name: "description",
         content: "Responda algumas perguntas rápidas e receba recomendações de perfume feitas para você.",
       },
-      { property: "og:title", content: "Quiz do Perfume Ideal | Oud Royale" },
+      { property: "og:title", content: "Quiz do Perfume Ideal | Flor de Amaranto" },
       { property: "og:description", content: "7 perguntas, 3 recomendações certeiras." },
       { property: "og:url", content: "/quiz" },
     ],

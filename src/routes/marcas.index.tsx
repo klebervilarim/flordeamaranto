@@ -5,12 +5,12 @@ import { fetchBrands, ORIGIN_LABELS } from "@/lib/catalog";
 export const Route = createFileRoute("/marcas/")({
   head: () => ({
     meta: [
-      { title: "Marcas — Lattafa, Afnan e mais | Oud Royale" },
+      { title: "Marcas — Lattafa, Afnan e mais | Flor de Amaranto" },
       {
         name: "description",
-        content: "Conheça as casas de perfumaria e beleza disponíveis na Oud Royale.",
+        content: "Conheça as casas de perfumaria e beleza disponíveis na Flor de Amaranto.",
       },
-      { property: "og:title", content: "Marcas | Oud Royale" },
+      { property: "og:title", content: "Marcas | Flor de Amaranto" },
       { property: "og:description", content: "As casas que compõem nossa curadoria." },
       { property: "og:url", content: "/marcas" },
     ],

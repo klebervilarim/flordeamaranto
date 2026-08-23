@@ -22,8 +22,8 @@ import {
 export const Route = createFileRoute("/estoque")({
   head: () => ({
     meta: [
-      { title: "Estoque — Oud Royale" },
-      { name: "description", content: "Painel de estoque restrito da Oud Royale." },
+      { title: "Estoque — Flor de Amaranto" },
+      { name: "description", content: "Painel de estoque restrito da Flor de Amaranto." },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),

@@ -5,12 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/blog")({
   head: () => ({
     meta: [
-      { title: "Blog — Guias de perfumaria e beleza | Oud Royale" },
+      { title: "Blog — Guias de perfumaria e beleza | Flor de Amaranto" },
       {
         name: "description",
         content: "Guias de notas olfativas, rotinas de skincare e dicas para escolher seu perfume.",
       },
-      { property: "og:title", content: "Blog | Oud Royale" },
+      { property: "og:title", content: "Blog | Flor de Amaranto" },
       { property: "og:description", content: "Conteúdo sobre perfumaria, skincare e beleza." },
       { property: "og:url", content: "/blog" },
     ],

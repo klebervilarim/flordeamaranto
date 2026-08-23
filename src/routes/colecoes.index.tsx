@@ -6,12 +6,12 @@ import { fetchCollections } from "@/lib/catalog";
 export const Route = createFileRoute("/colecoes/")({
   head: () => ({
     meta: [
-      { title: "Coleções curadas | Oud Royale" },
+      { title: "Coleções curadas | Flor de Amaranto" },
       {
         name: "description",
         content: "Coleções temáticas: mais vendidos, novidades, oud intenso, gourmands e muito mais.",
       },
-      { property: "og:title", content: "Coleções | Oud Royale" },
+      { property: "og:title", content: "Coleções | Flor de Amaranto" },
       { property: "og:description", content: "Curadoria temática de perfumes e beleza." },
       { property: "og:url", content: "/colecoes" },
     ],

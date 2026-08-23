@@ -9,9 +9,9 @@ export const Route = createFileRoute("/marcas/$slug")({
     const name = label(params.slug);
     return {
       meta: [
-        { title: `${name} | Marcas Oud Royale` },
-        { name: "description", content: `Todos os produtos da marca ${name} disponíveis na Oud Royale.` },
-        { property: "og:title", content: `${name} | Oud Royale` },
+        { title: `${name} | Marcas Flor de Amaranto` },
+        { name: "description", content: `Todos os produtos da marca ${name} disponíveis na Flor de Amaranto.` },
+        { property: "og:title", content: `${name} | Flor de Amaranto` },
         { property: "og:description", content: `Catálogo completo da marca ${name}.` },
         { property: "og:url", content: `/marcas/${params.slug}` },
       ],

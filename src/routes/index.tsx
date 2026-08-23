@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Sparkles, ShieldCheck, Truck } from "lucide-react";
-import heroImage from "@/assets/hero-perfume.jpg";
+import heroImage from "@/assets/hero-flor.jpg";
 import beautyImage from "@/assets/cat-beauty.jpg";
 import { Button } from "@/components/ui/button";
 import { ProductGrid } from "@/components/product/ProductGrid";
@@ -10,13 +10,13 @@ import { fetchBrands, fetchCollections, fetchProducts } from "@/lib/catalog";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Oud Royale — Perfumes Árabes, Beleza e Autocuidado" },
+      { title: "Flor de Amaranto — Perfumes Árabes, Beleza e Autocuidado" },
       {
         name: "description",
         content:
           "Encontre a fragrância que combina com você. Perfumes árabes, de nicho e importados, skincare, cosméticos e maquiagem com curadoria premium.",
       },
-      { property: "og:title", content: "Oud Royale — Perfumaria & Beleza Premium" },
+      { property: "og:title", content: "Flor de Amaranto — Cosméticos e Beleza" },
       {
         property: "og:description",
         content: "Perfumes, beleza e autocuidado selecionados para transformar sua experiência.",
@@ -54,7 +54,7 @@ function Home() {
       <section className="relative isolate overflow-hidden bg-ink text-ink-foreground">
         <img
           src={heroImage}
-          alt="Frasco de perfume árabe dourado sobre mármore negro"
+          alt="Perfume e cosméticos sobre seda com flores de amaranto"
           width={1600}
           height={1104}
           className="absolute inset-0 h-full w-full object-cover opacity-60"

@@ -9,9 +9,9 @@ export const Route = createFileRoute("/colecoes/$slug")({
     const name = label(params.slug);
     return {
       meta: [
-        { title: `${name} | Coleções Oud Royale` },
-        { name: "description", content: `Produtos selecionados da coleção ${name} na Oud Royale.` },
-        { property: "og:title", content: `${name} | Oud Royale` },
+        { title: `${name} | Coleções Flor de Amaranto` },
+        { name: "description", content: `Produtos selecionados da coleção ${name} na Flor de Amaranto.` },
+        { property: "og:title", content: `${name} | Flor de Amaranto` },
         { property: "og:description", content: `Curadoria da coleção ${name}.` },
         { property: "og:url", content: `/colecoes/${params.slug}` },
       ],
@@ -26,7 +26,7 @@ function CollectionDetail() {
   return (
     <CatalogPage
       title={label(slug)}
-      subtitle="Coleção curada pela Oud Royale."
+      subtitle="Coleção curada pela Flor de Amaranto."
       base={{ collectionSlug: slug }}
       facets={["genders", "origins", "families", "brandSlugs"]}
     />

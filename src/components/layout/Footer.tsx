@@ -55,7 +55,7 @@ export function Footer() {
       return;
     }
     setEmail("");
-    toast.success("Inscrição confirmada. Bem-vindo à Oud Royale.");
+    toast.success("Inscrição confirmada. Bem-vindo à Flor de Amaranto.");
   };
 
   return (
@@ -63,7 +63,7 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
         <div className="grid gap-12 lg:grid-cols-[1.2fr_repeat(3,minmax(0,1fr))]">
           <div className="max-w-sm">
-            <span className="font-display text-2xl tracking-[0.28em]">OUD ROYALE</span>
+            <span className="font-display text-2xl tracking-[0.28em]">FLOR DE AMARANTO</span>
             <div className="rule-gold mt-4" />
             <p className="mt-4 text-sm leading-relaxed text-ink-foreground/60">
               Um destino premium para perfumes, beleza e autocuidado. Curadoria de fragrâncias
@@ -105,7 +105,7 @@ export function Footer() {
         </div>
 
         <div className="mt-14 flex flex-col gap-3 border-t border-ink-foreground/10 pt-6 text-xs text-ink-foreground/40 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Oud Royale. Todos os direitos reservados.</p>
+          <p>© {new Date().getFullYear()} Flor de Amaranto. Todos os direitos reservados.</p>
           <p>PIX · Cartão · Boleto — pagamento seguro</p>
         </div>
       </div>

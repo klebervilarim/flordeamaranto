@@ -8,10 +8,10 @@ import { useFavorites } from "@/hooks/useFavorites";
 export const Route = createFileRoute("/favoritos")({
   head: () => ({
     meta: [
-      { title: "Meus favoritos | Oud Royale" },
+      { title: "Meus favoritos | Flor de Amaranto" },
       { name: "description", content: "Os produtos que você salvou para comprar depois." },
-      { property: "og:title", content: "Favoritos | Oud Royale" },
-      { property: "og:description", content: "Sua lista de desejos na Oud Royale." },
+      { property: "og:title", content: "Favoritos | Flor de Amaranto" },
+      { property: "og:description", content: "Sua lista de desejos na Flor de Amaranto." },
       { property: "og:url", content: "/favoritos" },
       { name: "robots", content: "noindex" },
     ],
