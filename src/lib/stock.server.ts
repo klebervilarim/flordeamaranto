@@ -1,8 +1,8 @@
 import { getRequest } from "@tanstack/react-start/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 
-type SupabaseLike = {
-  rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
-};
+export type UserSupabase = SupabaseClient<Database>;
 
 export function getClientIp(): string {
   try {
