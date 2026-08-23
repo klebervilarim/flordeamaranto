@@ -26,6 +26,7 @@ import { Route as QuizRouteImport } from './routes/quiz'
 import { Route as SkincareRouteImport } from './routes/skincare'
 import { Route as ColecoesIndexRouteImport } from './routes/colecoes.index'
 import { Route as ColecoesSlugRouteImport } from './routes/colecoes.$slug'
+import { Route as EstoqueIndexRouteImport } from './routes/estoque.index'
 import { Route as MarcasIndexRouteImport } from './routes/marcas.index'
 import { Route as MarcasSlugRouteImport } from './routes/marcas.$slug'
 import { Route as PerfumesIndexRouteImport } from './routes/perfumes.index'
@@ -119,6 +120,11 @@ const ColecoesSlugRoute = ColecoesSlugRouteImport.update({
   path: '/colecoes/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EstoqueIndexRoute = EstoqueIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => EstoqueRoute,
+} as any)
 const MarcasIndexRoute = MarcasIndexRouteImport.update({
   id: '/marcas/',
   path: '/marcas/',
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
   '/produto/$slug': typeof ProdutoSlugRoute
   '/colecoes/': typeof ColecoesIndexRoute
+  '/estoque/': typeof EstoqueIndexRoute
   '/marcas/': typeof MarcasIndexRoute
   '/perfumes/': typeof PerfumesIndexRoute
   '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
@@ -191,7 +198,6 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/corpo-e-banho': typeof CorpoEBanhoRoute
   '/cosmeticos': typeof CosmeticosRoute
-  '/estoque': typeof EstoqueRouteWithChildren
   '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
   '/minha-conta': typeof MinhaContaRoute
@@ -203,6 +209,7 @@ export interface FileRoutesByTo {
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
   '/produto/$slug': typeof ProdutoSlugRoute
   '/colecoes': typeof ColecoesIndexRoute
+  '/estoque': typeof EstoqueIndexRoute
   '/marcas': typeof MarcasIndexRoute
   '/perfumes': typeof PerfumesIndexRoute
   '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
@@ -230,6 +237,7 @@ export interface FileRoutesById {
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
   '/produto/$slug': typeof ProdutoSlugRoute
   '/colecoes/': typeof ColecoesIndexRoute
+  '/estoque/': typeof EstoqueIndexRoute
   '/marcas/': typeof MarcasIndexRoute
   '/perfumes/': typeof PerfumesIndexRoute
   '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
@@ -258,6 +266,7 @@ export interface FileRouteTypes {
     | '/perfumes/$filtro'
     | '/produto/$slug'
     | '/colecoes/'
+    | '/estoque/'
     | '/marcas/'
     | '/perfumes/'
     | '/estoque/produto/$id'
@@ -272,7 +281,6 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/corpo-e-banho'
     | '/cosmeticos'
-    | '/estoque'
     | '/favoritos'
     | '/maquiagem'
     | '/minha-conta'
@@ -284,6 +292,7 @@ export interface FileRouteTypes {
     | '/perfumes/$filtro'
     | '/produto/$slug'
     | '/colecoes'
+    | '/estoque'
     | '/marcas'
     | '/perfumes'
     | '/estoque/produto/$id'
@@ -310,6 +319,7 @@ export interface FileRouteTypes {
     | '/perfumes/$filtro'
     | '/produto/$slug'
     | '/colecoes/'
+    | '/estoque/'
     | '/marcas/'
     | '/perfumes/'
     | '/estoque/produto/$id'
@@ -463,6 +473,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ColecoesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/estoque/': {
+      id: '/estoque/'
+      path: '/'
+      fullPath: '/estoque/'
+      preLoaderRoute: typeof EstoqueIndexRouteImport
+      parentRoute: typeof EstoqueRoute
+    }
     '/marcas/': {
       id: '/marcas/'
       path: '/marcas'
@@ -516,10 +533,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface EstoqueRouteChildren {
+  EstoqueIndexRoute: typeof EstoqueIndexRoute
   EstoqueProdutoIdRoute: typeof EstoqueProdutoIdRoute
 }
 
 const EstoqueRouteChildren: EstoqueRouteChildren = {
+  EstoqueIndexRoute: EstoqueIndexRoute,
   EstoqueProdutoIdRoute: EstoqueProdutoIdRoute,
 }
 

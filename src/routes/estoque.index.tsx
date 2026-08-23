@@ -25,7 +25,7 @@ import {
   type StockItem,
 } from "@/lib/stock.functions";
 
-export const Route = createFileRoute("/estoque")({
+export const Route = createFileRoute("/estoque/")({
   head: () => ({
     meta: [
       { title: "Estoque — Flor de Amaranto" },
