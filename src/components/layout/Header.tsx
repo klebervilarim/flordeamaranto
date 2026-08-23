@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
+import { Heart, LayoutDashboard, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useAuth } from "@/hooks/useAuth";
 import emblemAsset from "@/assets/emblem-flor-de-amaranto.png.asset.json";
 
 const NAV = [
@@ -32,6 +33,7 @@ const SUB: SubLink[] = [
 export function Header() {
   const { count } = useCart();
   const { ids } = useFavorites();
+  const { isAdmin } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [term, setTerm] = useState("");
@@ -93,6 +95,27 @@ export function Header() {
                     </Link>
                   ))}
                 </nav>
+                {isAdmin && (
+                  <>
+                    <p className="eyebrow mt-8 text-gold">Administração</p>
+                    <nav className="mt-3 flex flex-col gap-2">
+                      <Link
+                        to="/admin"
+                        onClick={() => setMenuOpen(false)}
+                        className="text-sm text-muted-foreground"
+                      >
+                        Dashboard
+                      </Link>
+                      <Link
+                        to="/estoque"
+                        onClick={() => setMenuOpen(false)}
+                        className="text-sm text-muted-foreground"
+                      >
+                        Estoque
+                      </Link>
+                    </nav>
+                  </>
+                )}
               </div>
             </SheetContent>
           </Sheet>
@@ -124,6 +147,15 @@ export function Header() {
           >
             {searchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
           </button>
+          {isAdmin && (
+            <Link
+              to="/admin"
+              aria-label="Dashboard do administrador"
+              className="hidden h-10 w-10 place-items-center text-gold sm:grid"
+            >
+              <LayoutDashboard className="h-5 w-5" />
+            </Link>
+          )}
           <Link
             to="/minha-conta"
             aria-label="Minha conta"

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { LayoutDashboard, Loader2, Pencil, Plus, ShieldCheck, Trash2 } from "lucide-react";
+import { LayoutDashboard, Loader2, Pencil, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { brl } from "@/lib/format";
 import { PRODUCT_TYPE_LABELS } from "@/lib/catalog";
@@ -17,13 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import placeholder from "@/assets/product-placeholder.jpg";
-import {
-  addAllowedIp,
-  listStock,
-  removeAllowedIp,
-  updateStockItem,
-  type StockItem,
-} from "@/lib/stock.functions";
+import { listStock, updateStockItem, type StockItem } from "@/lib/stock.functions";
 
 export const Route = createFileRoute("/estoque/")({
   head: () => ({
@@ -39,20 +33,17 @@ export const Route = createFileRoute("/estoque/")({
 function EstoquePage() {
   return (
     <StockGate>
-      {(access) => <StockPanel currentIp={access.ip} allowedIps={access.allowedIps} />}
+      <StockPanel />
     </StockGate>
   );
 }
 
-function StockPanel({ currentIp, allowedIps }: { currentIp: string; allowedIps: string[] }) {
+function StockPanel() {
   const listFn = useServerFn(listStock);
   const saveFn = useServerFn(updateStockItem);
-  const addIp = useServerFn(addAllowedIp);
-  const removeIp = useServerFn(removeAllowedIp);
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [newIp, setNewIp] = useState("");
   const [edits, setEdits] = useState<
     Record<string, { stock?: number; price?: number; costPrice?: number }>
   >({});
@@ -79,24 +70,6 @@ function StockPanel({ currentIp, allowedIps }: { currentIp: string; allowedIps: 
         return next;
       });
       queryClient.invalidateQueries({ queryKey: ["stock-list"] });
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
-  const addIpMutation = useMutation({
-    mutationFn: (ip?: string) => addIp({ data: { ip } }),
-    onSuccess: (r) => {
-      toast.success(`IP ${r.ip} autorizado.`);
-      queryClient.invalidateQueries({ queryKey: ["stock-status"] });
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
-  const removeIpMutation = useMutation({
-    mutationFn: (ip: string) => removeIp({ data: { ip } }),
-    onSuccess: () => {
-      toast.success("IP removido.");
-      queryClient.invalidateQueries({ queryKey: ["stock-status"] });
     },
     onError: (e) => toast.error(e.message),
   });
@@ -150,7 +123,7 @@ function StockPanel({ currentIp, allowedIps }: { currentIp: string; allowedIps: 
     <div className="mx-auto max-w-6xl px-4 py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="eyebrow text-gold">Acesso autorizado · IP {currentIp}</p>
+          <p className="eyebrow text-gold">Área do administrador</p>
           <h1 className="mt-2 font-display text-4xl">Estoque</h1>
         </div>
         <div className="flex items-center gap-3">
@@ -161,7 +134,7 @@ function StockPanel({ currentIp, allowedIps }: { currentIp: string; allowedIps: 
           </Button>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <ShieldCheck className="h-4 w-4 text-gold" />
-            Protegido por IP + administrador
+            Acesso restrito ao administrador
           </div>
         </div>
       </div>
@@ -173,48 +146,6 @@ function StockPanel({ currentIp, allowedIps }: { currentIp: string; allowedIps: 
         <Stat label="Venda potencial" value={brl(totals.revenue)} />
       </div>
 
-      <details className="mt-8 border border-border bg-card p-4">
-        <summary className="cursor-pointer text-sm font-medium">IPs autorizados</summary>
-        <ul className="mt-3 space-y-2 text-sm">
-          {allowedIps.map((ip) => (
-            <li key={ip} className="flex items-center justify-between gap-3">
-              <span>
-                {ip}{" "}
-                {ip === currentIp && <span className="text-xs text-gold">(este dispositivo)</span>}
-              </span>
-              {allowedIps.length > 1 && (
-                <button
-                  type="button"
-                  aria-label={`Remover IP ${ip}`}
-                  className="text-muted-foreground hover:text-destructive"
-                  onClick={() => removeIpMutation.mutate(ip)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-        <div className="mt-4 flex gap-2">
-          <Input
-            value={newIp}
-            onChange={(e) => setNewIp(e.target.value)}
-            placeholder="Adicionar IP (ex.: 187.44.10.25)"
-            className="max-w-xs"
-          />
-          <Button
-            variant="outlineInk"
-            size="sm"
-            disabled={addIpMutation.isPending || newIp.trim().length < 3}
-            onClick={() => {
-              addIpMutation.mutate(newIp.trim());
-              setNewIp("");
-            }}
-          >
-            <Plus className="mr-1 h-4 w-4" /> Adicionar
-          </Button>
-        </div>
-      </details>
 
       <div className="mt-8 flex flex-wrap gap-3">
         <Input

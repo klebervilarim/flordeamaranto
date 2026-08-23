@@ -42,7 +42,7 @@ function EditProductPage() {
   const { id } = Route.useParams();
   return (
     <StockGate>
-      {() => <ProductEditorLoader id={id} />}
+      <ProductEditorLoader id={id} />
     </StockGate>
   );
 }
