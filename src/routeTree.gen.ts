@@ -16,6 +16,7 @@ import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CorpoEBanhoRouteImport } from './routes/corpo-e-banho'
 import { Route as CosmeticosRouteImport } from './routes/cosmeticos'
+import { Route as EstoqueRouteImport } from './routes/estoque'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as MaquiagemRouteImport } from './routes/maquiagem'
 import { Route as MinhaContaRouteImport } from './routes/minha-conta'
@@ -63,6 +64,11 @@ const CorpoEBanhoRoute = CorpoEBanhoRouteImport.update({
 const CosmeticosRoute = CosmeticosRouteImport.update({
   id: '/cosmeticos',
   path: '/cosmeticos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EstoqueRoute = EstoqueRouteImport.update({
+  id: '/estoque',
+  path: '/estoque',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FavoritosRoute = FavoritosRouteImport.update({
@@ -139,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/corpo-e-banho': typeof CorpoEBanhoRoute
   '/cosmeticos': typeof CosmeticosRoute
+  '/estoque': typeof EstoqueRoute
   '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
   '/minha-conta': typeof MinhaContaRoute
@@ -161,6 +168,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/corpo-e-banho': typeof CorpoEBanhoRoute
   '/cosmeticos': typeof CosmeticosRoute
+  '/estoque': typeof EstoqueRoute
   '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
   '/minha-conta': typeof MinhaContaRoute
@@ -184,6 +192,7 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/corpo-e-banho': typeof CorpoEBanhoRoute
   '/cosmeticos': typeof CosmeticosRoute
+  '/estoque': typeof EstoqueRoute
   '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
   '/minha-conta': typeof MinhaContaRoute
@@ -208,6 +217,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/corpo-e-banho'
     | '/cosmeticos'
+    | '/estoque'
     | '/favoritos'
     | '/maquiagem'
     | '/minha-conta'
@@ -230,6 +240,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/corpo-e-banho'
     | '/cosmeticos'
+    | '/estoque'
     | '/favoritos'
     | '/maquiagem'
     | '/minha-conta'
@@ -252,6 +263,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/corpo-e-banho'
     | '/cosmeticos'
+    | '/estoque'
     | '/favoritos'
     | '/maquiagem'
     | '/minha-conta'
@@ -275,6 +287,7 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   CorpoEBanhoRoute: typeof CorpoEBanhoRoute
   CosmeticosRoute: typeof CosmeticosRoute
+  EstoqueRoute: typeof EstoqueRoute
   FavoritosRoute: typeof FavoritosRoute
   MaquiagemRoute: typeof MaquiagemRoute
   MinhaContaRoute: typeof MinhaContaRoute
@@ -339,6 +352,13 @@ declare module '@tanstack/react-router' {
       path: '/cosmeticos'
       fullPath: '/cosmeticos'
       preLoaderRoute: typeof CosmeticosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/estoque': {
+      id: '/estoque'
+      path: '/estoque'
+      fullPath: '/estoque'
+      preLoaderRoute: typeof EstoqueRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/favoritos': {
@@ -443,6 +463,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   CorpoEBanhoRoute: CorpoEBanhoRoute,
   CosmeticosRoute: CosmeticosRoute,
+  EstoqueRoute: EstoqueRoute,
   FavoritosRoute: FavoritosRoute,
   MaquiagemRoute: MaquiagemRoute,
   MinhaContaRoute: MinhaContaRoute,
