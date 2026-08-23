@@ -185,7 +185,7 @@ function GateCard({
 }: {
   title: string;
   text: string;
-  children?: React.ReactNode;
+  children?: ReactNode;
 }) {
   return (
     <div className="mx-auto max-w-md px-4 py-24 text-center">
