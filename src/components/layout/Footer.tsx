@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { MessageCircle, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,9 +14,10 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
     links: [
       { label: "Todos os perfumes", to: "/perfumes" },
       { label: "Perfumes árabes", to: "/perfumes/$filtro", params: { filtro: "arabes" } },
-      { label: "Perfumes de nicho", to: "/perfumes/$filtro", params: { filtro: "nicho" } },
-      { label: "Importados", to: "/perfumes/$filtro", params: { filtro: "importados" } },
-      { label: "Nacionais", to: "/perfumes/$filtro", params: { filtro: "nacionais" } },
+      { label: "Doces", to: "/perfumes/$filtro", params: { filtro: "doces" } },
+      { label: "Amadeirados", to: "/perfumes/$filtro", params: { filtro: "amadeirados" } },
+      { label: "Florais", to: "/perfumes/$filtro", params: { filtro: "florais" } },
+      { label: "Cítricos", to: "/perfumes/$filtro", params: { filtro: "citricos" } },
     ],
   },
   {
@@ -25,6 +27,7 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
       { label: "Cosméticos", to: "/cosmeticos" },
       { label: "Maquiagem", to: "/maquiagem" },
       { label: "Corpo & Banho", to: "/corpo-e-banho" },
+      { label: "Ofertas", to: "/ofertas" },
     ],
   },
   {
@@ -34,10 +37,22 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
       { label: "Marcas", to: "/marcas" },
       { label: "Quiz de fragrância", to: "/quiz" },
       { label: "Blog", to: "/blog" },
-      { label: "Ofertas", to: "/ofertas" },
+      { label: "Favoritos", to: "/favoritos" },
+    ],
+  },
+  {
+    title: "Institucional",
+    links: [
+      { label: "Sobre nós", to: "/sobre" },
+      { label: "Entrega e Frete", to: "/entrega-e-frete" },
+      { label: "Trocas e Devoluções", to: "/trocas-e-devolucoes" },
+      { label: "Política de Privacidade", to: "/privacidade" },
+      { label: "Termos de Uso", to: "/termos-de-uso" },
     ],
   },
 ];
+
+const PAYMENTS = ["Pix", "Visa", "Mastercard", "Elo", "American Express", "Boleto"];
 
 export function Footer() {
   const [email, setEmail] = useState("");
@@ -61,7 +76,7 @@ export function Footer() {
   return (
     <footer className="mt-24 bg-ink text-ink-foreground">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-        <div className="grid gap-12 lg:grid-cols-[1.2fr_repeat(3,minmax(0,1fr))]">
+        <div className="grid gap-12 lg:grid-cols-[1.2fr_repeat(4,minmax(0,1fr))]">
           <div className="max-w-sm">
             <span className="font-display text-2xl tracking-[0.28em]">FLOR DE AMARANTO</span>
             <div className="rule-gold mt-4" />
@@ -82,6 +97,15 @@ export function Footer() {
                 Assinar
               </Button>
             </form>
+            <a
+              href="https://wa.me/5511999999999?text=Ol%C3%A1!%20Gostaria%20de%20atendimento."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center gap-2 text-sm text-ink-foreground/70 transition-colors hover:text-gold"
+            >
+              <MessageCircle className="h-4 w-4 text-emerald" />
+              Atendimento pelo WhatsApp
+            </a>
           </div>
 
           {COLUMNS.map((col) => (
@@ -104,9 +128,32 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mt-14 flex flex-col gap-3 border-t border-ink-foreground/10 pt-6 text-xs text-ink-foreground/40 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Flor de Amaranto. Todos os direitos reservados.</p>
-          <p>PIX · Cartão · Boleto — pagamento seguro</p>
+        <div className="mt-14 grid gap-8 border-t border-ink-foreground/10 pt-8 sm:grid-cols-2">
+          <div>
+            <p className="eyebrow text-ink-foreground/40">Formas de pagamento</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {PAYMENTS.map((p) => (
+                <span
+                  key={p}
+                  className="border border-ink-foreground/15 px-3 py-1.5 text-[0.68rem] tracking-[0.12em] text-ink-foreground/70 uppercase"
+                >
+                  {p}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="eyebrow text-ink-foreground/40">Compra segura</p>
+            <p className="mt-3 inline-flex items-center gap-2 text-sm text-ink-foreground/70">
+              <ShieldCheck className="h-4 w-4 text-emerald" />
+              Site 100% seguro · Certificado SSL · Dados criptografados
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-10 flex flex-col gap-3 border-t border-ink-foreground/10 pt-6 text-xs text-ink-foreground/40 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} Flor de Amaranto — Cosméticos e Beleza. Todos os direitos reservados.</p>
+          <p>Frete grátis acima de R$ 399 · 3x sem juros</p>
         </div>
       </div>
     </footer>

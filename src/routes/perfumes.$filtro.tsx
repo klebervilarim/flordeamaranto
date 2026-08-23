@@ -40,6 +40,41 @@ const PRESETS: Record<string, Preset> = {
     subtitle: "Fragrâncias sem gênero, para todos.",
     base: { productTypes: ["perfume"], genders: ["unissex"] },
   },
+  doces: {
+    title: "Perfumes Doces",
+    subtitle: "Baunilha, caramelo e frutas maduras: a família gourmand.",
+    base: { productTypes: ["perfume"], families: ["Gourmand"] },
+  },
+  amadeirados: {
+    title: "Perfumes Amadeirados",
+    subtitle: "Sândalo, cedro e vetiver: estrutura e elegância.",
+    base: { productTypes: ["perfume"], families: ["Amadeirado"] },
+  },
+  especiados: {
+    title: "Perfumes Especiados",
+    subtitle: "Canela, cardamomo e pimenta: calor e presença.",
+    base: { productTypes: ["perfume"], families: ["Especiado"] },
+  },
+  citricos: {
+    title: "Perfumes Cítricos",
+    subtitle: "Bergamota, limão e neroli: frescura luminosa.",
+    base: { productTypes: ["perfume"], families: ["Cítrico"] },
+  },
+  florais: {
+    title: "Perfumes Florais",
+    subtitle: "Jasmim, rosa e peônia: o coração da perfumaria.",
+    base: { productTypes: ["perfume"], families: ["Floral"] },
+  },
+  frutados: {
+    title: "Perfumes Frutados",
+    subtitle: "Frutas vermelhas, pêssego e figo: doçura vibrante.",
+    base: { productTypes: ["perfume"], families: ["Frutado"] },
+  },
+  aromaticos: {
+    title: "Perfumes Aromáticos",
+    subtitle: "Lavanda, hortelã e alecrim: frescor verde e herbal.",
+    base: { productTypes: ["perfume"], families: ["Aromático"] },
+  },
 };
 
 export const Route = createFileRoute("/perfumes/$filtro")({

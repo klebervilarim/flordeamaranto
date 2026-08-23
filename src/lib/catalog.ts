@@ -191,6 +191,28 @@ export async function fetchBrands(): Promise<Brand[]> {
   return (data ?? []) as Brand[];
 }
 
+export type BrandCount = { slug: string; name: string; count: number };
+
+export async function fetchBrandCounts(): Promise<BrandCount[]> {
+  const { data, error } = await supabase
+    .from("products")
+    .select("brands(slug, name)")
+    .eq("status", "active")
+    .gt("price", 0)
+    .not("brand_id", "is", null)
+    .limit(1000);
+  if (error) throw error;
+  const map = new Map<string, BrandCount>();
+  for (const row of data ?? []) {
+    const b = (row as { brands?: { slug: string; name: string } | null }).brands;
+    if (!b) continue;
+    const entry = map.get(b.slug) ?? { slug: b.slug, name: b.name, count: 0 };
+    entry.count += 1;
+    map.set(b.slug, entry);
+  }
+  return [...map.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
 export async function fetchCollections(): Promise<Collection[]> {
   const { data, error } = await supabase
     .from("collections")
