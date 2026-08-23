@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { ShippingOptions, useShippingQuote } from "@/components/cart/ShippingCalculator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +11,7 @@ import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { brl } from "@/lib/format";
+import { cepDigits, maskCep } from "@/lib/shipping";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -37,19 +39,45 @@ const schema = z.object({
   state: z.string().trim().min(2, "UF inválida").max(2),
 });
 
-const FREE_SHIPPING = 399;
-
 function CheckoutPage() {
-  const { lines, subtotal, clear } = useCart();
+  const { lines, subtotal, clear, shipping, setShipping } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [payment, setPayment] = useState("pix");
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [cep, setCep] = useState(shipping?.cep ? maskCep(shipping.cep) : "");
+  const formRef = useRef<HTMLFormElement>(null);
+  const { quote, loading: quoting, result: quoteResult, error: quoteError } = useShippingQuote();
 
-  const shipping = subtotal >= FREE_SHIPPING || subtotal === 0 ? 0 : 29.9;
+  const shippingPrice = shipping?.price ?? 0;
   const discount = payment === "pix" ? subtotal * 0.05 : 0;
-  const total = subtotal + shipping - discount;
+  const total = subtotal + shippingPrice - discount;
+
+  const onCepChange = (value: string) => {
+    const masked = maskCep(value);
+    setCep(masked);
+    const digits = cepDigits(masked);
+    if (digits.length === 8) {
+      void quote(digits).then((res) => {
+        if (!res) return;
+        const form = formRef.current;
+        if (form) {
+          const set = (name: string, v: string) => {
+            const el = form.elements.namedItem(name);
+            if (el instanceof HTMLInputElement && v) el.value = v;
+          };
+          set("street", res.address.street);
+          set("city", res.address.city);
+          set("state", res.address.state);
+        }
+        if (res.options.length > 0) {
+          const cheapest = res.options.reduce((a, b) => (a.price <= b.price ? a : b));
+          setShipping({ cep: digits, ...cheapest });
+        }
+      });
+    }
+  };
 
   if (!user) {
     return (
@@ -86,6 +114,12 @@ function CheckoutPage() {
       setErrors(next);
       return;
     }
+    if (!shipping) {
+      toast.error("Calcule o frete", {
+        description: "Informe o CEP e escolha uma opção de entrega.",
+      });
+      return;
+    }
     setErrors({});
     setSubmitting(true);
     const d = parsed.data;
@@ -103,13 +137,16 @@ function CheckoutPage() {
             number: d.number,
             city: d.city,
             state: d.state.toUpperCase(),
+            shipping_method: shipping.name,
+            shipping_eta: shipping.eta,
           },
           payment_method: payment,
           subtotal,
-          shipping,
+          shipping: shipping.price,
           discount,
           total,
           status: "pending",
+          notes: `Entrega: ${shipping.name} — ${shipping.eta} (CEP ${shipping.cep})`,
         })
         .select("id, order_number")
         .single();
@@ -143,7 +180,7 @@ function CheckoutPage() {
       <div className="rule-gold" />
       <h1 className="font-display mt-4 text-4xl">Checkout</h1>
 
-      <form onSubmit={onSubmit} className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <form ref={formRef} onSubmit={onSubmit} className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-10">
           <fieldset>
             <legend className="eyebrow text-muted-foreground">Seus dados</legend>
@@ -157,12 +194,34 @@ function CheckoutPage() {
           <fieldset>
             <legend className="eyebrow text-muted-foreground">Entrega</legend>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <Field name="zip" label="CEP" error={errors['zip']} />
+              <Field
+                name="zip"
+                label="CEP"
+                error={errors['zip']}
+                value={cep}
+                onChange={onCepChange}
+                placeholder="00000-000"
+                inputMode="numeric"
+              />
               <Field name="street" label="Rua" error={errors['street']} />
               <Field name="number" label="Número" error={errors['number']} />
               <Field name="city" label="Cidade" error={errors['city']} />
               <Field name="state" label="UF" error={errors['state']} />
             </div>
+            {quoting && (
+              <p className="mt-3 text-xs text-muted-foreground">Calculando frete...</p>
+            )}
+            {quoteError && <p className="mt-3 text-xs text-destructive">{quoteError}</p>}
+            {quoteResult && (
+              <div className="mt-4">
+                <p className="eyebrow mb-3 text-muted-foreground">Opções de entrega</p>
+                <ShippingOptions
+                  options={quoteResult.options}
+                  selectedId={shipping?.cep === quoteResult.cep ? shipping.id : undefined}
+                  onSelect={(opt) => setShipping({ cep: quoteResult.cep, ...opt })}
+                />
+              </div>
+            )}
           </fieldset>
 
           <fieldset>
@@ -199,8 +258,19 @@ function CheckoutPage() {
           <dl className="mt-5 space-y-2 border-t border-border pt-5 text-sm">
             <div className="flex justify-between">
               <dt className="text-muted-foreground">Frete</dt>
-              <dd>{shipping === 0 ? "Grátis" : brl(shipping)}</dd>
+              <dd>
+                {shipping
+                  ? shipping.price === 0
+                    ? "Grátis"
+                    : brl(shipping.price)
+                  : "Informe o CEP"}
+              </dd>
             </div>
+            {shipping && (
+              <p className="text-right text-xs text-muted-foreground">
+                {shipping.name} — {shipping.eta}
+              </p>
+            )}
             {discount > 0 && (
               <div className="flex justify-between text-emerald">
                 <dt>Desconto Pix</dt>
@@ -226,12 +296,20 @@ function Field({
   label,
   type = "text",
   defaultValue,
+  value,
+  onChange,
+  placeholder,
+  inputMode,
   error,
 }: {
   name: string;
   label: string;
   type?: string | undefined;
   defaultValue?: string | undefined;
+  value?: string | undefined;
+  onChange?: ((value: string) => void) | undefined;
+  placeholder?: string | undefined;
+  inputMode?: "numeric" | "text" | undefined;
   error?: string | undefined;
 }) {
   return (
@@ -239,7 +317,28 @@ function Field({
       <Label htmlFor={name} className="text-xs tracking-[0.12em] uppercase">
         {label}
       </Label>
-      <Input id={name} name={name} type={type} defaultValue={defaultValue} className="mt-2" />
+      {value !== undefined ? (
+        <Input
+          id={name}
+          name={name}
+          type={type}
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
+          placeholder={placeholder}
+          inputMode={inputMode}
+          className="mt-2"
+        />
+      ) : (
+        <Input
+          id={name}
+          name={name}
+          type={type}
+          defaultValue={defaultValue}
+          placeholder={placeholder}
+          inputMode={inputMode}
+          className="mt-2"
+        />
+      )}
       {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
     </div>
   );
