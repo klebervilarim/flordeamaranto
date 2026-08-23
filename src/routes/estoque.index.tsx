@@ -130,6 +130,7 @@ function StockPanel({ currentIp, allowedIps }: { currentIp: string; allowedIps: 
   }, [items]);
 
   const setEdit = (id: string, field: "stock" | "price" | "costPrice", value: string) => {
+    if (!value.trim()) return;
     const num = Number(value.replace(",", "."));
     if (Number.isNaN(num)) return;
     setEdits((e) => ({ ...e, [id]: { ...e[id], [field]: num } }));

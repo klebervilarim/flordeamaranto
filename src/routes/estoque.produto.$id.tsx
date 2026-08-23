@@ -96,7 +96,9 @@ function ProductEditorLoader({ id }: { id: string }) {
 const NONE = "__none__";
 
 function num(value: string): number | null {
-  const n = Number(value.replace(",", "."));
+  const v = value.trim();
+  if (!v) return null;
+  const n = Number(v.replace(",", "."));
   return Number.isNaN(n) ? null : n;
 }
 
