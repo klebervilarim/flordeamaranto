@@ -110,12 +110,12 @@ export const updateStockItem = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertStockAccess(context.supabase, context.userId);
-    const patch: Record<string, number> = {};
-    if (data.stock != null) patch.stock = data.stock;
-    if (data.price != null) patch.price = data.price;
+    const patch: Database["public"]["Tables"]["products"]["Update"] = {};
+    if (data.stock != null) patch["stock"] = data.stock;
+    if (data.price != null) patch["price"] = data.price;
     if (data.costPrice != null) {
-      patch.cost_price = data.costPrice;
-      patch.suggested_price = Math.round(data.costPrice * 1.4 * 100) / 100;
+      patch["cost_price"] = data.costPrice;
+      patch["suggested_price"] = Math.round(data.costPrice * 1.4 * 100) / 100;
     }
     if (Object.keys(patch).length === 0) return { ok: true };
     const { error } = await context.supabase.from("products").update(patch).eq("id", data.id);

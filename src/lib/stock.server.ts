@@ -17,7 +17,7 @@ export function getClientIp(): string {
   }
 }
 
-export async function callerIsAdmin(supabase: SupabaseLike, userId: string): Promise<boolean> {
+export async function callerIsAdmin(supabase: UserSupabase, userId: string): Promise<boolean> {
   const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
   return Boolean(data);
 }
@@ -52,7 +52,7 @@ export async function writeAllowedIps(ips: string[]): Promise<void> {
 
 /** Garante: usuário é admin E o IP da requisição está na lista autorizada. */
 export async function assertStockAccess(
-  supabase: SupabaseLike,
+  supabase: UserSupabase,
   userId: string,
 ): Promise<{ ip: string }> {
   const admin = await callerIsAdmin(supabase, userId);
