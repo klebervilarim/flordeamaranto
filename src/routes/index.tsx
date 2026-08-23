@@ -189,7 +189,7 @@ function Home() {
   });
   const { data: novelties = [] } = useQuery({
     queryKey: ["home-new"],
-    queryFn: () => fetchProducts({ collectionSlug: "novidades", sort: "new" }),
+    queryFn: () => fetchProducts({ sort: "new" }),
   });
   const { data: collections = [] } = useQuery({ queryKey: ["collections"], queryFn: fetchCollections });
   const { data: brands = [] } = useQuery({ queryKey: ["brands"], queryFn: fetchBrands });
