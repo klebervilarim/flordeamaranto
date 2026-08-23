@@ -116,7 +116,8 @@ function Home() {
       <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
         <div className="grid gap-4 lg:grid-cols-2">
           <Link
-            to="/perfumes/arabes"
+            to="/perfumes/$filtro"
+            params={{ filtro: "arabes" }}
             className="group relative isolate flex min-h-[300px] flex-col justify-end overflow-hidden bg-ink p-8 text-ink-foreground"
           >
             <img

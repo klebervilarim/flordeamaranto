@@ -5,15 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 
-const COLUMNS = [
+type FooterLink = { label: string; to: string; params?: { filtro: string } };
+
+const COLUMNS: { title: string; links: FooterLink[] }[] = [
   {
     title: "Perfumaria",
     links: [
       { label: "Todos os perfumes", to: "/perfumes" },
-      { label: "Perfumes árabes", to: "/perfumes/arabes" },
-      { label: "Perfumes de nicho", to: "/perfumes/nicho" },
-      { label: "Importados", to: "/perfumes/importados" },
-      { label: "Nacionais", to: "/perfumes/nacionais" },
+      { label: "Perfumes árabes", to: "/perfumes/$filtro", params: { filtro: "arabes" } },
+      { label: "Perfumes de nicho", to: "/perfumes/$filtro", params: { filtro: "nicho" } },
+      { label: "Importados", to: "/perfumes/$filtro", params: { filtro: "importados" } },
+      { label: "Nacionais", to: "/perfumes/$filtro", params: { filtro: "nacionais" } },
     ],
   },
   {
@@ -35,7 +37,7 @@ const COLUMNS = [
       { label: "Ofertas", to: "/ofertas" },
     ],
   },
-] as const;
+];
 
 export function Footer() {
   const [email, setEmail] = useState("");
@@ -87,9 +89,10 @@ export function Footer() {
               <p className="eyebrow text-gold">{col.title}</p>
               <ul className="mt-4 space-y-2.5">
                 {col.links.map((l) => (
-                  <li key={l.to}>
+                  <li key={l.label}>
                     <Link
-                      to={l.to}
+                      to={l.to as never}
+                      {...(l.params ? { params: l.params as never } : {})}
                       className="text-sm text-ink-foreground/60 transition-colors hover:text-gold"
                     >
                       {l.label}

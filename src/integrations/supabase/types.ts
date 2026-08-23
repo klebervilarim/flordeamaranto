@@ -697,6 +697,7 @@ export type Database = {
           status: Database["public"]["Enums"]["product_status"]
           stock: number
           subcategory_slug: string | null
+          suggested_price: number | null
           top_notes: string[]
           updated_at: string
           usage_instructions: string | null
@@ -749,6 +750,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["product_status"]
           stock?: number
           subcategory_slug?: string | null
+          suggested_price?: number | null
           top_notes?: string[]
           updated_at?: string
           usage_instructions?: string | null
@@ -801,6 +803,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["product_status"]
           stock?: number
           subcategory_slug?: string | null
+          suggested_price?: number | null
           top_notes?: string[]
           updated_at?: string
           usage_instructions?: string | null
