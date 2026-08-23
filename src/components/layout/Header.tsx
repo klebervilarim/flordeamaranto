@@ -95,6 +95,27 @@ export function Header() {
                     </Link>
                   ))}
                 </nav>
+                {isAdmin && (
+                  <>
+                    <p className="eyebrow mt-8 text-gold">Administração</p>
+                    <nav className="mt-3 flex flex-col gap-2">
+                      <Link
+                        to="/admin"
+                        onClick={() => setMenuOpen(false)}
+                        className="text-sm text-muted-foreground"
+                      >
+                        Dashboard
+                      </Link>
+                      <Link
+                        to="/estoque"
+                        onClick={() => setMenuOpen(false)}
+                        className="text-sm text-muted-foreground"
+                      >
+                        Estoque
+                      </Link>
+                    </nav>
+                  </>
+                )}
               </div>
             </SheetContent>
           </Sheet>
