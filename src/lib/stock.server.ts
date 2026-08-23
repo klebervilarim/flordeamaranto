@@ -1,21 +1,7 @@
-import { getRequest } from "@tanstack/react-start/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
 export type UserSupabase = SupabaseClient<Database>;
-
-export function getClientIp(): string {
-  try {
-    const req = getRequest();
-    const cf = req.headers.get("cf-connecting-ip");
-    if (cf) return cf.trim();
-    const xff = req.headers.get("x-forwarded-for");
-    if (xff) return xff.split(",")[0]!.trim();
-    return "desconhecido";
-  } catch {
-    return "desconhecido";
-  }
-}
 
 export async function callerIsAdmin(supabase: UserSupabase, userId: string): Promise<boolean> {
   const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
@@ -31,40 +17,8 @@ export async function adminCount(): Promise<number> {
   return count ?? 0;
 }
 
-export async function readAllowedIps(): Promise<string[]> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin
-    .from("admin_settings")
-    .select("value")
-    .eq("key", "stock_allowed_ips")
-    .maybeSingle();
-  const v = data?.value;
-  return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
-}
-
-export async function writeAllowedIps(ips: string[]): Promise<void> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { error } = await supabaseAdmin
-    .from("admin_settings")
-    .upsert({ key: "stock_allowed_ips", value: ips, updated_at: new Date().toISOString() });
-  if (error) throw new Error("Falha ao salvar lista de IPs.");
-}
-
-/** Garante apenas: usuário é admin (sem restrição de IP). */
+/** Garante que o usuário autenticado é administrador. */
 export async function assertAdmin(supabase: UserSupabase, userId: string): Promise<void> {
   const admin = await callerIsAdmin(supabase, userId);
   if (!admin) throw new Error("Acesso restrito a administradores.");
-}
-
-/** Garante: usuário é admin E o IP da requisição está na lista autorizada. */
-export async function assertStockAccess(
-  supabase: UserSupabase,
-  userId: string,
-): Promise<{ ip: string }> {
-  const admin = await callerIsAdmin(supabase, userId);
-  if (!admin) throw new Error("Acesso restrito a administradores.");
-  const ip = getClientIp();
-  const ips = await readAllowedIps();
-  if (!ips.includes(ip)) throw new Error(`IP não autorizado: ${ip}`);
-  return { ip };
 }
