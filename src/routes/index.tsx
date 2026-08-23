@@ -1,11 +1,21 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Sparkles, ShieldCheck, Truck } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Sparkles, ShieldCheck, Truck } from "lucide-react";
 import heroImage from "@/assets/hero-flor.jpg";
+import heroArabes from "@/assets/hero-arabes.jpg";
 import beautyImage from "@/assets/cat-beauty.jpg";
+import styleDoces from "@/assets/styles/doces.jpg";
+import styleAmadeirados from "@/assets/styles/amadeirados.jpg";
+import styleEspeciados from "@/assets/styles/especiados.jpg";
+import styleCitricos from "@/assets/styles/citricos.jpg";
+import styleFlorais from "@/assets/styles/florais.jpg";
+import styleAromaticos from "@/assets/styles/aromaticos.jpg";
+import styleFrutados from "@/assets/styles/frutados.jpg";
 import { Button } from "@/components/ui/button";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { fetchBrands, fetchCollections, fetchProducts } from "@/lib/catalog";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -37,6 +47,141 @@ const CATEGORIES = [
   { label: "Ofertas", to: "/ofertas" as const, hint: "Preços especiais" },
 ];
 
+const ESTILOS = [
+  { label: "Doces", filtro: "doces", img: styleDoces },
+  { label: "Amadeirados", filtro: "amadeirados", img: styleAmadeirados },
+  { label: "Especiados", filtro: "especiados", img: styleEspeciados },
+  { label: "Cítricos", filtro: "citricos", img: styleCitricos },
+  { label: "Florais", filtro: "florais", img: styleFlorais },
+  { label: "Aromáticos", filtro: "aromaticos", img: styleAromaticos },
+  { label: "Frutados", filtro: "frutados", img: styleFrutados },
+];
+
+type Slide = {
+  eyebrow: string;
+  title: string;
+  text: string;
+  image: string;
+  imageAlt: string;
+  primary: { label: string; to: string; params?: { filtro: string } };
+  secondary?: { label: string; to: string };
+};
+
+const SLIDES: Slide[] = [
+  {
+    eyebrow: "Perfumaria & Beleza",
+    title: "Encontre a fragrância que combina com você.",
+    text: "Perfumes, beleza e autocuidado selecionados para transformar sua experiência.",
+    image: heroImage,
+    imageAlt: "Perfume e cosméticos sobre seda com flores de amaranto",
+    primary: { label: "Comprar perfumes", to: "/perfumes" },
+    secondary: { label: "Explorar coleção", to: "/colecoes" },
+  },
+  {
+    eyebrow: "Coleção em destaque",
+    title: "Oud, âmbar e especiarias: o melhor da perfumaria árabe.",
+    text: "Fragrâncias intensas e luxuosas das maiores casas do Oriente Médio.",
+    image: heroArabes,
+    imageAlt: "Frascos orientais de perfume árabe com detalhes dourados",
+    primary: { label: "Ver perfumes árabes", to: "/perfumes/$filtro", params: { filtro: "arabes" } },
+  },
+  {
+    eyebrow: "Preços especiais",
+    title: "Ofertas da semana em perfumes e beleza.",
+    text: "Descontos por tempo limitado na seleção mais desejada da casa.",
+    image: beautyImage,
+    imageAlt: "Cosméticos e perfumes em oferta",
+    primary: { label: "Ver ofertas", to: "/ofertas" },
+  },
+];
+
+function HeroCarousel() {
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setActive((i) => (i + 1) % SLIDES.length), 6500);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <section className="relative isolate overflow-hidden bg-ink text-ink-foreground">
+      {SLIDES.map((s, i) => (
+        <div
+          key={s.title}
+          aria-hidden={i !== active}
+          className={cn(
+            "transition-opacity duration-1000",
+            i === 0 ? "relative" : "absolute inset-0",
+            i === active ? "opacity-100" : "pointer-events-none opacity-0",
+          )}
+        >
+          <img
+            src={s.image}
+            alt={s.imageAlt}
+            width={1600}
+            height={1024}
+            loading={i === 0 ? "eager" : "lazy"}
+            className="absolute inset-0 h-full w-full object-cover opacity-60"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/80 to-transparent" />
+          <div className="relative mx-auto flex min-h-[78vh] max-w-7xl flex-col justify-center px-4 py-20 sm:px-6">
+            <p className="eyebrow text-gold">{s.eyebrow}</p>
+            <h1 className="font-display mt-5 max-w-2xl text-4xl leading-[1.05] sm:text-6xl lg:text-7xl">
+              {s.title}
+            </h1>
+            <p className="mt-5 max-w-md text-sm leading-relaxed text-ink-foreground/70 sm:text-base">
+              {s.text}
+            </p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Button asChild variant="gold" size="xl">
+                <Link
+                  to={s.primary.to as never}
+                  {...(s.primary.params ? { params: s.primary.params as never } : {})}
+                >
+                  {s.primary.label}
+                </Link>
+              </Button>
+              {s.secondary && (
+                <Button asChild variant="outlineGold" size="xl">
+                  <Link to={s.secondary.to as never}>{s.secondary.label}</Link>
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+
+      <div className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2">
+        {SLIDES.map((s, i) => (
+          <button
+            key={s.title}
+            aria-label={`Ir para destaque ${i + 1}`}
+            onClick={() => setActive(i)}
+            className={cn(
+              "h-1.5 rounded-full transition-all",
+              i === active ? "w-8 bg-gold" : "w-2.5 bg-ink-foreground/40 hover:bg-ink-foreground/70",
+            )}
+          />
+        ))}
+      </div>
+      <button
+        aria-label="Destaque anterior"
+        onClick={() => setActive((i) => (i - 1 + SLIDES.length) % SLIDES.length)}
+        className="absolute top-1/2 left-3 z-10 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-ink-foreground/25 text-ink-foreground/70 transition-colors hover:border-gold hover:text-gold sm:grid"
+      >
+        <ChevronLeft className="h-5 w-5" />
+      </button>
+      <button
+        aria-label="Próximo destaque"
+        onClick={() => setActive((i) => (i + 1) % SLIDES.length)}
+        className="absolute top-1/2 right-3 z-10 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-ink-foreground/25 text-ink-foreground/70 transition-colors hover:border-gold hover:text-gold sm:grid"
+      >
+        <ChevronRight className="h-5 w-5" />
+      </button>
+    </section>
+  );
+}
+
 function Home() {
   const { data: featured = [], isLoading } = useQuery({
     queryKey: ["home-featured"],
@@ -51,33 +196,7 @@ function Home() {
 
   return (
     <>
-      <section className="relative isolate overflow-hidden bg-ink text-ink-foreground">
-        <img
-          src={heroImage}
-          alt="Perfume e cosméticos sobre seda com flores de amaranto"
-          width={1600}
-          height={1104}
-          className="absolute inset-0 h-full w-full object-cover opacity-60"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/80 to-transparent" />
-        <div className="relative mx-auto flex min-h-[78vh] max-w-7xl flex-col justify-center px-4 py-20 sm:px-6">
-          <p className="eyebrow text-gold">Perfumaria & Beleza</p>
-          <h1 className="font-display mt-5 max-w-2xl text-4xl leading-[1.05] sm:text-6xl lg:text-7xl">
-            Encontre a fragrância que combina com você.
-          </h1>
-          <p className="mt-5 max-w-md text-sm leading-relaxed text-ink-foreground/70 sm:text-base">
-            Perfumes, beleza e autocuidado selecionados para transformar sua experiência.
-          </p>
-          <div className="mt-9 flex flex-wrap gap-3">
-            <Button asChild variant="gold" size="xl">
-              <Link to="/perfumes">Comprar perfumes</Link>
-            </Button>
-            <Button asChild variant="outlineGold" size="xl">
-              <Link to="/colecoes">Explorar coleção</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+      <HeroCarousel />
 
       <section className="border-b border-border bg-secondary">
         <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 text-xs sm:grid-cols-3 sm:px-6">
@@ -95,6 +214,41 @@ function Home() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+        <SectionTitle eyebrow="Famílias olfativas" title="Escolha pelo estilo" />
+        <div className="no-scrollbar mt-10 flex gap-8 overflow-x-auto pb-2 sm:justify-between">
+          {ESTILOS.map((e) => (
+            <Link
+              key={e.filtro}
+              to="/perfumes/$filtro"
+              params={{ filtro: e.filtro }}
+              className="group flex w-28 shrink-0 flex-col items-center gap-3"
+            >
+              <span className="overflow-hidden rounded-full border border-border transition-all group-hover:border-gold group-hover:shadow-gold">
+                <img
+                  src={e.img}
+                  alt={`Ingredientes da família ${e.label}`}
+                  loading="lazy"
+                  width={512}
+                  height={512}
+                  className="h-28 w-28 object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+              </span>
+              <span className="text-xs tracking-[0.18em] uppercase transition-colors group-hover:text-gold">
+                {e.label}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
+        <SectionTitle eyebrow="Seleção da casa" title="Mais vendidos" to="/perfumes" />
+        <div className="mt-8">
+          <ProductGrid products={featured.slice(0, 8)} loading={isLoading} />
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
         <SectionTitle eyebrow="Navegue" title="Categorias" />
         <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-3">
           {CATEGORIES.map((cat) => (
@@ -121,11 +275,11 @@ function Home() {
             className="group relative isolate flex min-h-[300px] flex-col justify-end overflow-hidden bg-ink p-8 text-ink-foreground"
           >
             <img
-              src={heroImage}
+              src={heroArabes}
               alt="Perfumes árabes"
               loading="lazy"
               width={1600}
-              height={1104}
+              height={1024}
               className="absolute inset-0 h-full w-full object-cover opacity-55 transition-transform duration-700 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-ink to-transparent" />
@@ -159,13 +313,6 @@ function Home() {
               </span>
             </div>
           </Link>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
-        <SectionTitle eyebrow="Seleção da casa" title="Mais vendidos" to="/perfumes" />
-        <div className="mt-8">
-          <ProductGrid products={featured.slice(0, 8)} loading={isLoading} />
         </div>
       </section>
 
