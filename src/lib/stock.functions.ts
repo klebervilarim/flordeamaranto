@@ -2,26 +2,14 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
-import {
-  adminCount,
-  assertStockAccess,
-  callerIsAdmin,
-  getClientIp,
-  readAllowedIps,
-  writeAllowedIps,
-} from "./stock.server";
+import { adminCount, assertAdmin, callerIsAdmin } from "./stock.server";
 
 export const getStockStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const isAdmin = await callerIsAdmin(context.supabase, context.userId);
     const admins = await adminCount();
-    if (!isAdmin) {
-      return { isAdmin, adminExists: admins > 0, ip: null as string | null, ipAllowed: false, allowedIps: [] as string[] };
-    }
-    const ip = getClientIp();
-    const allowedIps = await readAllowedIps();
-    return { isAdmin, adminExists: true, ip, ipAllowed: allowedIps.includes(ip), allowedIps };
+    return { isAdmin, adminExists: admins > 0 };
   });
 
 export const claimFirstAdmin = createServerFn({ method: "POST" })
@@ -35,40 +23,6 @@ export const claimFirstAdmin = createServerFn({ method: "POST" })
       .insert({ user_id: context.userId, role: "admin" });
     if (error) throw new Error("Não foi possível ativar o administrador.");
     return { ok: true };
-  });
-
-export const addAllowedIp = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ ip: z.string().min(3).max(64).optional() }).parse(input))
-  .handler(async ({ data, context }) => {
-    if (!(await callerIsAdmin(context.supabase, context.userId))) {
-      throw new Error("Acesso restrito a administradores.");
-    }
-    const current = getClientIp();
-    const ips = await readAllowedIps();
-    if (ips.length > 0 && !ips.includes(current)) {
-      throw new Error(`IP não autorizado: ${current}`);
-    }
-    const ip = data.ip?.trim() || current;
-    if (!ips.includes(ip)) ips.push(ip);
-    await writeAllowedIps(ips);
-    return { ok: true, ip, allowedIps: ips };
-  });
-
-export const removeAllowedIp = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ ip: z.string().min(3).max(64) }).parse(input))
-  .handler(async ({ data, context }) => {
-    if (!(await callerIsAdmin(context.supabase, context.userId))) {
-      throw new Error("Acesso restrito a administradores.");
-    }
-    const current = getClientIp();
-    const ips = await readAllowedIps();
-    if (!ips.includes(current)) throw new Error(`IP não autorizado: ${current}`);
-    const next = ips.filter((x) => x !== data.ip);
-    if (next.length === 0) throw new Error("A lista precisa manter ao menos um IP autorizado.");
-    await writeAllowedIps(next);
-    return { ok: true, allowedIps: next };
   });
 
 export type StockItem = {
