@@ -702,6 +702,7 @@ export type Database = {
           origin: string | null
           price: number
           product_type: string
+          purchase_location: string
           rating: number
           rating_count: number
           sale_price: number | null
@@ -755,6 +756,7 @@ export type Database = {
           origin?: string | null
           price?: number
           product_type?: string
+          purchase_location?: string
           rating?: number
           rating_count?: number
           sale_price?: number | null
@@ -808,6 +810,7 @@ export type Database = {
           origin?: string | null
           price?: number
           product_type?: string
+          purchase_location?: string
           rating?: number
           rating_count?: number
           sale_price?: number | null
