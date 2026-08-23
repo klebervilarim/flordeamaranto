@@ -126,6 +126,15 @@ export function Header() {
           >
             {searchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
           </button>
+          {isAdmin && (
+            <Link
+              to="/admin"
+              aria-label="Dashboard do administrador"
+              className="hidden h-10 w-10 place-items-center text-gold sm:grid"
+            >
+              <LayoutDashboard className="h-5 w-5" />
+            </Link>
+          )}
           <Link
             to="/minha-conta"
             aria-label="Minha conta"
