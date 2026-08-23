@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { LayoutDashboard, Loader2, Pencil, Plus, ShieldCheck, Trash2 } from "lucide-react";
+import { LayoutDashboard, Loader2, Pencil, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { brl } from "@/lib/format";
 import { PRODUCT_TYPE_LABELS } from "@/lib/catalog";
@@ -17,13 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import placeholder from "@/assets/product-placeholder.jpg";
-import {
-  addAllowedIp,
-  listStock,
-  removeAllowedIp,
-  updateStockItem,
-  type StockItem,
-} from "@/lib/stock.functions";
+import { listStock, updateStockItem, type StockItem } from "@/lib/stock.functions";
 
 export const Route = createFileRoute("/estoque/")({
   head: () => ({
@@ -39,20 +33,17 @@ export const Route = createFileRoute("/estoque/")({
 function EstoquePage() {
   return (
     <StockGate>
-      {(access) => <StockPanel currentIp={access.ip} allowedIps={access.allowedIps} />}
+      <StockPanel />
     </StockGate>
   );
 }
 
-function StockPanel({ currentIp, allowedIps }: { currentIp: string; allowedIps: string[] }) {
+function StockPanel() {
   const listFn = useServerFn(listStock);
   const saveFn = useServerFn(updateStockItem);
-  const addIp = useServerFn(addAllowedIp);
-  const removeIp = useServerFn(removeAllowedIp);
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [newIp, setNewIp] = useState("");
   const [edits, setEdits] = useState<
     Record<string, { stock?: number; price?: number; costPrice?: number }>
   >({});
@@ -79,24 +70,6 @@ function StockPanel({ currentIp, allowedIps }: { currentIp: string; allowedIps: 
         return next;
       });
       queryClient.invalidateQueries({ queryKey: ["stock-list"] });
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
-  const addIpMutation = useMutation({
-    mutationFn: (ip?: string) => addIp({ data: { ip } }),
-    onSuccess: (r) => {
-      toast.success(`IP ${r.ip} autorizado.`);
-      queryClient.invalidateQueries({ queryKey: ["stock-status"] });
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
-  const removeIpMutation = useMutation({
-    mutationFn: (ip: string) => removeIp({ data: { ip } }),
-    onSuccess: () => {
-      toast.success("IP removido.");
-      queryClient.invalidateQueries({ queryKey: ["stock-status"] });
     },
     onError: (e) => toast.error(e.message),
   });
