@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import placeholder from "@/assets/product-placeholder.jpg";
+import { ShippingCalculator } from "@/components/cart/ShippingCalculator";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
 import { brl, installments } from "@/lib/format";
+import { FREE_SHIPPING_OVER } from "@/lib/shipping";
 
 export const Route = createFileRoute("/carrinho")({
   head: () => ({
@@ -20,12 +22,10 @@ export const Route = createFileRoute("/carrinho")({
   component: CartPage,
 });
 
-const FREE_SHIPPING = 399;
-
 function CartPage() {
-  const { lines, subtotal, setQuantity, remove } = useCart();
-  const shipping = subtotal >= FREE_SHIPPING || subtotal === 0 ? 0 : 29.9;
-  const total = subtotal + shipping;
+  const { lines, subtotal, setQuantity, remove, shipping } = useCart();
+  const shippingPrice = shipping?.price ?? 0;
+  const total = subtotal + shippingPrice;
   const parc = installments(total);
 
   if (lines.length === 0) {
@@ -112,14 +112,29 @@ function CartPage() {
         </ul>
 
         <aside className="h-fit border border-border p-6 lg:sticky lg:top-28">
-          <h2 className="eyebrow text-muted-foreground">Resumo</h2>
+          <ShippingCalculator />
+          <h2 className="eyebrow mt-6 text-muted-foreground">Resumo</h2>
           <dl className="mt-5 space-y-3 text-sm">
             <Row label="Subtotal" value={brl(subtotal)} />
-            <Row label="Frete" value={shipping === 0 ? "Grátis" : brl(shipping)} />
+            <Row
+              label="Frete"
+              value={
+                shipping
+                  ? shipping.price === 0
+                    ? "Grátis"
+                    : brl(shipping.price)
+                  : "Informe o CEP"
+              }
+            />
+            {shipping && (
+              <p className="-mt-1 text-right text-xs text-muted-foreground">
+                {shipping.name} — {shipping.eta}
+              </p>
+            )}
           </dl>
-          {subtotal < FREE_SHIPPING && (
+          {subtotal < FREE_SHIPPING_OVER && (
             <p className="mt-4 bg-sand px-3 py-2 text-xs text-cocoa">
-              Faltam {brl(FREE_SHIPPING - subtotal)} para frete grátis.
+              Faltam {brl(FREE_SHIPPING_OVER - subtotal)} para frete grátis (PAC).
             </p>
           )}
           <div className="mt-5 flex items-baseline justify-between border-t border-border pt-5">
