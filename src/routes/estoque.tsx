@@ -1,18 +1,24 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState, type ReactNode } from "react";
-import { Loader2, Lock, Plus, ShieldCheck, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { LayoutDashboard, Loader2, Pencil, Plus, ShieldCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { useAuth } from "@/hooks/useAuth";
 import { brl } from "@/lib/format";
+import { PRODUCT_TYPE_LABELS } from "@/lib/catalog";
+import { StockGate } from "@/components/stock/StockGate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import placeholder from "@/assets/product-placeholder.jpg";
 import {
   addAllowedIp,
-  claimFirstAdmin,
-  getStockStatus,
   listStock,
   removeAllowedIp,
   updateStockItem,
@@ -31,25 +37,48 @@ export const Route = createFileRoute("/estoque")({
 });
 
 function EstoquePage() {
-  const { user, loading } = useAuth();
-  const queryClient = useQueryClient();
-  const getStatus = useServerFn(getStockStatus);
-  const claim = useServerFn(claimFirstAdmin);
+  return (
+    <StockGate>
+      {(access) => <StockPanel currentIp={access.ip} allowedIps={access.allowedIps} />}
+    </StockGate>
+  );
+}
+
+function StockPanel({ currentIp, allowedIps }: { currentIp: string; allowedIps: string[] }) {
+  const listFn = useServerFn(listStock);
+  const saveFn = useServerFn(updateStockItem);
   const addIp = useServerFn(addAllowedIp);
   const removeIp = useServerFn(removeAllowedIp);
+  const queryClient = useQueryClient();
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [newIp, setNewIp] = useState("");
+  const [edits, setEdits] = useState<
+    Record<string, { stock?: number; price?: number; costPrice?: number }>
+  >({});
 
-  const statusQuery = useQuery({
-    queryKey: ["stock-status"],
-    queryFn: () => getStatus(),
-    enabled: Boolean(user),
+  const stockQuery = useQuery({
+    queryKey: ["stock-list"],
+    queryFn: () => listFn(),
     retry: false,
   });
 
-  const claimMutation = useMutation({
-    mutationFn: () => claim(),
-    onSuccess: () => {
-      toast.success("Administrador ativado.");
-      queryClient.invalidateQueries({ queryKey: ["stock-status"] });
+  const saveMutation = useMutation({
+    mutationFn: (input: {
+      id: string;
+      stock?: number;
+      price?: number;
+      costPrice?: number;
+      purchaseLocation?: string;
+    }) => saveFn({ data: input }),
+    onSuccess: (_r, v) => {
+      toast.success("Alteração salva.");
+      setEdits((e) => {
+        const next = { ...e };
+        delete next[v.id];
+        return next;
+      });
+      queryClient.invalidateQueries({ queryKey: ["stock-list"] });
     },
     onError: (e) => toast.error(e.message),
   });
@@ -72,182 +101,21 @@ function EstoquePage() {
     onError: (e) => toast.error(e.message),
   });
 
-  if (loading) {
-    return (
-      <div className="grid min-h-[50vh] place-items-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <GateCard
-        title="Área restrita"
-        text="Entre com a sua conta para acessar o painel de estoque."
-      >
-        <Button asChild variant="gold" size="pill">
-          <Link to="/minha-conta">Entrar / Criar conta</Link>
-        </Button>
-      </GateCard>
-    );
-  }
-
-  if (statusQuery.isLoading) {
-    return (
-      <div className="grid min-h-[50vh] place-items-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  if (statusQuery.isError) {
-    return (
-      <GateCard title="Erro" text={statusQuery.error.message}>
-        <Button variant="outlineInk" size="pill" onClick={() => statusQuery.refetch()}>
-          Tentar novamente
-        </Button>
-      </GateCard>
-    );
-  }
-
-  const status = statusQuery.data!;
-
-  if (!status.isAdmin && !status.adminExists) {
-    return (
-      <GateCard
-        title="Ativar administrador"
-        text="Nenhum administrador foi configurado ainda. Como este é o primeiro acesso, você pode ativar esta conta como administradora da loja."
-      >
-        <Button
-          variant="gold"
-          size="pill"
-          disabled={claimMutation.isPending}
-          onClick={() => claimMutation.mutate()}
-        >
-          {claimMutation.isPending ? "Ativando…" : "Ativar esta conta como administradora"}
-        </Button>
-      </GateCard>
-    );
-  }
-
-  if (!status.isAdmin) {
-    return (
-      <GateCard
-        title="Acesso negado"
-        text="Esta área é restrita ao administrador da loja."
-      />
-    );
-  }
-
-  if (!status.ipAllowed && status.allowedIps.length === 0) {
-    return (
-      <GateCard
-        title="Autorizar este IP"
-        text={`Por segurança, o painel de estoque só abre em IPs autorizados. Seu IP atual é ${status.ip}. Autorize-o para continuar.`}
-      >
-        <Button
-          variant="gold"
-          size="pill"
-          disabled={addIpMutation.isPending}
-          onClick={() => addIpMutation.mutate(undefined)}
-        >
-          {addIpMutation.isPending ? "Autorizando…" : `Autorizar IP ${status.ip}`}
-        </Button>
-      </GateCard>
-    );
-  }
-
-  if (!status.ipAllowed) {
-    return (
-      <GateCard
-        title="IP não autorizado"
-        text={`Seu IP atual (${status.ip}) não está na lista de acesso ao estoque. Acesse a partir de um IP autorizado para liberar novos endereços.`}
-      />
-    );
-  }
-
-  return (
-    <StockPanel
-      currentIp={status.ip!}
-      allowedIps={status.allowedIps}
-      onAddIp={(ip) => addIpMutation.mutate(ip)}
-      onRemoveIp={(ip) => removeIpMutation.mutate(ip)}
-      addingIp={addIpMutation.isPending}
-    />
-  );
-}
-
-function GateCard({
-  title,
-  text,
-  children,
-}: {
-  title: string;
-  text: string;
-  children?: ReactNode;
-}) {
-  return (
-    <div className="mx-auto max-w-md px-4 py-24 text-center">
-      <div className="mx-auto mb-6 grid h-14 w-14 place-items-center rounded-full bg-secondary">
-        <Lock className="h-6 w-6 text-gold" />
-      </div>
-      <h1 className="font-display text-3xl">{title}</h1>
-      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{text}</p>
-      {children && <div className="mt-8 flex justify-center">{children}</div>}
-    </div>
-  );
-}
-
-function StockPanel({
-  currentIp,
-  allowedIps,
-  onAddIp,
-  onRemoveIp,
-  addingIp,
-}: {
-  currentIp: string;
-  allowedIps: string[];
-  onAddIp: (ip?: string) => void;
-  onRemoveIp: (ip: string) => void;
-  addingIp: boolean;
-}) {
-  const listFn = useServerFn(listStock);
-  const saveFn = useServerFn(updateStockItem);
-  const queryClient = useQueryClient();
-  const [search, setSearch] = useState("");
-  const [newIp, setNewIp] = useState("");
-  const [edits, setEdits] = useState<Record<string, { stock?: number; price?: number; costPrice?: number }>>({});
-
-  const stockQuery = useQuery({
-    queryKey: ["stock-list"],
-    queryFn: () => listFn(),
-    retry: false,
-  });
-
-  const saveMutation = useMutation({
-    mutationFn: (input: { id: string; stock?: number; price?: number; costPrice?: number }) =>
-      saveFn({ data: input }),
-    onSuccess: (_r, v) => {
-      toast.success("Alteração salva.");
-      setEdits((e) => {
-        const next = { ...e };
-        delete next[v.id];
-        return next;
-      });
-      queryClient.invalidateQueries({ queryKey: ["stock-list"] });
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
   const items = stockQuery.data ?? [];
+
+  const typeOptions = useMemo(() => {
+    const types = [...new Set(items.map((p) => p.product_type))].sort();
+    return types.map((t) => ({ value: t, label: PRODUCT_TYPE_LABELS[t] ?? t }));
+  }, [items]);
+
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
-    if (!term) return items;
-    return items.filter(
-      (p) => p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term),
-    );
-  }, [items, search]);
+    return items.filter((p) => {
+      if (typeFilter !== "all" && p.product_type !== typeFilter) return false;
+      if (!term) return true;
+      return p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term);
+    });
+  }, [items, search, typeFilter]);
 
   const totals = useMemo(() => {
     let units = 0;
@@ -284,9 +152,16 @@ function StockPanel({
           <p className="eyebrow text-gold">Acesso autorizado · IP {currentIp}</p>
           <h1 className="mt-2 font-display text-4xl">Estoque</h1>
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <ShieldCheck className="h-4 w-4 text-gold" />
-          Protegido por IP + administrador
+        <div className="flex items-center gap-3">
+          <Button asChild variant="outlineInk" size="pill">
+            <Link to="/admin">
+              <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+            </Link>
+          </Button>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <ShieldCheck className="h-4 w-4 text-gold" />
+            Protegido por IP + administrador
+          </div>
         </div>
       </div>
 
@@ -303,14 +178,15 @@ function StockPanel({
           {allowedIps.map((ip) => (
             <li key={ip} className="flex items-center justify-between gap-3">
               <span>
-                {ip} {ip === currentIp && <span className="text-xs text-gold">(este dispositivo)</span>}
+                {ip}{" "}
+                {ip === currentIp && <span className="text-xs text-gold">(este dispositivo)</span>}
               </span>
               {allowedIps.length > 1 && (
                 <button
                   type="button"
                   aria-label={`Remover IP ${ip}`}
                   className="text-muted-foreground hover:text-destructive"
-                  onClick={() => onRemoveIp(ip)}
+                  onClick={() => removeIpMutation.mutate(ip)}
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -328,9 +204,9 @@ function StockPanel({
           <Button
             variant="outlineInk"
             size="sm"
-            disabled={addingIp || newIp.trim().length < 3}
+            disabled={addIpMutation.isPending || newIp.trim().length < 3}
             onClick={() => {
-              onAddIp(newIp.trim());
+              addIpMutation.mutate(newIp.trim());
               setNewIp("");
             }}
           >
@@ -339,13 +215,26 @@ function StockPanel({
         </div>
       </details>
 
-      <div className="mt-8">
+      <div className="mt-8 flex flex-wrap gap-3">
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar por nome ou SKU…"
           className="max-w-sm"
         />
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="w-56">
+            <SelectValue placeholder="Tipo de produto" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os tipos</SelectItem>
+            {typeOptions.map((t) => (
+              <SelectItem key={t.value} value={t.value}>
+                {t.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {stockQuery.isLoading ? (
@@ -356,10 +245,11 @@ function StockPanel({
         <p className="py-20 text-center text-sm text-destructive">{stockQuery.error.message}</p>
       ) : (
         <div className="mt-6 overflow-x-auto">
-          <table className="w-full min-w-[760px] text-sm">
+          <table className="w-full min-w-[900px] text-sm">
             <thead>
               <tr className="border-b border-border text-left text-[0.65rem] tracking-[0.16em] text-muted-foreground uppercase">
                 <th className="py-3 pr-3">Produto</th>
+                <th className="py-3 pr-3">Local de compra</th>
                 <th className="py-3 pr-3">Estoque</th>
                 <th className="py-3 pr-3">Custo</th>
                 <th className="py-3 pr-3">Sugerido (+40%)</th>
@@ -382,9 +272,28 @@ function StockPanel({
                       />
                       <div>
                         <p className="font-medium">{p.name}</p>
-                        <p className="text-xs text-muted-foreground">{p.sku}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {p.sku}
+                          {p.brands?.name ? ` · ${p.brands.name}` : ""}
+                        </p>
                       </div>
                     </div>
+                  </td>
+                  <td className="py-3 pr-3">
+                    <Select
+                      value={p.purchase_location}
+                      onValueChange={(v) =>
+                        saveMutation.mutate({ id: p.id, purchaseLocation: v })
+                      }
+                    >
+                      <SelectTrigger className="h-8 w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Brasil">Brasil</SelectItem>
+                        <SelectItem value="Paraguai">Paraguai</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </td>
                   <td className="py-3 pr-3">
                     <Input
@@ -418,18 +327,27 @@ function StockPanel({
                     />
                   </td>
                   <td className="py-3 text-right">
-                    {isDirty(p.id) && (
-                      <Button
-                        variant="gold"
-                        size="sm"
-                        disabled={saveMutation.isPending}
-                        onClick={() =>
-                          saveMutation.mutate({ id: p.id, ...edits[p.id] })
-                        }
-                      >
-                        Salvar
+                    <div className="flex items-center justify-end gap-2">
+                      {isDirty(p.id) && (
+                        <Button
+                          variant="gold"
+                          size="sm"
+                          disabled={saveMutation.isPending}
+                          onClick={() => saveMutation.mutate({ id: p.id, ...edits[p.id] })}
+                        >
+                          Salvar
+                        </Button>
+                      )}
+                      <Button asChild variant="outlineInk" size="sm">
+                        <Link
+                          to="/estoque/produto/$id"
+                          params={{ id: p.id }}
+                          aria-label={`Editar ${p.name}`}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Link>
                       </Button>
-                    )}
+                    </div>
                   </td>
                 </tr>
               ))}

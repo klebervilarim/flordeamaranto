@@ -50,6 +50,12 @@ export async function writeAllowedIps(ips: string[]): Promise<void> {
   if (error) throw new Error("Falha ao salvar lista de IPs.");
 }
 
+/** Garante apenas: usuário é admin (sem restrição de IP). */
+export async function assertAdmin(supabase: UserSupabase, userId: string): Promise<void> {
+  const admin = await callerIsAdmin(supabase, userId);
+  if (!admin) throw new Error("Acesso restrito a administradores.");
+}
+
 /** Garante: usuário é admin E o IP da requisição está na lista autorizada. */
 export async function assertStockAccess(
   supabase: UserSupabase,

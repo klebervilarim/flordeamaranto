@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as BuscaRouteImport } from './routes/busca'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
@@ -30,10 +31,17 @@ import { Route as MarcasSlugRouteImport } from './routes/marcas.$slug'
 import { Route as PerfumesIndexRouteImport } from './routes/perfumes.index'
 import { Route as PerfumesFiltroRouteImport } from './routes/perfumes.$filtro'
 import { Route as ProdutoSlugRouteImport } from './routes/produto.$slug'
+import { Route as EstoqueProdutoIdRouteImport } from './routes/estoque.produto.$id'
+import { Route as ApiPublicProductImageSplatRouteImport } from './routes/api/public/product-image/$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogRoute = BlogRouteImport.update({
@@ -136,16 +144,28 @@ const ProdutoSlugRoute = ProdutoSlugRouteImport.update({
   path: '/produto/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EstoqueProdutoIdRoute = EstoqueProdutoIdRouteImport.update({
+  id: '/produto/$id',
+  path: '/produto/$id',
+  getParentRoute: () => EstoqueRoute,
+} as any)
+const ApiPublicProductImageSplatRoute =
+  ApiPublicProductImageSplatRouteImport.update({
+    id: '/api/public/product-image/$',
+    path: '/api/public/product-image/$',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/blog': typeof BlogRoute
   '/busca': typeof BuscaRoute
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
   '/corpo-e-banho': typeof CorpoEBanhoRoute
   '/cosmeticos': typeof CosmeticosRoute
-  '/estoque': typeof EstoqueRoute
+  '/estoque': typeof EstoqueRouteWithChildren
   '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
   '/minha-conta': typeof MinhaContaRoute
@@ -159,16 +179,19 @@ export interface FileRoutesByFullPath {
   '/colecoes/': typeof ColecoesIndexRoute
   '/marcas/': typeof MarcasIndexRoute
   '/perfumes/': typeof PerfumesIndexRoute
+  '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
+  '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/blog': typeof BlogRoute
   '/busca': typeof BuscaRoute
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
   '/corpo-e-banho': typeof CorpoEBanhoRoute
   '/cosmeticos': typeof CosmeticosRoute
-  '/estoque': typeof EstoqueRoute
+  '/estoque': typeof EstoqueRouteWithChildren
   '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
   '/minha-conta': typeof MinhaContaRoute
@@ -182,17 +205,20 @@ export interface FileRoutesByTo {
   '/colecoes': typeof ColecoesIndexRoute
   '/marcas': typeof MarcasIndexRoute
   '/perfumes': typeof PerfumesIndexRoute
+  '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
+  '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/blog': typeof BlogRoute
   '/busca': typeof BuscaRoute
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
   '/corpo-e-banho': typeof CorpoEBanhoRoute
   '/cosmeticos': typeof CosmeticosRoute
-  '/estoque': typeof EstoqueRoute
+  '/estoque': typeof EstoqueRouteWithChildren
   '/favoritos': typeof FavoritosRoute
   '/maquiagem': typeof MaquiagemRoute
   '/minha-conta': typeof MinhaContaRoute
@@ -206,11 +232,14 @@ export interface FileRoutesById {
   '/colecoes/': typeof ColecoesIndexRoute
   '/marcas/': typeof MarcasIndexRoute
   '/perfumes/': typeof PerfumesIndexRoute
+  '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
+  '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/blog'
     | '/busca'
     | '/carrinho'
@@ -231,9 +260,12 @@ export interface FileRouteTypes {
     | '/colecoes/'
     | '/marcas/'
     | '/perfumes/'
+    | '/estoque/produto/$id'
+    | '/api/public/product-image/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/blog'
     | '/busca'
     | '/carrinho'
@@ -254,9 +286,12 @@ export interface FileRouteTypes {
     | '/colecoes'
     | '/marcas'
     | '/perfumes'
+    | '/estoque/produto/$id'
+    | '/api/public/product-image/$'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/blog'
     | '/busca'
     | '/carrinho'
@@ -277,17 +312,20 @@ export interface FileRouteTypes {
     | '/colecoes/'
     | '/marcas/'
     | '/perfumes/'
+    | '/estoque/produto/$id'
+    | '/api/public/product-image/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   BlogRoute: typeof BlogRoute
   BuscaRoute: typeof BuscaRoute
   CarrinhoRoute: typeof CarrinhoRoute
   CheckoutRoute: typeof CheckoutRoute
   CorpoEBanhoRoute: typeof CorpoEBanhoRoute
   CosmeticosRoute: typeof CosmeticosRoute
-  EstoqueRoute: typeof EstoqueRoute
+  EstoqueRoute: typeof EstoqueRouteWithChildren
   FavoritosRoute: typeof FavoritosRoute
   MaquiagemRoute: typeof MaquiagemRoute
   MinhaContaRoute: typeof MinhaContaRoute
@@ -301,6 +339,7 @@ export interface RootRouteChildren {
   ColecoesIndexRoute: typeof ColecoesIndexRoute
   MarcasIndexRoute: typeof MarcasIndexRoute
   PerfumesIndexRoute: typeof PerfumesIndexRoute
+  ApiPublicProductImageSplatRoute: typeof ApiPublicProductImageSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -310,6 +349,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog': {
@@ -452,18 +498,44 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProdutoSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/estoque/produto/$id': {
+      id: '/estoque/produto/$id'
+      path: '/produto/$id'
+      fullPath: '/estoque/produto/$id'
+      preLoaderRoute: typeof EstoqueProdutoIdRouteImport
+      parentRoute: typeof EstoqueRoute
+    }
+    '/api/public/product-image/$': {
+      id: '/api/public/product-image/$'
+      path: '/api/public/product-image/$'
+      fullPath: '/api/public/product-image/$'
+      preLoaderRoute: typeof ApiPublicProductImageSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface EstoqueRouteChildren {
+  EstoqueProdutoIdRoute: typeof EstoqueProdutoIdRoute
+}
+
+const EstoqueRouteChildren: EstoqueRouteChildren = {
+  EstoqueProdutoIdRoute: EstoqueProdutoIdRoute,
+}
+
+const EstoqueRouteWithChildren =
+  EstoqueRoute._addFileChildren(EstoqueRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   BlogRoute: BlogRoute,
   BuscaRoute: BuscaRoute,
   CarrinhoRoute: CarrinhoRoute,
   CheckoutRoute: CheckoutRoute,
   CorpoEBanhoRoute: CorpoEBanhoRoute,
   CosmeticosRoute: CosmeticosRoute,
-  EstoqueRoute: EstoqueRoute,
+  EstoqueRoute: EstoqueRouteWithChildren,
   FavoritosRoute: FavoritosRoute,
   MaquiagemRoute: MaquiagemRoute,
   MinhaContaRoute: MinhaContaRoute,
@@ -477,6 +549,7 @@ const rootRouteChildren: RootRouteChildren = {
   ColecoesIndexRoute: ColecoesIndexRoute,
   MarcasIndexRoute: MarcasIndexRoute,
   PerfumesIndexRoute: PerfumesIndexRoute,
+  ApiPublicProductImageSplatRoute: ApiPublicProductImageSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
