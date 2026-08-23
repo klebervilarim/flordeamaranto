@@ -108,7 +108,7 @@ export async function fetchProducts(filters: CatalogFilters = {}): Promise<Produ
     if (productIds.length === 0) return [];
   }
 
-  let query = supabase.from("products").select(SELECT).eq("status", "active");
+  let query = supabase.from("products").select(SELECT).eq("status", "active").gt("price", 0);
 
   if (productIds) query = query.in("id", productIds);
   if (filters.productTypes?.length) query = query.in("product_type", filters.productTypes);
@@ -176,7 +176,9 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
     .eq("slug", slug)
     .maybeSingle();
   if (error) throw error;
-  return (data as unknown as Product) ?? null;
+  const product = (data as unknown as Product) ?? null;
+  if (product && product.price <= 0) return null;
+  return product;
 }
 
 export async function fetchBrands(): Promise<Brand[]> {
