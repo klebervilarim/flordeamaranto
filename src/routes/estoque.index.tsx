@@ -123,7 +123,7 @@ function StockPanel() {
     <div className="mx-auto max-w-6xl px-4 py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="eyebrow text-gold">Acesso autorizado · IP {currentIp}</p>
+          <p className="eyebrow text-gold">Área do administrador</p>
           <h1 className="mt-2 font-display text-4xl">Estoque</h1>
         </div>
         <div className="flex items-center gap-3">
@@ -134,7 +134,7 @@ function StockPanel() {
           </Button>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <ShieldCheck className="h-4 w-4 text-gold" />
-            Protegido por IP + administrador
+            Acesso restrito ao administrador
           </div>
         </div>
       </div>
@@ -146,48 +146,6 @@ function StockPanel() {
         <Stat label="Venda potencial" value={brl(totals.revenue)} />
       </div>
 
-      <details className="mt-8 border border-border bg-card p-4">
-        <summary className="cursor-pointer text-sm font-medium">IPs autorizados</summary>
-        <ul className="mt-3 space-y-2 text-sm">
-          {allowedIps.map((ip) => (
-            <li key={ip} className="flex items-center justify-between gap-3">
-              <span>
-                {ip}{" "}
-                {ip === currentIp && <span className="text-xs text-gold">(este dispositivo)</span>}
-              </span>
-              {allowedIps.length > 1 && (
-                <button
-                  type="button"
-                  aria-label={`Remover IP ${ip}`}
-                  className="text-muted-foreground hover:text-destructive"
-                  onClick={() => removeIpMutation.mutate(ip)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-        <div className="mt-4 flex gap-2">
-          <Input
-            value={newIp}
-            onChange={(e) => setNewIp(e.target.value)}
-            placeholder="Adicionar IP (ex.: 187.44.10.25)"
-            className="max-w-xs"
-          />
-          <Button
-            variant="outlineInk"
-            size="sm"
-            disabled={addIpMutation.isPending || newIp.trim().length < 3}
-            onClick={() => {
-              addIpMutation.mutate(newIp.trim());
-              setNewIp("");
-            }}
-          >
-            <Plus className="mr-1 h-4 w-4" /> Adicionar
-          </Button>
-        </div>
-      </details>
 
       <div className="mt-8 flex flex-wrap gap-3">
         <Input
