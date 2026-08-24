@@ -18,8 +18,8 @@ export const Route = createFileRoute("/corpo-e-banho")({
   component: () => (
     <CatalogPage
       title="Corpo & Banho"
-      subtitle="Hidratantes, óleos, sabonetes e body splash perfumados."
-      base={{ productTypes: ["corpo-e-banho", "cabelo"] }}
+      subtitle="Body splash, cremes, sabonetes, hidratantes e óleos perfumados."
+      base={{ productTypes: ["corpo-e-banho", "cabelo", "body-splash", "sabonete", "creme"] }}
       facets={["families", "brandSlugs"]}
     />
   ),

@@ -20,7 +20,7 @@ export const Route = createFileRoute("/perfumes/")({
     <CatalogPage
       title="Perfumes"
       subtitle="Árabes, de nicho, importados e nacionais — masculinos, femininos e unissex."
-      base={{ productTypes: ["perfume"] }}
+      base={{ productTypes: ["perfume", "miniatura"] }}
       facets={["genders", "origins", "families", "brandSlugs", "longevity", "sillage"]}
     />
   ),
