@@ -225,6 +225,10 @@ export async function fetchCollections(): Promise<Collection[]> {
 
 export const PRODUCT_TYPE_LABELS: Record<string, string> = {
   perfume: "Perfume",
+  miniatura: "Miniatura",
+  "body-splash": "Body Splash",
+  sabonete: "Sabonete",
+  creme: "Creme Corporal",
   cosmetico: "Cosmético",
   skincare: "Skincare",
   maquiagem: "Maquiagem",

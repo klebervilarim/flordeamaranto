@@ -8,7 +8,12 @@ const PRESETS: Record<string, Preset> = {
   arabes: {
     title: "Perfumes Árabes",
     subtitle: "Oud, âmbar, resinas e especiarias: a assinatura do Oriente Médio.",
-    base: { productTypes: ["perfume"], origins: ["arabe"] },
+    base: { productTypes: ["perfume", "miniatura"], origins: ["arabe"] },
+  },
+  miniaturas: {
+    title: "Miniaturas",
+    subtitle: "Perfumes em miniatura de 25ml — perfeitos para conhecer novas fragrâncias.",
+    base: { productTypes: ["miniatura"] },
   },
   nicho: {
     title: "Perfumes de Nicho",
