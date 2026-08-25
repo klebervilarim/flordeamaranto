@@ -47,13 +47,21 @@ export const listStock = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("products")
       .select(
-        "id, sku, name, image_url, stock, cost_price, suggested_price, price, sale_price, product_type, purchase_location, brands(name)",
+        "id, sku, name, image_url, stock, price, sale_price, product_type, purchase_location, brands(name)",
       )
       .neq("status", "archived")
       .order("name")
       .limit(1500);
     if (error) throw new Error("Falha ao carregar estoque.");
-    return (data ?? []) as unknown as StockItem[];
+    const { data: costs } = await context.supabase
+      .from("product_costs")
+      .select("product_id, cost_price, suggested_price");
+    const costMap = new Map((costs ?? []).map((c) => [c.product_id, c]));
+    return (data ?? []).map((p) => ({
+      ...p,
+      cost_price: costMap.get(p.id)?.cost_price ?? null,
+      suggested_price: costMap.get(p.id)?.suggested_price ?? null,
+    })) as unknown as StockItem[];
   });
 
 export const updateStockItem = createServerFn({ method: "POST" })
@@ -75,13 +83,19 @@ export const updateStockItem = createServerFn({ method: "POST" })
     if (data.stock != null) patch["stock"] = data.stock;
     if (data.price != null) patch["price"] = data.price;
     if (data.purchaseLocation != null) patch["purchase_location"] = data.purchaseLocation;
-    if (data.costPrice != null) {
-      patch["cost_price"] = data.costPrice;
-      patch["suggested_price"] = Math.round(data.costPrice * 1.4 * 100) / 100;
+    if (Object.keys(patch).length > 0) {
+      const { error } = await context.supabase.from("products").update(patch).eq("id", data.id);
+      if (error) throw new Error("Falha ao salvar alteração.");
     }
-    if (Object.keys(patch).length === 0) return { ok: true };
-    const { error } = await context.supabase.from("products").update(patch).eq("id", data.id);
-    if (error) throw new Error("Falha ao salvar alteração.");
+    if (data.costPrice != null) {
+      const { error } = await context.supabase.from("product_costs").upsert({
+        product_id: data.id,
+        cost_price: data.costPrice,
+        suggested_price: Math.round(data.costPrice * 1.4 * 100) / 100,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) throw new Error("Falha ao salvar alteração.");
+    }
     return { ok: true };
   });
 
@@ -135,13 +149,22 @@ export const getStockProduct = createServerFn({ method: "GET" })
     const { data: row, error } = await context.supabase
       .from("products")
       .select(
-        "id, sku, name, slug, brand_id, product_type, category_slug, gender, origin, volume, short_description, description, price, sale_price, cost_price, suggested_price, stock, purchase_location, image_url, status, featured, bestseller, is_new, brands(id, name)",
+        "id, sku, name, slug, brand_id, product_type, category_slug, gender, origin, volume, short_description, description, price, sale_price, stock, purchase_location, image_url, status, featured, bestseller, is_new, brands(id, name)",
       )
       .eq("id", data.id)
       .maybeSingle();
     if (error) throw new Error("Falha ao carregar produto.");
     if (!row) throw new Error("Produto não encontrado.");
-    return row as unknown as StockProductDetail;
+    const { data: costRow } = await context.supabase
+      .from("product_costs")
+      .select("cost_price, suggested_price")
+      .eq("product_id", data.id)
+      .maybeSingle();
+    return {
+      ...row,
+      cost_price: costRow?.cost_price ?? null,
+      suggested_price: costRow?.suggested_price ?? null,
+    } as unknown as StockProductDetail;
   });
 
 const productUpdateSchema = z.object({
@@ -184,7 +207,6 @@ export const updateProduct = createServerFn({ method: "POST" })
       category_slug: data.categorySlug || null,
       price: data.price,
       sale_price: data.salePrice,
-      cost_price: data.costPrice,
       stock: data.stock,
       purchase_location: data.purchaseLocation,
       short_description: data.shortDescription || null,
@@ -194,12 +216,21 @@ export const updateProduct = createServerFn({ method: "POST" })
       bestseller: data.bestseller,
       is_new: data.isNew,
     };
-    if (data.costPrice != null) {
-      patch["suggested_price"] = Math.round(data.costPrice * 1.4 * 100) / 100;
-    }
     if (data.imageUrl) patch["image_url"] = data.imageUrl;
     const { error } = await context.supabase.from("products").update(patch).eq("id", data.id);
     if (error) throw new Error("Falha ao salvar o produto.");
+    const costPatch: Database["public"]["Tables"]["product_costs"]["Insert"] = {
+      product_id: data.id,
+      cost_price: data.costPrice,
+      updated_at: new Date().toISOString(),
+    };
+    if (data.costPrice != null) {
+      costPatch["suggested_price"] = Math.round(data.costPrice * 1.4 * 100) / 100;
+    }
+    const { error: costError } = await context.supabase
+      .from("product_costs")
+      .upsert(costPatch);
+    if (costError) throw new Error("Falha ao salvar o custo do produto.");
     return { ok: true };
   });
 
