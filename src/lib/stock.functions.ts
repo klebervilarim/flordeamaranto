@@ -149,13 +149,22 @@ export const getStockProduct = createServerFn({ method: "GET" })
     const { data: row, error } = await context.supabase
       .from("products")
       .select(
-        "id, sku, name, slug, brand_id, product_type, category_slug, gender, origin, volume, short_description, description, price, sale_price, cost_price, suggested_price, stock, purchase_location, image_url, status, featured, bestseller, is_new, brands(id, name)",
+        "id, sku, name, slug, brand_id, product_type, category_slug, gender, origin, volume, short_description, description, price, sale_price, stock, purchase_location, image_url, status, featured, bestseller, is_new, brands(id, name)",
       )
       .eq("id", data.id)
       .maybeSingle();
     if (error) throw new Error("Falha ao carregar produto.");
     if (!row) throw new Error("Produto não encontrado.");
-    return row as unknown as StockProductDetail;
+    const { data: costRow } = await context.supabase
+      .from("product_costs")
+      .select("cost_price, suggested_price")
+      .eq("product_id", data.id)
+      .maybeSingle();
+    return {
+      ...row,
+      cost_price: costRow?.cost_price ?? null,
+      suggested_price: costRow?.suggested_price ?? null,
+    } as unknown as StockProductDetail;
   });
 
 const productUpdateSchema = z.object({
