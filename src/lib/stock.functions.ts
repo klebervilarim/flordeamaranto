@@ -83,13 +83,19 @@ export const updateStockItem = createServerFn({ method: "POST" })
     if (data.stock != null) patch["stock"] = data.stock;
     if (data.price != null) patch["price"] = data.price;
     if (data.purchaseLocation != null) patch["purchase_location"] = data.purchaseLocation;
-    if (data.costPrice != null) {
-      patch["cost_price"] = data.costPrice;
-      patch["suggested_price"] = Math.round(data.costPrice * 1.4 * 100) / 100;
+    if (Object.keys(patch).length > 0) {
+      const { error } = await context.supabase.from("products").update(patch).eq("id", data.id);
+      if (error) throw new Error("Falha ao salvar alteração.");
     }
-    if (Object.keys(patch).length === 0) return { ok: true };
-    const { error } = await context.supabase.from("products").update(patch).eq("id", data.id);
-    if (error) throw new Error("Falha ao salvar alteração.");
+    if (data.costPrice != null) {
+      const { error } = await context.supabase.from("product_costs").upsert({
+        product_id: data.id,
+        cost_price: data.costPrice,
+        suggested_price: Math.round(data.costPrice * 1.4 * 100) / 100,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) throw new Error("Falha ao salvar alteração.");
+    }
     return { ok: true };
   });
 
