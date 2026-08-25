@@ -216,12 +216,21 @@ export const updateProduct = createServerFn({ method: "POST" })
       bestseller: data.bestseller,
       is_new: data.isNew,
     };
-    if (data.costPrice != null) {
-      patch["suggested_price"] = Math.round(data.costPrice * 1.4 * 100) / 100;
-    }
     if (data.imageUrl) patch["image_url"] = data.imageUrl;
     const { error } = await context.supabase.from("products").update(patch).eq("id", data.id);
     if (error) throw new Error("Falha ao salvar o produto.");
+    const costPatch: Database["public"]["Tables"]["product_costs"]["Insert"] = {
+      product_id: data.id,
+      cost_price: data.costPrice,
+      updated_at: new Date().toISOString(),
+    };
+    if (data.costPrice != null) {
+      costPatch["suggested_price"] = Math.round(data.costPrice * 1.4 * 100) / 100;
+    }
+    const { error: costError } = await context.supabase
+      .from("product_costs")
+      .upsert(costPatch);
+    if (costError) throw new Error("Falha ao salvar o custo do produto.");
     return { ok: true };
   });
 
