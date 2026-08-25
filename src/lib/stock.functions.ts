@@ -47,13 +47,21 @@ export const listStock = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("products")
       .select(
-        "id, sku, name, image_url, stock, cost_price, suggested_price, price, sale_price, product_type, purchase_location, brands(name)",
+        "id, sku, name, image_url, stock, price, sale_price, product_type, purchase_location, brands(name)",
       )
       .neq("status", "archived")
       .order("name")
       .limit(1500);
     if (error) throw new Error("Falha ao carregar estoque.");
-    return (data ?? []) as unknown as StockItem[];
+    const { data: costs } = await context.supabase
+      .from("product_costs")
+      .select("product_id, cost_price, suggested_price");
+    const costMap = new Map((costs ?? []).map((c) => [c.product_id, c]));
+    return (data ?? []).map((p) => ({
+      ...p,
+      cost_price: costMap.get(p.id)?.cost_price ?? null,
+      suggested_price: costMap.get(p.id)?.suggested_price ?? null,
+    })) as unknown as StockItem[];
   });
 
 export const updateStockItem = createServerFn({ method: "POST" })
