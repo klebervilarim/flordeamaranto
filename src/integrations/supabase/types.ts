@@ -610,6 +610,35 @@ export type Database = {
           },
         ]
       }
+      product_costs: {
+        Row: {
+          cost_price: number | null
+          product_id: string
+          suggested_price: number | null
+          updated_at: string
+        }
+        Insert: {
+          cost_price?: number | null
+          product_id: string
+          suggested_price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          cost_price?: number | null
+          product_id?: string
+          suggested_price?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_costs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_images: {
         Row: {
           alt: string | null
@@ -678,7 +707,6 @@ export type Database = {
           brand_id: string | null
           category_slug: string | null
           color: string | null
-          cost_price: number | null
           coverage: string | null
           created_at: string
           day_night: string | null
@@ -716,7 +744,6 @@ export type Database = {
           status: Database["public"]["Enums"]["product_status"]
           stock: number
           subcategory_slug: string | null
-          suggested_price: number | null
           top_notes: string[]
           updated_at: string
           usage_instructions: string | null
@@ -732,7 +759,6 @@ export type Database = {
           brand_id?: string | null
           category_slug?: string | null
           color?: string | null
-          cost_price?: number | null
           coverage?: string | null
           created_at?: string
           day_night?: string | null
@@ -770,7 +796,6 @@ export type Database = {
           status?: Database["public"]["Enums"]["product_status"]
           stock?: number
           subcategory_slug?: string | null
-          suggested_price?: number | null
           top_notes?: string[]
           updated_at?: string
           usage_instructions?: string | null
@@ -786,7 +811,6 @@ export type Database = {
           brand_id?: string | null
           category_slug?: string | null
           color?: string | null
-          cost_price?: number | null
           coverage?: string | null
           created_at?: string
           day_night?: string | null
@@ -824,7 +848,6 @@ export type Database = {
           status?: Database["public"]["Enums"]["product_status"]
           stock?: number
           subcategory_slug?: string | null
-          suggested_price?: number | null
           top_notes?: string[]
           updated_at?: string
           usage_instructions?: string | null
