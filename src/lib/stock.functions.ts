@@ -207,7 +207,6 @@ export const updateProduct = createServerFn({ method: "POST" })
       category_slug: data.categorySlug || null,
       price: data.price,
       sale_price: data.salePrice,
-      cost_price: data.costPrice,
       stock: data.stock,
       purchase_location: data.purchaseLocation,
       short_description: data.shortDescription || null,
