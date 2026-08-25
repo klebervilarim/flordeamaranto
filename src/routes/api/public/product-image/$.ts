@@ -8,8 +8,8 @@ export const Route = createFileRoute("/api/public/product-image/$")({
         if (!key || key.includes("..") || !/^[\w./-]+$/.test(key)) {
           return new Response("Not found", { status: 404 });
         }
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data, error } = await supabaseAdmin.storage.from("product-images").download(key);
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { data, error } = await supabase.storage.from("product-images").download(key);
         if (error || !data) return new Response("Not found", { status: 404 });
         return new Response(data, {
           headers: {
