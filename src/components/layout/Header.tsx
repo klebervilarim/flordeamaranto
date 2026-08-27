@@ -159,6 +159,37 @@ export function Header() {
                       Estoque
                     </Link>
                   </nav>
+                  <p className="eyebrow mt-8 text-gold">Cadastros</p>
+                  <nav className="mt-3 flex flex-col gap-2">
+                    <Link
+                      to="/estoque/marcas"
+                      onClick={() => setMenuOpen(false)}
+                      className="text-sm text-muted-foreground"
+                    >
+                      Marcas
+                    </Link>
+                    <Link
+                      to="/estoque/tipos-produto"
+                      onClick={() => setMenuOpen(false)}
+                      className="text-sm text-muted-foreground"
+                    >
+                      Tipos de produto
+                    </Link>
+                    <Link
+                      to="/estoque/categorias"
+                      onClick={() => setMenuOpen(false)}
+                      className="text-sm text-muted-foreground"
+                    >
+                      Categorias
+                    </Link>
+                    <Link
+                      to="/estoque/fornecedores"
+                      onClick={() => setMenuOpen(false)}
+                      className="text-sm text-muted-foreground"
+                    >
+                      Fornecedores
+                    </Link>
+                  </nav>
                 </>
               )}
             </div>
@@ -352,6 +383,43 @@ export function Header() {
                     className="text-sm text-foreground transition-colors hover:text-gold"
                   >
                     Estoque
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isAdmin && (
+            <div className="group relative">
+              <button className="flex items-center gap-1 py-3 text-[0.7rem] tracking-[0.22em] text-gold uppercase transition-colors hover:text-gold">
+                Cadastros{" "}
+                <ChevronDown className="h-3 w-3 transition-transform group-hover:rotate-180" />
+              </button>
+              <div className="invisible absolute top-full right-0 z-50 pt-1 opacity-0 transition-all group-hover:visible group-hover:opacity-100">
+                <div className="flex w-56 flex-col gap-2 border border-border bg-card p-5 shadow-luxe">
+                  <Link
+                    to="/estoque/marcas"
+                    className="text-sm text-foreground transition-colors hover:text-gold"
+                  >
+                    Marcas
+                  </Link>
+                  <Link
+                    to="/estoque/tipos-produto"
+                    className="text-sm text-foreground transition-colors hover:text-gold"
+                  >
+                    Tipos de produto
+                  </Link>
+                  <Link
+                    to="/estoque/categorias"
+                    className="text-sm text-foreground transition-colors hover:text-gold"
+                  >
+                    Categorias
+                  </Link>
+                  <Link
+                    to="/estoque/fornecedores"
+                    className="text-sm text-foreground transition-colors hover:text-gold"
+                  >
+                    Fornecedores
                   </Link>
                 </div>
               </div>

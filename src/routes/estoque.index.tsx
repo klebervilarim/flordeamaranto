@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { LayoutDashboard, Loader2, Pencil, ShieldCheck } from "lucide-react";
+import { Download, LayoutDashboard, Loader2, Pencil, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { brl } from "@/lib/format";
 import { PRODUCT_TYPE_LABELS } from "@/lib/catalog";
@@ -119,6 +119,38 @@ function StockPanel() {
 
   const isDirty = (id: string) => edits[id] != null && Object.keys(edits[id]!).length > 0;
 
+  const exportExcel = async () => {
+    const XLSX = await import("xlsx");
+    const rows = items.map((p) => {
+      const price = p.sale_price ?? p.price;
+      return {
+        SKU: p.sku,
+        Produto: p.name,
+        Marca: p.brands?.name ?? "",
+        "Estoque atual": p.stock,
+        "Estoque mínimo": p.min_stock,
+        Status: stockStatus(p).label,
+        "Preço de venda": price,
+        "Valor total em estoque": Math.round(price * p.stock * 100) / 100,
+      };
+    });
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws["!cols"] = [
+      { wch: 16 },
+      { wch: 36 },
+      { wch: 20 },
+      { wch: 14 },
+      { wch: 14 },
+      { wch: 12 },
+      { wch: 16 },
+      { wch: 20 },
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Estoque");
+    const date = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `estoque-flor-de-amaranto-${date}.xlsx`);
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -127,6 +159,14 @@ function StockPanel() {
           <h1 className="mt-2 font-display text-4xl">Estoque</h1>
         </div>
         <div className="flex items-center gap-3">
+          <Button
+            variant="outlineInk"
+            size="pill"
+            onClick={exportExcel}
+            disabled={items.length === 0}
+          >
+            <Download className="mr-2 h-4 w-4" /> Exportar Excel
+          </Button>
           <Button asChild variant="outlineInk" size="pill">
             <Link to="/admin">
               <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
@@ -145,7 +185,6 @@ function StockPanel() {
         <Stat label="Custo total" value={brl(totals.cost)} />
         <Stat label="Venda potencial" value={brl(totals.revenue)} />
       </div>
-
 
       <div className="mt-8 flex flex-wrap gap-3">
         <Input
@@ -183,6 +222,7 @@ function StockPanel() {
                 <th className="py-3 pr-3">Produto</th>
                 <th className="py-3 pr-3">Local de compra</th>
                 <th className="py-3 pr-3">Estoque</th>
+                <th className="py-3 pr-3">Status</th>
                 <th className="py-3 pr-3">Custo</th>
                 <th className="py-3 pr-3">Sugerido (+40%)</th>
                 <th className="py-3 pr-3">Preço de venda</th>
@@ -214,9 +254,7 @@ function StockPanel() {
                   <td className="py-3 pr-3">
                     <Select
                       value={p.purchase_location}
-                      onValueChange={(v) =>
-                        saveMutation.mutate({ id: p.id, purchaseLocation: v })
-                      }
+                      onValueChange={(v) => saveMutation.mutate({ id: p.id, purchaseLocation: v })}
                     >
                       <SelectTrigger className="h-8 w-32">
                         <SelectValue />
@@ -234,6 +272,9 @@ function StockPanel() {
                       className="h-8 w-20"
                       onChange={(e) => setEdit(p.id, "stock", e.target.value)}
                     />
+                  </td>
+                  <td className="py-3 pr-3">
+                    <StatusBadge status={stockStatus(p)} />
                   </td>
                   <td className="py-3 pr-3">
                     <Input
@@ -293,6 +334,23 @@ function StockPanel() {
         </div>
       )}
     </div>
+  );
+}
+
+type StockStatus = { label: "Esgotado" | "Baixo" | "Normal"; color: string };
+
+function stockStatus(p: StockItem): StockStatus {
+  if (p.stock <= 0) return { label: "Esgotado", color: "bg-destructive" };
+  if (p.stock <= p.min_stock) return { label: "Baixo", color: "bg-amber-500" };
+  return { label: "Normal", color: "bg-emerald-500" };
+}
+
+function StatusBadge({ status }: { status: StockStatus }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+      <span className={`h-2 w-2 rounded-full ${status.color}`} />
+      {status.label}
+    </span>
   );
 }
 

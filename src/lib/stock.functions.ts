@@ -31,6 +31,7 @@ export type StockItem = {
   name: string;
   image_url: string | null;
   stock: number;
+  min_stock: number;
   cost_price: number | null;
   suggested_price: number | null;
   price: number;
@@ -47,7 +48,7 @@ export const listStock = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("products")
       .select(
-        "id, sku, name, image_url, stock, price, sale_price, product_type, purchase_location, brands(name)",
+        "id, sku, name, image_url, stock, min_stock, price, sale_price, product_type, purchase_location, brands(name)",
       )
       .neq("status", "archived")
       .order("name")

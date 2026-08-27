@@ -32,6 +32,10 @@ import { Route as TrocasEDevolucoesRouteImport } from './routes/trocas-e-devoluc
 import { Route as ColecoesIndexRouteImport } from './routes/colecoes.index'
 import { Route as ColecoesSlugRouteImport } from './routes/colecoes.$slug'
 import { Route as EstoqueIndexRouteImport } from './routes/estoque.index'
+import { Route as EstoqueCategoriasRouteImport } from './routes/estoque.categorias'
+import { Route as EstoqueFornecedoresRouteImport } from './routes/estoque.fornecedores'
+import { Route as EstoqueMarcasRouteImport } from './routes/estoque.marcas'
+import { Route as EstoqueTiposProdutoRouteImport } from './routes/estoque.tipos-produto'
 import { Route as MarcasIndexRouteImport } from './routes/marcas.index'
 import { Route as MarcasSlugRouteImport } from './routes/marcas.$slug'
 import { Route as PerfumesIndexRouteImport } from './routes/perfumes.index'
@@ -155,6 +159,26 @@ const EstoqueIndexRoute = EstoqueIndexRouteImport.update({
   path: '/',
   getParentRoute: () => EstoqueRoute,
 } as any)
+const EstoqueCategoriasRoute = EstoqueCategoriasRouteImport.update({
+  id: '/categorias',
+  path: '/categorias',
+  getParentRoute: () => EstoqueRoute,
+} as any)
+const EstoqueFornecedoresRoute = EstoqueFornecedoresRouteImport.update({
+  id: '/fornecedores',
+  path: '/fornecedores',
+  getParentRoute: () => EstoqueRoute,
+} as any)
+const EstoqueMarcasRoute = EstoqueMarcasRouteImport.update({
+  id: '/marcas',
+  path: '/marcas',
+  getParentRoute: () => EstoqueRoute,
+} as any)
+const EstoqueTiposProdutoRoute = EstoqueTiposProdutoRouteImport.update({
+  id: '/tipos-produto',
+  path: '/tipos-produto',
+  getParentRoute: () => EstoqueRoute,
+} as any)
 const MarcasIndexRoute = MarcasIndexRouteImport.update({
   id: '/marcas/',
   path: '/marcas/',
@@ -214,6 +238,10 @@ export interface FileRoutesByFullPath {
   '/termos-de-uso': typeof TermosDeUsoRoute
   '/trocas-e-devolucoes': typeof TrocasEDevolucoesRoute
   '/colecoes/$slug': typeof ColecoesSlugRoute
+  '/estoque/categorias': typeof EstoqueCategoriasRoute
+  '/estoque/fornecedores': typeof EstoqueFornecedoresRoute
+  '/estoque/marcas': typeof EstoqueMarcasRoute
+  '/estoque/tipos-produto': typeof EstoqueTiposProdutoRoute
   '/marcas/$slug': typeof MarcasSlugRoute
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
   '/produto/$slug': typeof ProdutoSlugRoute
@@ -245,6 +273,10 @@ export interface FileRoutesByTo {
   '/termos-de-uso': typeof TermosDeUsoRoute
   '/trocas-e-devolucoes': typeof TrocasEDevolucoesRoute
   '/colecoes/$slug': typeof ColecoesSlugRoute
+  '/estoque/categorias': typeof EstoqueCategoriasRoute
+  '/estoque/fornecedores': typeof EstoqueFornecedoresRoute
+  '/estoque/marcas': typeof EstoqueMarcasRoute
+  '/estoque/tipos-produto': typeof EstoqueTiposProdutoRoute
   '/marcas/$slug': typeof MarcasSlugRoute
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
   '/produto/$slug': typeof ProdutoSlugRoute
@@ -278,6 +310,10 @@ export interface FileRoutesById {
   '/termos-de-uso': typeof TermosDeUsoRoute
   '/trocas-e-devolucoes': typeof TrocasEDevolucoesRoute
   '/colecoes/$slug': typeof ColecoesSlugRoute
+  '/estoque/categorias': typeof EstoqueCategoriasRoute
+  '/estoque/fornecedores': typeof EstoqueFornecedoresRoute
+  '/estoque/marcas': typeof EstoqueMarcasRoute
+  '/estoque/tipos-produto': typeof EstoqueTiposProdutoRoute
   '/marcas/$slug': typeof MarcasSlugRoute
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
   '/produto/$slug': typeof ProdutoSlugRoute
@@ -312,6 +348,10 @@ export interface FileRouteTypes {
     | '/termos-de-uso'
     | '/trocas-e-devolucoes'
     | '/colecoes/$slug'
+    | '/estoque/categorias'
+    | '/estoque/fornecedores'
+    | '/estoque/marcas'
+    | '/estoque/tipos-produto'
     | '/marcas/$slug'
     | '/perfumes/$filtro'
     | '/produto/$slug'
@@ -343,6 +383,10 @@ export interface FileRouteTypes {
     | '/termos-de-uso'
     | '/trocas-e-devolucoes'
     | '/colecoes/$slug'
+    | '/estoque/categorias'
+    | '/estoque/fornecedores'
+    | '/estoque/marcas'
+    | '/estoque/tipos-produto'
     | '/marcas/$slug'
     | '/perfumes/$filtro'
     | '/produto/$slug'
@@ -375,6 +419,10 @@ export interface FileRouteTypes {
     | '/termos-de-uso'
     | '/trocas-e-devolucoes'
     | '/colecoes/$slug'
+    | '/estoque/categorias'
+    | '/estoque/fornecedores'
+    | '/estoque/marcas'
+    | '/estoque/tipos-produto'
     | '/marcas/$slug'
     | '/perfumes/$filtro'
     | '/produto/$slug'
@@ -580,6 +628,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EstoqueIndexRouteImport
       parentRoute: typeof EstoqueRoute
     }
+    '/estoque/categorias': {
+      id: '/estoque/categorias'
+      path: '/categorias'
+      fullPath: '/estoque/categorias'
+      preLoaderRoute: typeof EstoqueCategoriasRouteImport
+      parentRoute: typeof EstoqueRoute
+    }
+    '/estoque/fornecedores': {
+      id: '/estoque/fornecedores'
+      path: '/fornecedores'
+      fullPath: '/estoque/fornecedores'
+      preLoaderRoute: typeof EstoqueFornecedoresRouteImport
+      parentRoute: typeof EstoqueRoute
+    }
+    '/estoque/marcas': {
+      id: '/estoque/marcas'
+      path: '/marcas'
+      fullPath: '/estoque/marcas'
+      preLoaderRoute: typeof EstoqueMarcasRouteImport
+      parentRoute: typeof EstoqueRoute
+    }
+    '/estoque/tipos-produto': {
+      id: '/estoque/tipos-produto'
+      path: '/tipos-produto'
+      fullPath: '/estoque/tipos-produto'
+      preLoaderRoute: typeof EstoqueTiposProdutoRouteImport
+      parentRoute: typeof EstoqueRoute
+    }
     '/marcas/': {
       id: '/marcas/'
       path: '/marcas'
@@ -633,11 +709,19 @@ declare module '@tanstack/react-router' {
 }
 
 interface EstoqueRouteChildren {
+  EstoqueCategoriasRoute: typeof EstoqueCategoriasRoute
+  EstoqueFornecedoresRoute: typeof EstoqueFornecedoresRoute
+  EstoqueMarcasRoute: typeof EstoqueMarcasRoute
+  EstoqueTiposProdutoRoute: typeof EstoqueTiposProdutoRoute
   EstoqueIndexRoute: typeof EstoqueIndexRoute
   EstoqueProdutoIdRoute: typeof EstoqueProdutoIdRoute
 }
 
 const EstoqueRouteChildren: EstoqueRouteChildren = {
+  EstoqueCategoriasRoute: EstoqueCategoriasRoute,
+  EstoqueFornecedoresRoute: EstoqueFornecedoresRoute,
+  EstoqueMarcasRoute: EstoqueMarcasRoute,
+  EstoqueTiposProdutoRoute: EstoqueTiposProdutoRoute,
   EstoqueIndexRoute: EstoqueIndexRoute,
   EstoqueProdutoIdRoute: EstoqueProdutoIdRoute,
 }
