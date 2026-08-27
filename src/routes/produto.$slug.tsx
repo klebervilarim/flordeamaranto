@@ -6,7 +6,7 @@ import placeholder from "@/assets/product-placeholder.jpg";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ProductGrid } from "@/components/product/ProductGrid";
-import { fetchProductBySlug, fetchProducts, GENDER_LABELS, ORIGIN_LABELS } from "@/lib/catalog";
+import { fetchProductBySlug, fetchProductImages, fetchProducts, GENDER_LABELS, ORIGIN_LABELS } from "@/lib/catalog";
 import { brl, discountPercent, installments, stockLabel } from "@/lib/format";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
