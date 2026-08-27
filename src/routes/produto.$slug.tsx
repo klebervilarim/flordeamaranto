@@ -116,20 +116,40 @@ function ProductPage() {
       </nav>
 
       <div className="mt-8 grid gap-12 lg:grid-cols-2">
-        <div className="relative bg-sand">
-          {off > 0 && (
-            <span className="absolute top-4 left-4 z-10 bg-ink px-3 py-1 text-[11px] tracking-[0.14em] text-ink-foreground uppercase">
-              -{off}%
-            </span>
+        <div>
+          <div className="relative bg-sand">
+            {off > 0 && (
+              <span className="absolute top-4 left-4 z-10 bg-ink px-3 py-1 text-[11px] tracking-[0.14em] text-ink-foreground uppercase">
+                -{off}%
+              </span>
+            )}
+            <img
+              src={gallery[active] || placeholder}
+              alt={product.name}
+              width={1000}
+              height={1000}
+              className="aspect-square w-full object-contain"
+            />
+          </div>
+          {gallery.length > 1 && (
+            <div className="mt-3 flex gap-3">
+              {gallery.map((src, i) => (
+                <button
+                  key={src}
+                  type="button"
+                  onClick={() => setActive(i)}
+                  aria-label={`Ver foto ${i + 1} de ${product.name}`}
+                  className={`h-20 w-20 overflow-hidden border bg-sand transition ${
+                    i === active ? "border-gold" : "border-border hover:border-gold/60"
+                  }`}
+                >
+                  <img src={src} alt="" className="h-full w-full object-contain" />
+                </button>
+              ))}
+            </div>
           )}
-          <img
-            src={product.image_url || placeholder}
-            alt={product.name}
-            width={1000}
-            height={1000}
-            className="aspect-square w-full object-cover"
-          />
         </div>
+
 
         <div>
           {product.brands && (
