@@ -17,6 +17,15 @@ export type AdminDashboard = {
   byDay: { date: string; revenue: number; orders: number }[];
   topProducts: { name: string; brand: string | null; qty: number; revenue: number }[];
   lowStock: { id: string; name: string; sku: string; stock: number; image_url: string | null }[];
+  recentMovements: {
+    id: string;
+    productName: string;
+    quantity: number;
+    previousQuantity: number | null;
+    newQuantity: number | null;
+    createdByName: string | null;
+    createdAt: string;
+  }[];
   recentOrders: {
     id: string;
     order_number: string;
@@ -34,29 +43,38 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const [ordersRes, itemsRes, productsRes, customersRes, lowStockRes] = await Promise.all([
-      supabaseAdmin
-        .from("orders")
-        .select("id, order_number, status, total, payment_method, created_at, user_id, shipping_address")
-        .order("created_at", { ascending: false })
-        .limit(3000),
-      supabaseAdmin
-        .from("order_items")
-        .select("product_name, brand_name, quantity, total")
-        .limit(8000),
-      supabaseAdmin
-        .from("products")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "active"),
-      supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
-      supabaseAdmin
-        .from("products")
-        .select("id, name, sku, stock, image_url")
-        .eq("status", "active")
-        .lte("stock", 3)
-        .order("stock", { ascending: true })
-        .limit(12),
-    ]);
+    const [ordersRes, itemsRes, productsRes, customersRes, lowStockCandidatesRes, movementsRes] =
+      await Promise.all([
+        supabaseAdmin
+          .from("orders")
+          .select(
+            "id, order_number, status, total, payment_method, created_at, user_id, shipping_address",
+          )
+          .order("created_at", { ascending: false })
+          .limit(3000),
+        supabaseAdmin
+          .from("order_items")
+          .select("product_name, brand_name, quantity, total")
+          .limit(8000),
+        supabaseAdmin
+          .from("products")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "active"),
+        supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
+        supabaseAdmin
+          .from("products")
+          .select("id, name, sku, stock, min_stock, image_url")
+          .eq("status", "active")
+          .order("stock", { ascending: true })
+          .limit(500),
+        supabaseAdmin
+          .from("inventory_movements")
+          .select(
+            "id, quantity, previous_quantity, new_quantity, created_at, products(name), profiles(full_name)",
+          )
+          .order("created_at", { ascending: false })
+          .limit(8),
+      ]);
 
     const orders = ordersRes.data ?? [];
     const valid = orders.filter((o) => o.status !== "cancelled");
@@ -97,7 +115,10 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
     }
     for (const [date, v] of dayMap) days.push({ date, ...v });
 
-    const prodMap = new Map<string, { name: string; brand: string | null; qty: number; revenue: number }>();
+    const prodMap = new Map<
+      string,
+      { name: string; brand: string | null; qty: number; revenue: number }
+    >();
     let itemsSold = 0;
     for (const it of itemsRes.data ?? []) {
       const key = it.product_name;
@@ -128,6 +149,20 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
       };
     });
 
+    const lowStock = (lowStockCandidatesRes.data ?? [])
+      .filter((p) => p.stock <= p.min_stock)
+      .slice(0, 12);
+
+    const recentMovements = (movementsRes.data ?? []).map((m) => ({
+      id: m.id,
+      productName: (m.products as { name: string } | null)?.name ?? "Produto removido",
+      quantity: m.quantity,
+      previousQuantity: m.previous_quantity,
+      newQuantity: m.new_quantity,
+      createdByName: (m.profiles as { full_name: string | null } | null)?.full_name ?? null,
+      createdAt: m.created_at,
+    }));
+
     return {
       revenue,
       ordersCount,
@@ -145,7 +180,8 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
         .slice(0, 10),
       byDay: days,
       topProducts,
-      lowStock: (lowStockRes.data ?? []) as AdminDashboard["lowStock"],
+      lowStock: lowStock as AdminDashboard["lowStock"],
+      recentMovements,
       recentOrders,
     };
   });

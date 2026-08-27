@@ -22,3 +22,26 @@ export async function assertAdmin(supabase: UserSupabase, userId: string): Promi
   const admin = await callerIsAdmin(supabase, userId);
   if (!admin) throw new Error("Acesso restrito a administradores.");
 }
+
+/** Registra um ajuste de estoque no histórico de movimentações, se a quantidade mudou. */
+export async function recordStockMovement(
+  supabase: UserSupabase,
+  params: {
+    productId: string;
+    previousQuantity: number;
+    newQuantity: number;
+    createdBy: string;
+    note?: string | null;
+  },
+): Promise<void> {
+  if (params.previousQuantity === params.newQuantity) return;
+  await supabase.from("inventory_movements").insert({
+    product_id: params.productId,
+    type: "adjustment",
+    quantity: params.newQuantity - params.previousQuantity,
+    previous_quantity: params.previousQuantity,
+    new_quantity: params.newQuantity,
+    created_by: params.createdBy,
+    note: params.note ?? null,
+  });
+}

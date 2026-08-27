@@ -355,7 +355,9 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          new_quantity: number | null
           note: string | null
+          previous_quantity: number | null
           product_id: string
           quantity: number
           type: string
@@ -364,7 +366,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          new_quantity?: number | null
           note?: string | null
+          previous_quantity?: number | null
           product_id: string
           quantity: number
           type: string
@@ -373,7 +377,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          new_quantity?: number | null
           note?: string | null
+          previous_quantity?: number | null
           product_id?: string
           quantity?: number
           type?: string
@@ -384,6 +390,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
-import { adminCount, assertAdmin, callerIsAdmin } from "./stock.server";
+import { adminCount, assertAdmin, callerIsAdmin, recordStockMovement } from "./stock.server";
 
 export const getStockStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -79,6 +79,15 @@ export const updateStockItem = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
+    let previousStock: number | null = null;
+    if (data.stock != null) {
+      const { data: current } = await context.supabase
+        .from("products")
+        .select("stock")
+        .eq("id", data.id)
+        .maybeSingle();
+      previousStock = current?.stock ?? null;
+    }
     const patch: Database["public"]["Tables"]["products"]["Update"] = {};
     if (data.stock != null) patch["stock"] = data.stock;
     if (data.price != null) patch["price"] = data.price;
@@ -86,6 +95,14 @@ export const updateStockItem = createServerFn({ method: "POST" })
     if (Object.keys(patch).length > 0) {
       const { error } = await context.supabase.from("products").update(patch).eq("id", data.id);
       if (error) throw new Error("Falha ao salvar alteração.");
+    }
+    if (data.stock != null && previousStock != null) {
+      await recordStockMovement(context.supabase, {
+        productId: data.id,
+        previousQuantity: previousStock,
+        newQuantity: data.stock,
+        createdBy: context.userId,
+      });
     }
     if (data.costPrice != null) {
       const { error } = await context.supabase.from("product_costs").upsert({
@@ -196,6 +213,12 @@ export const updateProduct = createServerFn({ method: "POST" })
   .inputValidator((input) => productUpdateSchema.parse(input))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
+    const { data: current } = await context.supabase
+      .from("products")
+      .select("stock")
+      .eq("id", data.id)
+      .maybeSingle();
+    const previousStock = current?.stock ?? null;
     const patch: Database["public"]["Tables"]["products"]["Update"] = {
       name: data.name,
       sku: data.sku,
@@ -219,6 +242,14 @@ export const updateProduct = createServerFn({ method: "POST" })
     if (data.imageUrl) patch["image_url"] = data.imageUrl;
     const { error } = await context.supabase.from("products").update(patch).eq("id", data.id);
     if (error) throw new Error("Falha ao salvar o produto.");
+    if (previousStock != null) {
+      await recordStockMovement(context.supabase, {
+        productId: data.id,
+        previousQuantity: previousStock,
+        newQuantity: data.stock,
+        createdBy: context.userId,
+      });
+    }
     const costPatch: Database["public"]["Tables"]["product_costs"]["Insert"] = {
       product_id: data.id,
       cost_price: data.costPrice,
@@ -227,9 +258,7 @@ export const updateProduct = createServerFn({ method: "POST" })
     if (data.costPrice != null) {
       costPatch["suggested_price"] = Math.round(data.costPrice * 1.4 * 100) / 100;
     }
-    const { error: costError } = await context.supabase
-      .from("product_costs")
-      .upsert(costPatch);
+    const { error: costError } = await context.supabase.from("product_costs").upsert(costPatch);
     if (costError) throw new Error("Falha ao salvar o custo do produto.");
     return { ok: true };
   });
@@ -247,7 +276,8 @@ export const uploadProductImage = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     if (!data.contentType.startsWith("image/")) throw new Error("Envie um arquivo de imagem.");
-    const ext = (data.fileName.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+    const ext =
+      (data.fileName.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
     const key = `${data.productId}/${Date.now()}.${ext}`;
     const buffer = Buffer.from(data.dataBase64, "base64");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

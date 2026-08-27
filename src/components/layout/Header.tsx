@@ -1,7 +1,16 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, Heart, LayoutDashboard, Menu, Search, ShoppingBag, User, X } from "lucide-react";
+import {
+  ChevronDown,
+  Heart,
+  LayoutDashboard,
+  Menu,
+  Search,
+  ShoppingBag,
+  User,
+  X,
+} from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,7 +81,10 @@ export function Header() {
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6">
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger asChild>
-            <button aria-label="Abrir menu" className="grid h-10 w-10 shrink-0 place-items-center lg:hidden">
+            <button
+              aria-label="Abrir menu"
+              className="grid h-10 w-10 shrink-0 place-items-center lg:hidden"
+            >
               <Menu className="h-5 w-5" />
             </button>
           </SheetTrigger>
@@ -83,7 +95,12 @@ export function Header() {
                 <span className="font-display text-xl tracking-[0.18em]">FLOR DE AMARANTO</span>
               </div>
               <nav className="mt-8 flex flex-col gap-1">
-                {[{ label: "Home", to: "/" }, { label: "Perfumes", to: "/perfumes" }, ...NAV_SIMPLE.slice(1), { label: "Marcas", to: "/marcas" }].map((item) => (
+                {[
+                  { label: "Home", to: "/" },
+                  { label: "Perfumes", to: "/perfumes" },
+                  ...NAV_SIMPLE.slice(1),
+                  { label: "Marcas", to: "/marcas" },
+                ].map((item) => (
                   <Link
                     key={item.to}
                     to={item.to}
@@ -108,10 +125,18 @@ export function Header() {
               </nav>
               <p className="eyebrow mt-8 text-gold">Descubra</p>
               <nav className="mt-3 flex flex-col gap-2">
-                <Link to="/quiz" onClick={() => setMenuOpen(false)} className="text-sm text-muted-foreground">
+                <Link
+                  to="/quiz"
+                  onClick={() => setMenuOpen(false)}
+                  className="text-sm text-muted-foreground"
+                >
                   Quiz de fragrância
                 </Link>
-                <Link to="/colecoes" onClick={() => setMenuOpen(false)} className="text-sm text-muted-foreground">
+                <Link
+                  to="/colecoes"
+                  onClick={() => setMenuOpen(false)}
+                  className="text-sm text-muted-foreground"
+                >
                   Coleções
                 </Link>
               </nav>
@@ -119,10 +144,18 @@ export function Header() {
                 <>
                   <p className="eyebrow mt-8 text-gold">Administração</p>
                   <nav className="mt-3 flex flex-col gap-2">
-                    <Link to="/admin" onClick={() => setMenuOpen(false)} className="text-sm text-muted-foreground">
+                    <Link
+                      to="/admin"
+                      onClick={() => setMenuOpen(false)}
+                      className="text-sm text-muted-foreground"
+                    >
                       Dashboard
                     </Link>
-                    <Link to="/estoque" onClick={() => setMenuOpen(false)} className="text-sm text-muted-foreground">
+                    <Link
+                      to="/estoque"
+                      onClick={() => setMenuOpen(false)}
+                      className="text-sm text-muted-foreground"
+                    >
                       Estoque
                     </Link>
                   </nav>
@@ -184,14 +217,26 @@ export function Header() {
               <LayoutDashboard className="h-5 w-5" />
             </Link>
           )}
-          <Link to="/minha-conta" aria-label="Minha conta" className="hidden h-10 w-10 place-items-center sm:grid">
+          <Link
+            to="/minha-conta"
+            aria-label="Minha conta"
+            className="hidden h-10 w-10 place-items-center sm:grid"
+          >
             <User className="h-5 w-5" />
           </Link>
-          <Link to="/favoritos" aria-label="Favoritos" className="relative hidden h-10 w-10 place-items-center sm:grid">
+          <Link
+            to="/favoritos"
+            aria-label="Favoritos"
+            className="relative hidden h-10 w-10 place-items-center sm:grid"
+          >
             <Heart className="h-5 w-5" />
             {ids.length > 0 && <Badge value={ids.length} />}
           </Link>
-          <Link to="/carrinho" aria-label="Sacola" className="relative grid h-10 w-10 place-items-center">
+          <Link
+            to="/carrinho"
+            aria-label="Sacola"
+            className="relative grid h-10 w-10 place-items-center"
+          >
             <ShoppingBag className="h-5 w-5" />
             {count > 0 && <Badge value={count} />}
           </Link>
@@ -199,7 +244,10 @@ export function Header() {
       </div>
 
       {searchOpen && (
-        <form onSubmit={submitSearch} className="border-t border-border px-4 py-3 sm:px-6 lg:hidden">
+        <form
+          onSubmit={submitSearch}
+          className="border-t border-border px-4 py-3 sm:px-6 lg:hidden"
+        >
           <div className="mx-auto flex max-w-3xl gap-2">
             <Input
               autoFocus
@@ -221,7 +269,8 @@ export function Header() {
 
           <div className="group relative">
             <button className="flex items-center gap-1 py-3 text-[0.7rem] tracking-[0.22em] uppercase transition-colors hover:text-gold">
-              Perfumes <ChevronDown className="h-3 w-3 transition-transform group-hover:rotate-180" />
+              Perfumes{" "}
+              <ChevronDown className="h-3 w-3 transition-transform group-hover:rotate-180" />
             </button>
             <div className="invisible absolute top-full left-1/2 z-50 -translate-x-1/2 pt-1 opacity-0 transition-all group-hover:visible group-hover:opacity-100">
               <div className="grid w-[540px] grid-cols-2 gap-8 border border-border bg-card p-6 shadow-luxe">
@@ -231,7 +280,10 @@ export function Header() {
                     {PERFUME_ORIGENS.map((item) => (
                       <DropLink key={item.label} item={item} />
                     ))}
-                    <Link to="/perfumes" className="mt-1 text-xs font-medium tracking-[0.14em] text-gold uppercase">
+                    <Link
+                      to="/perfumes"
+                      className="mt-1 text-xs font-medium tracking-[0.14em] text-gold uppercase"
+                    >
                       Ver todos os perfumes →
                     </Link>
                   </div>
@@ -266,7 +318,10 @@ export function Header() {
                       <span className="text-xs text-muted-foreground">({b.count})</span>
                     </Link>
                   ))}
-                  <Link to="/marcas" className="mt-1 text-xs font-medium tracking-[0.14em] text-gold uppercase">
+                  <Link
+                    to="/marcas"
+                    className="mt-1 text-xs font-medium tracking-[0.14em] text-gold uppercase"
+                  >
                     Todas as marcas →
                   </Link>
                 </div>
@@ -277,6 +332,31 @@ export function Header() {
           {NAV_SIMPLE.slice(1).map((item) => (
             <NavLink key={item.to} to={item.to} label={item.label} />
           ))}
+
+          {isAdmin && (
+            <div className="group relative">
+              <button className="flex items-center gap-1 py-3 text-[0.7rem] tracking-[0.22em] text-gold uppercase transition-colors hover:text-gold">
+                Admin{" "}
+                <ChevronDown className="h-3 w-3 transition-transform group-hover:rotate-180" />
+              </button>
+              <div className="invisible absolute top-full right-0 z-50 pt-1 opacity-0 transition-all group-hover:visible group-hover:opacity-100">
+                <div className="flex w-56 flex-col gap-2 border border-border bg-card p-5 shadow-luxe">
+                  <Link
+                    to="/admin"
+                    className="text-sm text-foreground transition-colors hover:text-gold"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    to="/estoque"
+                    className="text-sm text-foreground transition-colors hover:text-gold"
+                  >
+                    Estoque
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
     </header>

@@ -139,8 +139,16 @@ function Dashboard({ data }: { data: AdminDashboard }) {
       </div>
 
       <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat icon={<Wallet className="h-4 w-4" />} label="Receita total" value={brl(data.revenue)} />
-        <Stat icon={<ShoppingBag className="h-4 w-4" />} label="Pedidos" value={String(data.ordersCount)} />
+        <Stat
+          icon={<Wallet className="h-4 w-4" />}
+          label="Receita total"
+          value={brl(data.revenue)}
+        />
+        <Stat
+          icon={<ShoppingBag className="h-4 w-4" />}
+          label="Pedidos"
+          value={String(data.ordersCount)}
+        />
         <Stat label="Ticket médio" value={brl(data.avgTicket)} />
         <Stat label="Itens vendidos" value={String(data.itemsSold)} />
         <Stat
@@ -167,8 +175,12 @@ function Dashboard({ data }: { data: AdminDashboard }) {
             ))}
           </div>
           <div className="mt-2 flex justify-between text-[0.6rem] tracking-wider text-muted-foreground uppercase">
-            <span>{data.byDay[0]?.date.slice(8, 10)}/{data.byDay[0]?.date.slice(5, 7)}</span>
-            <span>{data.byDay.at(-1)?.date.slice(8, 10)}/{data.byDay.at(-1)?.date.slice(5, 7)}</span>
+            <span>
+              {data.byDay[0]?.date.slice(8, 10)}/{data.byDay[0]?.date.slice(5, 7)}
+            </span>
+            <span>
+              {data.byDay.at(-1)?.date.slice(8, 10)}/{data.byDay.at(-1)?.date.slice(5, 7)}
+            </span>
           </div>
         </section>
 
@@ -276,7 +288,7 @@ function Dashboard({ data }: { data: AdminDashboard }) {
         </section>
 
         <section className="border border-border bg-card p-5 lg:col-span-2">
-          <h2 className="font-display text-xl">Estoque baixo (≤ 3 unidades)</h2>
+          <h2 className="font-display text-xl">Estoque baixo</h2>
           {data.lowStock.length === 0 ? (
             <Empty text="Nenhum produto com estoque crítico." />
           ) : (
@@ -297,20 +309,46 @@ function Dashboard({ data }: { data: AdminDashboard }) {
             </ul>
           )}
         </section>
+
+        <section className="border border-border bg-card p-5 lg:col-span-2">
+          <h2 className="font-display text-xl">Últimas movimentações de estoque</h2>
+          {data.recentMovements.length === 0 ? (
+            <Empty text="Nenhum ajuste de estoque registrado ainda." />
+          ) : (
+            <ul className="mt-4 space-y-3 text-sm">
+              {data.recentMovements.map((m) => (
+                <li key={m.id} className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="font-medium">{m.productName}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(m.createdAt).toLocaleString("pt-BR")}
+                      {m.createdByName ? ` · ${m.createdByName}` : ""}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p
+                      className={`font-medium ${m.quantity < 0 ? "text-destructive" : "text-gold"}`}
+                    >
+                      {m.quantity > 0 ? "+" : ""}
+                      {m.quantity}
+                    </p>
+                    {m.previousQuantity != null && m.newQuantity != null && (
+                      <p className="text-xs text-muted-foreground">
+                        {m.previousQuantity} → {m.newQuantity}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </div>
     </div>
   );
 }
 
-function Stat({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: string;
-  icon?: React.ReactNode;
-}) {
+function Stat({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
   return (
     <div className="border border-border bg-card px-4 py-3">
       <p className="flex items-center gap-1.5 text-[0.6rem] tracking-[0.16em] text-muted-foreground uppercase">
