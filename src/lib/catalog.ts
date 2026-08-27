@@ -181,6 +181,20 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
   return product;
 }
 
+export type ProductImage = { id: string; url: string; alt: string | null; sort_order: number };
+
+export async function fetchProductImages(productId: string): Promise<ProductImage[]> {
+  const { data, error } = await supabase
+    .from("product_images")
+    .select("id,url,alt,sort_order")
+    .eq("product_id", productId)
+    .order("sort_order");
+  if (error) throw error;
+  return (data ?? []) as ProductImage[];
+}
+
+
+
 export async function fetchBrands(): Promise<Brand[]> {
   const { data, error } = await supabase
     .from("brands")
