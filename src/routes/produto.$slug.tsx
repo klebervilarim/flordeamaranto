@@ -77,16 +77,24 @@ function ProductPage() {
   const { add } = useCart();
   const { isFavorite, toggle } = useFavorites();
   const [qty, setQty] = useState(1);
+  const [active, setActive] = useState(0);
 
   const price = product.sale_price ?? product.price;
   const off = discountPercent(product.price, product.sale_price);
   const parc = installments(price);
   const fav = isFavorite(product.id);
 
+  const { data: extraImages = [] } = useQuery({
+    queryKey: ["product-images", product.id],
+    queryFn: () => fetchProductImages(product.id),
+  });
+  const gallery = [product.image_url || placeholder, ...extraImages.map((i) => i.url)];
+
   const { data: related = [] } = useQuery({
     queryKey: ["related", product.id, product.product_type],
     queryFn: () => fetchProducts({ productTypes: [product.product_type], sort: "rating" }),
   });
+
 
   const specs: [string, string][] = [
     ["Marca", product.brands?.name ?? "—"],
