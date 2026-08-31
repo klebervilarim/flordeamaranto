@@ -192,6 +192,13 @@ function ProductPage() {
             </p>
           )}
 
+          {product.inspiration && (
+            <p className="mt-4 text-sm">
+              <span className="eyebrow text-gold">Inspiração</span>{" "}
+              <span className="text-muted-foreground">{product.inspiration}</span>
+            </p>
+          )}
+
           <div className="mt-7 border-y border-border py-6">
             <div className="flex items-baseline gap-3">
               <span className="font-display text-4xl">{brl(price)}</span>

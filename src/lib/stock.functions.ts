@@ -144,6 +144,7 @@ export type StockProductDetail = {
   origin: string | null;
   volume: string | null;
   short_description: string | null;
+  inspiration: string | null;
   description: string | null;
   price: number;
   sale_price: number | null;
@@ -167,7 +168,7 @@ export const getStockProduct = createServerFn({ method: "GET" })
     const { data: row, error } = await context.supabase
       .from("products")
       .select(
-        "id, sku, name, slug, brand_id, product_type, category_slug, gender, origin, volume, short_description, description, price, sale_price, stock, purchase_location, image_url, status, featured, bestseller, is_new, brands(id, name)",
+        "id, sku, name, slug, brand_id, product_type, category_slug, gender, origin, volume, inspiration, short_description, description, price, sale_price, stock, purchase_location, image_url, status, featured, bestseller, is_new, brands(id, name)",
       )
       .eq("id", data.id)
       .maybeSingle();
@@ -200,6 +201,7 @@ const productUpdateSchema = z.object({
   costPrice: z.number().positive().nullable(),
   stock: z.number().int().min(0),
   purchaseLocation: z.string().trim().min(2).max(60),
+  inspiration: z.string().trim().max(200).nullable(),
   shortDescription: z.string().trim().max(600).nullable(),
   description: z.string().trim().max(8000).nullable(),
   imageUrl: z.string().trim().max(600).nullable(),
@@ -233,6 +235,7 @@ export const updateProduct = createServerFn({ method: "POST" })
       sale_price: data.salePrice,
       stock: data.stock,
       purchase_location: data.purchaseLocation,
+      inspiration: data.inspiration || null,
       short_description: data.shortDescription || null,
       description: data.description || null,
       status: data.status,

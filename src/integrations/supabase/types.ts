@@ -778,6 +778,7 @@ export type Database = {
           id: string
           image_url: string | null
           ingredients: string[]
+          inspiration: string | null
           intensity: string | null
           is_new: boolean
           longevity: string | null
@@ -830,6 +831,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           ingredients?: string[]
+          inspiration?: string | null
           intensity?: string | null
           is_new?: boolean
           longevity?: string | null
@@ -882,6 +884,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           ingredients?: string[]
+          inspiration?: string | null
           intensity?: string | null
           is_new?: boolean
           longevity?: string | null

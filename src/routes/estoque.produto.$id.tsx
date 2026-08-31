@@ -130,6 +130,7 @@ function ProductEditor({
   const [costPrice, setCostPrice] = useState(money(product.cost_price));
   const [stock, setStock] = useState(String(product.stock));
   const [purchaseLocation, setPurchaseLocation] = useState(product.purchase_location || "Brasil");
+  const [inspiration, setInspiration] = useState(product.inspiration ?? "");
   const [shortDescription, setShortDescription] = useState(product.short_description ?? "");
   const [description, setDescription] = useState(product.description ?? "");
   const [imageUrl, setImageUrl] = useState(product.image_url ?? "");
@@ -162,6 +163,7 @@ function ProductEditor({
           costPrice: cost,
           stock: Math.max(0, Math.trunc(num(stock) ?? 0)),
           purchaseLocation,
+          inspiration: inspiration.trim() || null,
           shortDescription: shortDescription.trim() || null,
           description: description.trim() || null,
           imageUrl: imageUrl.trim() || null,
@@ -399,6 +401,13 @@ function ProductEditor({
             <Check id="isNew" label="Novidade" checked={isNew} onChange={setIsNew} />
           </div>
 
+          <Field label="Inspiração">
+            <Input
+              value={inspiration}
+              onChange={(e) => setInspiration(e.target.value)}
+              placeholder="Ex.: Libre Intense — Yves Saint Laurent"
+            />
+          </Field>
           <Field label="Descrição curta">
             <Input
               value={shortDescription}
