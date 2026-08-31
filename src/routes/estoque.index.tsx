@@ -168,6 +168,11 @@ function StockPanel() {
             <Download className="mr-2 h-4 w-4" /> Exportar Excel
           </Button>
           <Button asChild variant="outlineInk" size="pill">
+            <Link to="/estoque/planilha">
+              <FileSpreadsheet className="mr-2 h-4 w-4" /> Planilha
+            </Link>
+          </Button>
+          <Button asChild variant="outlineInk" size="pill">
             <Link to="/admin">
               <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
             </Link>
