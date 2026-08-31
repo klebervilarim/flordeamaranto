@@ -4,6 +4,9 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
 import { adminCount, assertAdmin, callerIsAdmin, recordStockMovement } from "./stock.server";
 
+/** Marca a segunda foto do produto (imagem da Fragrantica). */
+const FRAGRANTICA_ALT = "fragrantica";
+
 export const getStockStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -30,6 +33,7 @@ export type StockItem = {
   sku: string;
   name: string;
   image_url: string | null;
+  secondary_image_url: string | null;
   stock: number;
   min_stock: number;
   cost_price: number | null;
@@ -58,10 +62,16 @@ export const listStock = createServerFn({ method: "GET" })
       .from("product_costs")
       .select("product_id, cost_price, suggested_price");
     const costMap = new Map((costs ?? []).map((c) => [c.product_id, c]));
+    const { data: secondary } = await context.supabase
+      .from("product_images")
+      .select("product_id, url")
+      .eq("alt", FRAGRANTICA_ALT);
+    const secondaryMap = new Map((secondary ?? []).map((i) => [i.product_id, i.url]));
     return (data ?? []).map((p) => ({
       ...p,
       cost_price: costMap.get(p.id)?.cost_price ?? null,
       suggested_price: costMap.get(p.id)?.suggested_price ?? null,
+      secondary_image_url: secondaryMap.get(p.id) ?? null,
     })) as unknown as StockItem[];
   });
 
@@ -153,6 +163,7 @@ export type StockProductDetail = {
   stock: number;
   purchase_location: string;
   image_url: string | null;
+  secondary_image_url: string | null;
   status: string;
   featured: boolean;
   bestseller: boolean;
@@ -174,6 +185,12 @@ export const getStockProduct = createServerFn({ method: "GET" })
       .maybeSingle();
     if (error) throw new Error("Falha ao carregar produto.");
     if (!row) throw new Error("Produto não encontrado.");
+    const { data: secondaryRow } = await context.supabase
+      .from("product_images")
+      .select("url")
+      .eq("product_id", data.id)
+      .eq("alt", FRAGRANTICA_ALT)
+      .maybeSingle();
     const { data: costRow } = await context.supabase
       .from("product_costs")
       .select("cost_price, suggested_price")
@@ -183,6 +200,7 @@ export const getStockProduct = createServerFn({ method: "GET" })
       ...row,
       cost_price: costRow?.cost_price ?? null,
       suggested_price: costRow?.suggested_price ?? null,
+      secondary_image_url: secondaryRow?.url ?? null,
     } as unknown as StockProductDetail;
   });
 
@@ -205,6 +223,7 @@ const productUpdateSchema = z.object({
   shortDescription: z.string().trim().max(600).nullable(),
   description: z.string().trim().max(8000).nullable(),
   imageUrl: z.string().trim().max(600).nullable(),
+  secondaryImageUrl: z.string().trim().max(600).nullable(),
   status: z.enum(["active", "draft", "archived"]),
   featured: z.boolean(),
   bestseller: z.boolean(),
@@ -253,6 +272,29 @@ export const updateProduct = createServerFn({ method: "POST" })
         newQuantity: data.stock,
         createdBy: context.userId,
       });
+    }
+    const { data: existingSecondary } = await context.supabase
+      .from("product_images")
+      .select("id")
+      .eq("product_id", data.id)
+      .eq("alt", FRAGRANTICA_ALT)
+      .maybeSingle();
+    if (data.secondaryImageUrl) {
+      if (existingSecondary) {
+        await context.supabase
+          .from("product_images")
+          .update({ url: data.secondaryImageUrl })
+          .eq("id", existingSecondary.id);
+      } else {
+        await context.supabase.from("product_images").insert({
+          product_id: data.id,
+          url: data.secondaryImageUrl,
+          alt: FRAGRANTICA_ALT,
+          sort_order: 1,
+        });
+      }
+    } else if (existingSecondary) {
+      await context.supabase.from("product_images").delete().eq("id", existingSecondary.id);
     }
     const costPatch: Database["public"]["Tables"]["product_costs"]["Insert"] = {
       product_id: data.id,
