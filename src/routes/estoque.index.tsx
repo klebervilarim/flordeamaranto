@@ -246,14 +246,25 @@ function StockPanel() {
                 <tr key={p.id} className="border-b border-border/60">
                   <td className="py-3 pr-3">
                     <div className="flex items-center gap-3">
-                      <img
-                        src={p.image_url ?? placeholder}
-                        alt={p.name}
-                        width={44}
-                        height={44}
-                        loading="lazy"
-                        className="h-11 w-11 object-cover"
-                      />
+                      <div className="flex gap-1">
+                        <img
+                          src={p.image_url ?? placeholder}
+                          alt={p.name}
+                          width={44}
+                          height={44}
+                          loading="lazy"
+                          className="h-11 w-11 object-cover"
+                        />
+                        <img
+                          src={p.secondary_image_url ?? placeholder}
+                          alt={`${p.name} — Fragrantica`}
+                          width={44}
+                          height={44}
+                          loading="lazy"
+                          title="2ª foto (Fragrantica)"
+                          className={`h-11 w-11 object-cover ${p.secondary_image_url ? "" : "opacity-30"}`}
+                        />
+                      </div>
                       <div>
                         <p className="font-medium">{p.name}</p>
                         <p className="text-xs text-muted-foreground">

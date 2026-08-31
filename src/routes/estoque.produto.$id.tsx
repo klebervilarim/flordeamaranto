@@ -117,6 +117,7 @@ function ProductEditor({
   const saveFn = useServerFn(updateProduct);
   const uploadFn = useServerFn(uploadProductImage);
   const fileRef = useRef<HTMLInputElement>(null);
+  const secondaryFileRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState(product.name);
   const [sku, setSku] = useState(product.sku);
@@ -134,6 +135,7 @@ function ProductEditor({
   const [shortDescription, setShortDescription] = useState(product.short_description ?? "");
   const [description, setDescription] = useState(product.description ?? "");
   const [imageUrl, setImageUrl] = useState(product.image_url ?? "");
+  const [secondaryImageUrl, setSecondaryImageUrl] = useState(product.secondary_image_url ?? "");
   const [status, setStatus] = useState(product.status);
   const [featured, setFeatured] = useState(product.featured);
   const [bestseller, setBestseller] = useState(product.bestseller);
@@ -167,6 +169,7 @@ function ProductEditor({
           shortDescription: shortDescription.trim() || null,
           description: description.trim() || null,
           imageUrl: imageUrl.trim() || null,
+          secondaryImageUrl: secondaryImageUrl.trim() || null,
           status: status as "active" | "draft" | "archived",
           featured,
           bestseller,
@@ -181,7 +184,7 @@ function ProductEditor({
     onError: (e) => toast.error(e.message),
   });
 
-  const onPickFile = async (file: File) => {
+  const onPickFile = async (file: File, slot: "main" | "secondary" = "main") => {
     if (file.size > 6 * 1024 * 1024) {
       toast.error("Imagem muito grande (máx. 6 MB).");
       return;
@@ -202,13 +205,15 @@ function ProductEditor({
           dataBase64,
         },
       });
-      setImageUrl(res.url);
+      if (slot === "secondary") setSecondaryImageUrl(res.url);
+      else setImageUrl(res.url);
       toast.success("Foto enviada. Clique em Salvar para aplicar.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao enviar a foto.");
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
+      if (secondaryFileRef.current) secondaryFileRef.current.value = "";
     }
   };
 
@@ -268,6 +273,62 @@ function ProductEditor({
               placeholder="https://…"
               className="mt-1"
             />
+          </div>
+
+          <div className="mt-8">
+            <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">
+              2ª foto · Fragrantica
+            </p>
+            <div className="mt-2 border border-border bg-secondary/40">
+              <img
+                src={secondaryImageUrl || placeholder}
+                alt={`${name} — Fragrantica`}
+                className="aspect-square w-full object-cover"
+              />
+            </div>
+            <input
+              ref={secondaryFileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void onPickFile(f, "secondary");
+              }}
+            />
+            <div className="mt-3 flex gap-2">
+              <Button
+                variant="outlineInk"
+                size="sm"
+                className="flex-1"
+                disabled={uploading}
+                onClick={() => secondaryFileRef.current?.click()}
+              >
+                {uploading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Upload className="mr-2 h-4 w-4" />
+                )}
+                {uploading ? "Enviando…" : "Enviar 2ª foto"}
+              </Button>
+              {secondaryImageUrl && (
+                <Button variant="ghost" size="sm" onClick={() => setSecondaryImageUrl("")}>
+                  Remover
+                </Button>
+              )}
+            </div>
+            <div className="mt-3">
+              <Label htmlFor="secondaryImageUrl" className="text-xs text-muted-foreground">
+                Ou cole a URL da Fragrantica
+              </Label>
+              <Input
+                id="secondaryImageUrl"
+                value={secondaryImageUrl}
+                onChange={(e) => setSecondaryImageUrl(e.target.value)}
+                placeholder="https://…"
+                className="mt-1"
+              />
+            </div>
           </div>
         </div>
 
