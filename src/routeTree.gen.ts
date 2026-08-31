@@ -35,6 +35,7 @@ import { Route as EstoqueIndexRouteImport } from './routes/estoque.index'
 import { Route as EstoqueCategoriasRouteImport } from './routes/estoque.categorias'
 import { Route as EstoqueFornecedoresRouteImport } from './routes/estoque.fornecedores'
 import { Route as EstoqueMarcasRouteImport } from './routes/estoque.marcas'
+import { Route as EstoquePlanilhaRouteImport } from './routes/estoque.planilha'
 import { Route as EstoqueTiposProdutoRouteImport } from './routes/estoque.tipos-produto'
 import { Route as MarcasIndexRouteImport } from './routes/marcas.index'
 import { Route as MarcasSlugRouteImport } from './routes/marcas.$slug'
@@ -174,6 +175,11 @@ const EstoqueMarcasRoute = EstoqueMarcasRouteImport.update({
   path: '/marcas',
   getParentRoute: () => EstoqueRoute,
 } as any)
+const EstoquePlanilhaRoute = EstoquePlanilhaRouteImport.update({
+  id: '/planilha',
+  path: '/planilha',
+  getParentRoute: () => EstoqueRoute,
+} as any)
 const EstoqueTiposProdutoRoute = EstoqueTiposProdutoRouteImport.update({
   id: '/tipos-produto',
   path: '/tipos-produto',
@@ -241,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/estoque/categorias': typeof EstoqueCategoriasRoute
   '/estoque/fornecedores': typeof EstoqueFornecedoresRoute
   '/estoque/marcas': typeof EstoqueMarcasRoute
+  '/estoque/planilha': typeof EstoquePlanilhaRoute
   '/estoque/tipos-produto': typeof EstoqueTiposProdutoRoute
   '/marcas/$slug': typeof MarcasSlugRoute
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
@@ -276,6 +283,7 @@ export interface FileRoutesByTo {
   '/estoque/categorias': typeof EstoqueCategoriasRoute
   '/estoque/fornecedores': typeof EstoqueFornecedoresRoute
   '/estoque/marcas': typeof EstoqueMarcasRoute
+  '/estoque/planilha': typeof EstoquePlanilhaRoute
   '/estoque/tipos-produto': typeof EstoqueTiposProdutoRoute
   '/marcas/$slug': typeof MarcasSlugRoute
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
@@ -313,6 +321,7 @@ export interface FileRoutesById {
   '/estoque/categorias': typeof EstoqueCategoriasRoute
   '/estoque/fornecedores': typeof EstoqueFornecedoresRoute
   '/estoque/marcas': typeof EstoqueMarcasRoute
+  '/estoque/planilha': typeof EstoquePlanilhaRoute
   '/estoque/tipos-produto': typeof EstoqueTiposProdutoRoute
   '/marcas/$slug': typeof MarcasSlugRoute
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
@@ -351,6 +360,7 @@ export interface FileRouteTypes {
     | '/estoque/categorias'
     | '/estoque/fornecedores'
     | '/estoque/marcas'
+    | '/estoque/planilha'
     | '/estoque/tipos-produto'
     | '/marcas/$slug'
     | '/perfumes/$filtro'
@@ -386,6 +396,7 @@ export interface FileRouteTypes {
     | '/estoque/categorias'
     | '/estoque/fornecedores'
     | '/estoque/marcas'
+    | '/estoque/planilha'
     | '/estoque/tipos-produto'
     | '/marcas/$slug'
     | '/perfumes/$filtro'
@@ -422,6 +433,7 @@ export interface FileRouteTypes {
     | '/estoque/categorias'
     | '/estoque/fornecedores'
     | '/estoque/marcas'
+    | '/estoque/planilha'
     | '/estoque/tipos-produto'
     | '/marcas/$slug'
     | '/perfumes/$filtro'
@@ -649,6 +661,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EstoqueMarcasRouteImport
       parentRoute: typeof EstoqueRoute
     }
+    '/estoque/planilha': {
+      id: '/estoque/planilha'
+      path: '/planilha'
+      fullPath: '/estoque/planilha'
+      preLoaderRoute: typeof EstoquePlanilhaRouteImport
+      parentRoute: typeof EstoqueRoute
+    }
     '/estoque/tipos-produto': {
       id: '/estoque/tipos-produto'
       path: '/tipos-produto'
@@ -712,6 +731,7 @@ interface EstoqueRouteChildren {
   EstoqueCategoriasRoute: typeof EstoqueCategoriasRoute
   EstoqueFornecedoresRoute: typeof EstoqueFornecedoresRoute
   EstoqueMarcasRoute: typeof EstoqueMarcasRoute
+  EstoquePlanilhaRoute: typeof EstoquePlanilhaRoute
   EstoqueTiposProdutoRoute: typeof EstoqueTiposProdutoRoute
   EstoqueIndexRoute: typeof EstoqueIndexRoute
   EstoqueProdutoIdRoute: typeof EstoqueProdutoIdRoute
@@ -721,6 +741,7 @@ const EstoqueRouteChildren: EstoqueRouteChildren = {
   EstoqueCategoriasRoute: EstoqueCategoriasRoute,
   EstoqueFornecedoresRoute: EstoqueFornecedoresRoute,
   EstoqueMarcasRoute: EstoqueMarcasRoute,
+  EstoquePlanilhaRoute: EstoquePlanilhaRoute,
   EstoqueTiposProdutoRoute: EstoqueTiposProdutoRoute,
   EstoqueIndexRoute: EstoqueIndexRoute,
   EstoqueProdutoIdRoute: EstoqueProdutoIdRoute,
