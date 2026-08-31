@@ -31,6 +31,7 @@ export type Product = {
   gender: string | null;
   origin: string | null;
   short_description: string | null;
+  inspiration: string | null;
   description: string | null;
   price: number;
   sale_price: number | null;
