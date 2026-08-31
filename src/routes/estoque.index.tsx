@@ -2,7 +2,14 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Download, LayoutDashboard, Loader2, Pencil, ShieldCheck } from "lucide-react";
+import {
+  Download,
+  FileSpreadsheet,
+  LayoutDashboard,
+  Loader2,
+  Pencil,
+  ShieldCheck,
+} from "lucide-react";
 import { toast } from "sonner";
 import { brl } from "@/lib/format";
 import { PRODUCT_TYPE_LABELS } from "@/lib/catalog";
@@ -166,6 +173,11 @@ function StockPanel() {
             disabled={items.length === 0}
           >
             <Download className="mr-2 h-4 w-4" /> Exportar Excel
+          </Button>
+          <Button asChild variant="outlineInk" size="pill">
+            <Link to="/estoque/planilha">
+              <FileSpreadsheet className="mr-2 h-4 w-4" /> Planilha
+            </Link>
           </Button>
           <Button asChild variant="outlineInk" size="pill">
             <Link to="/admin">
