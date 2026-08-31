@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
 import { assertAdmin, recordStockMovement } from "./stock.server";
 
 export type SheetProductRow = {
@@ -161,7 +162,7 @@ export const importStockSheet = createServerFn({ method: "POST" })
         errors.push(`Produto não encontrado: ${row.sku}`);
         continue;
       }
-      const patch: Record<string, unknown> = {};
+      const patch: Database["public"]["Tables"]["products"]["Update"] = {};
       if (row.name && row.name !== product.name) patch["name"] = row.name;
       if (row.price != null && row.price > 0 && Number(row.price) !== Number(product.price))
         patch["price"] = row.price;
