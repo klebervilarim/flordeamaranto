@@ -45,6 +45,7 @@ import { Route as PerfumesFiltroRouteImport } from './routes/perfumes.$filtro'
 import { Route as ProdutoSlugRouteImport } from './routes/produto.$slug'
 import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api/public/mercadopago-webhook'
 import { Route as EstoqueProdutoIdRouteImport } from './routes/estoque.produto.$id'
+import { Route as PagamentoSucessoIdRouteImport } from './routes/pagamento.sucesso.$id'
 import { Route as ApiPublicProductImageSplatRouteImport } from './routes/api/public/product-image/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -228,6 +229,11 @@ const EstoqueProdutoIdRoute = EstoqueProdutoIdRouteImport.update({
   path: '/produto/$id',
   getParentRoute: () => EstoqueRoute,
 } as any)
+const PagamentoSucessoIdRoute = PagamentoSucessoIdRouteImport.update({
+  id: '/pagamento/sucesso/$id',
+  path: '/pagamento/sucesso/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicProductImageSplatRoute =
   ApiPublicProductImageSplatRouteImport.update({
     id: '/api/public/product-image/$',
@@ -272,6 +278,7 @@ export interface FileRoutesByFullPath {
   '/perfumes/': typeof PerfumesIndexRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
+  '/pagamento/sucesso/$id': typeof PagamentoSucessoIdRoute
   '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
 }
 export interface FileRoutesByTo {
@@ -310,6 +317,7 @@ export interface FileRoutesByTo {
   '/perfumes': typeof PerfumesIndexRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
+  '/pagamento/sucesso/$id': typeof PagamentoSucessoIdRoute
   '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
 }
 export interface FileRoutesById {
@@ -350,6 +358,7 @@ export interface FileRoutesById {
   '/perfumes/': typeof PerfumesIndexRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
+  '/pagamento/sucesso/$id': typeof PagamentoSucessoIdRoute
   '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
 }
 export interface FileRouteTypes {
@@ -391,6 +400,7 @@ export interface FileRouteTypes {
     | '/perfumes/'
     | '/api/public/mercadopago-webhook'
     | '/estoque/produto/$id'
+    | '/pagamento/sucesso/$id'
     | '/api/public/product-image/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -429,6 +439,7 @@ export interface FileRouteTypes {
     | '/perfumes'
     | '/api/public/mercadopago-webhook'
     | '/estoque/produto/$id'
+    | '/pagamento/sucesso/$id'
     | '/api/public/product-image/$'
   id:
     | '__root__'
@@ -468,6 +479,7 @@ export interface FileRouteTypes {
     | '/perfumes/'
     | '/api/public/mercadopago-webhook'
     | '/estoque/produto/$id'
+    | '/pagamento/sucesso/$id'
     | '/api/public/product-image/$'
   fileRoutesById: FileRoutesById
 }
@@ -501,6 +513,7 @@ export interface RootRouteChildren {
   MarcasIndexRoute: typeof MarcasIndexRoute
   PerfumesIndexRoute: typeof PerfumesIndexRoute
   ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
+  PagamentoSucessoIdRoute: typeof PagamentoSucessoIdRoute
   ApiPublicProductImageSplatRoute: typeof ApiPublicProductImageSplatRoute
 }
 
@@ -758,6 +771,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EstoqueProdutoIdRouteImport
       parentRoute: typeof EstoqueRoute
     }
+    '/pagamento/sucesso/$id': {
+      id: '/pagamento/sucesso/$id'
+      path: '/pagamento/sucesso/$id'
+      fullPath: '/pagamento/sucesso/$id'
+      preLoaderRoute: typeof PagamentoSucessoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/product-image/$': {
       id: '/api/public/product-image/$'
       path: '/api/public/product-image/$'
@@ -821,6 +841,7 @@ const rootRouteChildren: RootRouteChildren = {
   MarcasIndexRoute: MarcasIndexRoute,
   PerfumesIndexRoute: PerfumesIndexRoute,
   ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
+  PagamentoSucessoIdRoute: PagamentoSucessoIdRoute,
   ApiPublicProductImageSplatRoute: ApiPublicProductImageSplatRoute,
 }
 export const routeTree = rootRouteImport

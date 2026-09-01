@@ -100,15 +100,20 @@ function PaymentPage() {
     const tick = async () => {
       const res = await checkOrderPayment({ data: { orderId: id } });
       if (res.status === "paid") {
-        setPaid(true);
         if (pollRef.current) window.clearInterval(pollRef.current);
+        void navigate({ to: "/pagamento/sucesso/$id", params: { id } });
       }
     };
     pollRef.current = window.setInterval(() => void tick(), 5000);
     return () => {
       if (pollRef.current) window.clearInterval(pollRef.current);
     };
-  }, [pix, paid, id]);
+  }, [pix, paid, id, navigate]);
+
+  // Redirect already-confirmed orders to the success page.
+  useEffect(() => {
+    if (paid) void navigate({ to: "/pagamento/sucesso/$id", params: { id } });
+  }, [paid, id, navigate]);
 
   const subtotal = Number(order?.subtotal ?? 0);
   const shippingPrice = Number(order?.shipping ?? 0);
