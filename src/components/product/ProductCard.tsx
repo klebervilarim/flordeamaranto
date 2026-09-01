@@ -16,17 +16,21 @@ export function ProductCard({ product }: { product: Product }) {
   const { n, value } = installments(current);
   const fav = isFavorite(product.id);
 
-  const badge = product.exclusive
-    ? "Exclusivo"
-    : off > 0
-      ? `${off}% OFF`
-      : product.is_new
-        ? "Novo"
-        : product.bestseller
-          ? "Mais vendido"
-          : product.stock === 1
-            ? "Última unidade"
-            : null;
+  const soldOut = product.stock <= 0;
+
+  const badge = soldOut
+    ? "Esgotado"
+    : product.exclusive
+      ? "Exclusivo"
+      : off > 0
+        ? `${off}% OFF`
+        : product.is_new
+          ? "Novo"
+          : product.bestseller
+            ? "Mais vendido"
+            : product.stock === 1
+              ? "Última unidade"
+              : null;
 
   return (
     <article className="group relative flex flex-col">
