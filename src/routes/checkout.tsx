@@ -35,6 +35,8 @@ const schema = z.object({
   zip: z.string().trim().min(8, "CEP inválido").max(9),
   street: z.string().trim().min(3, "Endereço inválido").max(160),
   number: z.string().trim().min(1, "Informe o número").max(10),
+  complement: z.string().trim().max(120).optional(),
+  district: z.string().trim().max(120).optional(),
   city: z.string().trim().min(2, "Cidade inválida").max(80),
   state: z.string().trim().min(2, "UF inválida").max(2),
 });
@@ -68,6 +70,7 @@ function CheckoutPage() {
             if (el instanceof HTMLInputElement && v) el.value = v;
           };
           set("street", res.address.street);
+          set("district", res.address.district);
           set("city", res.address.city);
           set("state", res.address.state);
         }
@@ -135,6 +138,8 @@ function CheckoutPage() {
             zip: d.zip,
             street: d.street,
             number: d.number,
+            complement: d.complement ?? "",
+            district: d.district ?? "",
             city: d.city,
             state: d.state.toUpperCase(),
             shipping_method: shipping.name,
@@ -205,6 +210,8 @@ function CheckoutPage() {
               />
               <Field name="street" label="Rua" error={errors['street']} />
               <Field name="number" label="Número" error={errors['number']} />
+              <Field name="complement" label="Complemento (opcional)" placeholder="Apto, bloco, casa..." />
+              <Field name="district" label="Bairro" />
               <Field name="city" label="Cidade" error={errors['city']} />
               <Field name="state" label="UF" error={errors['state']} />
             </div>
