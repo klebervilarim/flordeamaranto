@@ -24,8 +24,8 @@ export function ProductCard({ product }: { product: Product }) {
         ? "Novo"
         : product.bestseller
           ? "Mais vendido"
-          : product.stock > 0 && product.stock <= 5
-            ? "Últimas unidades"
+          : product.stock === 1
+            ? "Última unidade"
             : null;
 
   return (
