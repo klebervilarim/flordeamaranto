@@ -35,6 +35,8 @@ const schema = z.object({
   zip: z.string().trim().min(8, "CEP inválido").max(9),
   street: z.string().trim().min(3, "Endereço inválido").max(160),
   number: z.string().trim().min(1, "Informe o número").max(10),
+  complement: z.string().trim().max(120).optional(),
+  district: z.string().trim().max(120).optional(),
   city: z.string().trim().min(2, "Cidade inválida").max(80),
   state: z.string().trim().min(2, "UF inválida").max(2),
 });
