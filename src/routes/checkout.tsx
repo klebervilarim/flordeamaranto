@@ -138,6 +138,8 @@ function CheckoutPage() {
             zip: d.zip,
             street: d.street,
             number: d.number,
+            complement: d.complement ?? "",
+            district: d.district ?? "",
             city: d.city,
             state: d.state.toUpperCase(),
             shipping_method: shipping.name,
