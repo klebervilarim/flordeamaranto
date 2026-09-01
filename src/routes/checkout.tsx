@@ -208,6 +208,8 @@ function CheckoutPage() {
               />
               <Field name="street" label="Rua" error={errors['street']} />
               <Field name="number" label="Número" error={errors['number']} />
+              <Field name="complement" label="Complemento (opcional)" placeholder="Apto, bloco, casa..." />
+              <Field name="district" label="Bairro" />
               <Field name="city" label="Cidade" error={errors['city']} />
               <Field name="state" label="UF" error={errors['state']} />
             </div>
