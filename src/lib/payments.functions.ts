@@ -69,7 +69,8 @@ export const payOrder = createServerFn({ method: "POST" })
       });
 
       const paid = result.status === "approved";
-      await supabase
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin
         .from("orders")
         .update({
           payment_method: isPix ? "pix" : "cartao",
@@ -119,17 +120,18 @@ export const checkOrderPayment = createServerFn({ method: "POST" })
     if (!order.payment_id) return { status: order.payment_status as string };
 
     const { getMercadoPagoPayment } = await import("./mercadopago.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const payment = await getMercadoPagoPayment(order.payment_id);
     if (!payment) return { status: order.payment_status as string };
     if (payment.status === "approved") {
-      await supabase
+      await supabaseAdmin
         .from("orders")
         .update({ payment_status: "paid", status: "paid" })
         .eq("id", order.id);
       return { status: "paid" as const };
     }
     if (payment.status === "rejected" || payment.status === "cancelled") {
-      await supabase.from("orders").update({ payment_status: "failed" }).eq("id", order.id);
+      await supabaseAdmin.from("orders").update({ payment_status: "failed" }).eq("id", order.id);
       return { status: "failed" as const };
     }
     return { status: "pending" as const };
