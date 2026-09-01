@@ -289,9 +289,24 @@ function CheckoutPage() {
             <span className="text-sm">Total</span>
             <span className="font-display text-3xl">{brl(total)}</span>
           </div>
-          <Button type="submit" variant="gold" size="xl" className="mt-6 w-full" disabled={submitting}>
-            {submitting ? "Processando..." : "Concluir pedido"}
+          <Button
+            type="submit"
+            variant="gold"
+            size="xl"
+            className="mt-6 w-full"
+            disabled={submitting || !shipping}
+          >
+            {submitting
+              ? "Processando..."
+              : shipping
+                ? "Concluir pedido"
+                : "Calcule o frete para continuar"}
           </Button>
+          {!shipping && (
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              Informe o CEP e selecione uma opção de entrega para finalizar.
+            </p>
+          )}
         </aside>
       </form>
     </div>
