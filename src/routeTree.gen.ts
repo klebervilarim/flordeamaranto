@@ -42,6 +42,7 @@ import { Route as MarcasSlugRouteImport } from './routes/marcas.$slug'
 import { Route as PerfumesIndexRouteImport } from './routes/perfumes.index'
 import { Route as PerfumesFiltroRouteImport } from './routes/perfumes.$filtro'
 import { Route as ProdutoSlugRouteImport } from './routes/produto.$slug'
+import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api/public/mercadopago-webhook'
 import { Route as EstoqueProdutoIdRouteImport } from './routes/estoque.produto.$id'
 import { Route as ApiPublicProductImageSplatRouteImport } from './routes/api/public/product-image/$'
 
@@ -210,6 +211,12 @@ const ProdutoSlugRoute = ProdutoSlugRouteImport.update({
   path: '/produto/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicMercadopagoWebhookRoute =
+  ApiPublicMercadopagoWebhookRouteImport.update({
+    id: '/api/public/mercadopago-webhook',
+    path: '/api/public/mercadopago-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const EstoqueProdutoIdRoute = EstoqueProdutoIdRouteImport.update({
   id: '/produto/$id',
   path: '/produto/$id',
@@ -256,6 +263,7 @@ export interface FileRoutesByFullPath {
   '/estoque/': typeof EstoqueIndexRoute
   '/marcas/': typeof MarcasIndexRoute
   '/perfumes/': typeof PerfumesIndexRoute
+  '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
   '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
 }
@@ -292,6 +300,7 @@ export interface FileRoutesByTo {
   '/estoque': typeof EstoqueIndexRoute
   '/marcas': typeof MarcasIndexRoute
   '/perfumes': typeof PerfumesIndexRoute
+  '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
   '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
 }
@@ -330,6 +339,7 @@ export interface FileRoutesById {
   '/estoque/': typeof EstoqueIndexRoute
   '/marcas/': typeof MarcasIndexRoute
   '/perfumes/': typeof PerfumesIndexRoute
+  '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
   '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
 }
@@ -369,6 +379,7 @@ export interface FileRouteTypes {
     | '/estoque/'
     | '/marcas/'
     | '/perfumes/'
+    | '/api/public/mercadopago-webhook'
     | '/estoque/produto/$id'
     | '/api/public/product-image/$'
   fileRoutesByTo: FileRoutesByTo
@@ -405,6 +416,7 @@ export interface FileRouteTypes {
     | '/estoque'
     | '/marcas'
     | '/perfumes'
+    | '/api/public/mercadopago-webhook'
     | '/estoque/produto/$id'
     | '/api/public/product-image/$'
   id:
@@ -442,6 +454,7 @@ export interface FileRouteTypes {
     | '/estoque/'
     | '/marcas/'
     | '/perfumes/'
+    | '/api/public/mercadopago-webhook'
     | '/estoque/produto/$id'
     | '/api/public/product-image/$'
   fileRoutesById: FileRoutesById
@@ -474,6 +487,7 @@ export interface RootRouteChildren {
   ColecoesIndexRoute: typeof ColecoesIndexRoute
   MarcasIndexRoute: typeof MarcasIndexRoute
   PerfumesIndexRoute: typeof PerfumesIndexRoute
+  ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
   ApiPublicProductImageSplatRoute: typeof ApiPublicProductImageSplatRoute
 }
 
@@ -710,6 +724,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProdutoSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/mercadopago-webhook': {
+      id: '/api/public/mercadopago-webhook'
+      path: '/api/public/mercadopago-webhook'
+      fullPath: '/api/public/mercadopago-webhook'
+      preLoaderRoute: typeof ApiPublicMercadopagoWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/estoque/produto/$id': {
       id: '/estoque/produto/$id'
       path: '/produto/$id'
@@ -778,6 +799,7 @@ const rootRouteChildren: RootRouteChildren = {
   ColecoesIndexRoute: ColecoesIndexRoute,
   MarcasIndexRoute: MarcasIndexRoute,
   PerfumesIndexRoute: PerfumesIndexRoute,
+  ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
   ApiPublicProductImageSplatRoute: ApiPublicProductImageSplatRoute,
 }
 export const routeTree = rootRouteImport
