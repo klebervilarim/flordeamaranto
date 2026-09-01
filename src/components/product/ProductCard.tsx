@@ -44,9 +44,12 @@ export function ProductCard({ product }: { product: Product }) {
             height={900}
             className={cn(
               "aspect-square w-full object-cover transition-transform duration-700",
-              soldOut ? "grayscale" : "group-hover:scale-[1.04]",
+              soldOut ? "grayscale brightness-75" : "group-hover:scale-[1.04]",
             )}
           />
+          {soldOut && (
+            <div className="pointer-events-none absolute inset-0 bg-muted-foreground/30" />
+          )}
         </Link>
 
         {badge && (
