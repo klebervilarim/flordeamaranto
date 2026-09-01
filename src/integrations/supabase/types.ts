@@ -542,10 +542,17 @@ export type Database = {
           created_at: string
           discount: number
           id: string
+          installments: number | null
           notes: string | null
           order_number: string
+          payment_id: string | null
           payment_method: string | null
+          payment_provider: string | null
           payment_status: string
+          pix_expires_at: string | null
+          pix_qr_code: string | null
+          pix_qr_code_base64: string | null
+          pix_ticket_url: string | null
           shipping: number
           shipping_address: Json | null
           status: Database["public"]["Enums"]["order_status"]
@@ -560,10 +567,17 @@ export type Database = {
           created_at?: string
           discount?: number
           id?: string
+          installments?: number | null
           notes?: string | null
           order_number?: string
+          payment_id?: string | null
           payment_method?: string | null
+          payment_provider?: string | null
           payment_status?: string
+          pix_expires_at?: string | null
+          pix_qr_code?: string | null
+          pix_qr_code_base64?: string | null
+          pix_ticket_url?: string | null
           shipping?: number
           shipping_address?: Json | null
           status?: Database["public"]["Enums"]["order_status"]
@@ -578,10 +592,17 @@ export type Database = {
           created_at?: string
           discount?: number
           id?: string
+          installments?: number | null
           notes?: string | null
           order_number?: string
+          payment_id?: string | null
           payment_method?: string | null
+          payment_provider?: string | null
           payment_status?: string
+          pix_expires_at?: string | null
+          pix_qr_code?: string | null
+          pix_qr_code_base64?: string | null
+          pix_ticket_url?: string | null
           shipping?: number
           shipping_address?: Json | null
           status?: Database["public"]["Enums"]["order_status"]

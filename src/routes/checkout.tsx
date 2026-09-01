@@ -6,7 +6,6 @@ import { ShippingOptions, useShippingQuote } from "@/components/cart/ShippingCal
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,7 +44,6 @@ function CheckoutPage() {
   const { lines, subtotal, clear, shipping, setShipping } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [payment, setPayment] = useState("pix");
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [cep, setCep] = useState(shipping?.cep ? maskCep(shipping.cep) : "");
@@ -53,8 +51,8 @@ function CheckoutPage() {
   const { quote, loading: quoting, result: quoteResult, error: quoteError } = useShippingQuote();
 
   const shippingPrice = shipping?.price ?? 0;
-  const discount = payment === "pix" ? subtotal * 0.05 : 0;
-  const total = subtotal + shippingPrice - discount;
+  const discount = 0;
+  const total = subtotal + shippingPrice;
 
   const onCepChange = (value: string) => {
     const masked = maskCep(value);
@@ -145,7 +143,7 @@ function CheckoutPage() {
             shipping_method: shipping.name,
             shipping_eta: shipping.eta,
           },
-          payment_method: payment,
+          payment_method: null,
           subtotal,
           shipping: shipping.price,
           discount,
@@ -169,8 +167,8 @@ function CheckoutPage() {
       );
 
       clear();
-      toast.success("Pedido realizado!", { description: `Número ${order.order_number ?? order.id}` });
-      void navigate({ to: "/minha-conta" });
+      toast.success("Pedido criado!", { description: "Escolha a forma de pagamento." });
+      void navigate({ to: "/pagamento/$id", params: { id: order.id } });
     } catch {
       toast.error("Não foi possível concluir o pedido", {
         description: "Revise seus dados e tente novamente.",
@@ -231,23 +229,13 @@ function CheckoutPage() {
             )}
           </fieldset>
 
-          <fieldset>
-            <legend className="eyebrow text-muted-foreground">Pagamento</legend>
-            <RadioGroup value={payment} onValueChange={setPayment} className="mt-5 space-y-3">
-              {[
-                { value: "pix", label: "Pix — 5% de desconto" },
-                { value: "cartao", label: "Cartão de crédito — até 6x sem juros" },
-                { value: "boleto", label: "Boleto bancário" },
-              ].map((opt) => (
-                <div key={opt.value} className="flex items-center gap-3 border border-border px-5 py-4">
-                  <RadioGroupItem value={opt.value} id={opt.value} />
-                  <Label htmlFor={opt.value} className="cursor-pointer text-sm font-normal">
-                    {opt.label}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </fieldset>
+          <div className="border border-border p-5 text-sm text-muted-foreground">
+            <p className="eyebrow text-muted-foreground">Pagamento</p>
+            <p className="mt-3">
+              Na próxima etapa você escolhe entre <strong className="text-foreground">Pix</strong> (5% de desconto) ou
+              <strong className="text-foreground"> cartão de crédito</strong> em até 12x.
+            </p>
+          </div>
         </div>
 
         <aside className="h-fit border border-border p-6 lg:sticky lg:top-28">
@@ -299,7 +287,7 @@ function CheckoutPage() {
             {submitting
               ? "Processando..."
               : shipping
-                ? "Concluir pedido"
+                ? "Ir para o pagamento"
                 : "Calcule o frete para continuar"}
           </Button>
           {!shipping && (
