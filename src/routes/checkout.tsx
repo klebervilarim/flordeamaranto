@@ -70,6 +70,7 @@ function CheckoutPage() {
             if (el instanceof HTMLInputElement && v) el.value = v;
           };
           set("street", res.address.street);
+          set("district", res.address.district);
           set("city", res.address.city);
           set("state", res.address.state);
         }
