@@ -39,6 +39,7 @@ import { Route as EstoquePlanilhaRouteImport } from './routes/estoque.planilha'
 import { Route as EstoqueTiposProdutoRouteImport } from './routes/estoque.tipos-produto'
 import { Route as MarcasIndexRouteImport } from './routes/marcas.index'
 import { Route as MarcasSlugRouteImport } from './routes/marcas.$slug'
+import { Route as PagamentoIdRouteImport } from './routes/pagamento.$id'
 import { Route as PerfumesIndexRouteImport } from './routes/perfumes.index'
 import { Route as PerfumesFiltroRouteImport } from './routes/perfumes.$filtro'
 import { Route as ProdutoSlugRouteImport } from './routes/produto.$slug'
@@ -196,6 +197,11 @@ const MarcasSlugRoute = MarcasSlugRouteImport.update({
   path: '/marcas/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PagamentoIdRoute = PagamentoIdRouteImport.update({
+  id: '/pagamento/$id',
+  path: '/pagamento/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PerfumesIndexRoute = PerfumesIndexRouteImport.update({
   id: '/perfumes/',
   path: '/perfumes/',
@@ -257,6 +263,7 @@ export interface FileRoutesByFullPath {
   '/estoque/planilha': typeof EstoquePlanilhaRoute
   '/estoque/tipos-produto': typeof EstoqueTiposProdutoRoute
   '/marcas/$slug': typeof MarcasSlugRoute
+  '/pagamento/$id': typeof PagamentoIdRoute
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
   '/produto/$slug': typeof ProdutoSlugRoute
   '/colecoes/': typeof ColecoesIndexRoute
@@ -294,6 +301,7 @@ export interface FileRoutesByTo {
   '/estoque/planilha': typeof EstoquePlanilhaRoute
   '/estoque/tipos-produto': typeof EstoqueTiposProdutoRoute
   '/marcas/$slug': typeof MarcasSlugRoute
+  '/pagamento/$id': typeof PagamentoIdRoute
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
   '/produto/$slug': typeof ProdutoSlugRoute
   '/colecoes': typeof ColecoesIndexRoute
@@ -333,6 +341,7 @@ export interface FileRoutesById {
   '/estoque/planilha': typeof EstoquePlanilhaRoute
   '/estoque/tipos-produto': typeof EstoqueTiposProdutoRoute
   '/marcas/$slug': typeof MarcasSlugRoute
+  '/pagamento/$id': typeof PagamentoIdRoute
   '/perfumes/$filtro': typeof PerfumesFiltroRoute
   '/produto/$slug': typeof ProdutoSlugRoute
   '/colecoes/': typeof ColecoesIndexRoute
@@ -373,6 +382,7 @@ export interface FileRouteTypes {
     | '/estoque/planilha'
     | '/estoque/tipos-produto'
     | '/marcas/$slug'
+    | '/pagamento/$id'
     | '/perfumes/$filtro'
     | '/produto/$slug'
     | '/colecoes/'
@@ -410,6 +420,7 @@ export interface FileRouteTypes {
     | '/estoque/planilha'
     | '/estoque/tipos-produto'
     | '/marcas/$slug'
+    | '/pagamento/$id'
     | '/perfumes/$filtro'
     | '/produto/$slug'
     | '/colecoes'
@@ -448,6 +459,7 @@ export interface FileRouteTypes {
     | '/estoque/planilha'
     | '/estoque/tipos-produto'
     | '/marcas/$slug'
+    | '/pagamento/$id'
     | '/perfumes/$filtro'
     | '/produto/$slug'
     | '/colecoes/'
@@ -482,6 +494,7 @@ export interface RootRouteChildren {
   TrocasEDevolucoesRoute: typeof TrocasEDevolucoesRoute
   ColecoesSlugRoute: typeof ColecoesSlugRoute
   MarcasSlugRoute: typeof MarcasSlugRoute
+  PagamentoIdRoute: typeof PagamentoIdRoute
   PerfumesFiltroRoute: typeof PerfumesFiltroRoute
   ProdutoSlugRoute: typeof ProdutoSlugRoute
   ColecoesIndexRoute: typeof ColecoesIndexRoute
@@ -703,6 +716,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarcasSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pagamento/$id': {
+      id: '/pagamento/$id'
+      path: '/pagamento/$id'
+      fullPath: '/pagamento/$id'
+      preLoaderRoute: typeof PagamentoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/perfumes/': {
       id: '/perfumes/'
       path: '/perfumes'
@@ -794,6 +814,7 @@ const rootRouteChildren: RootRouteChildren = {
   TrocasEDevolucoesRoute: TrocasEDevolucoesRoute,
   ColecoesSlugRoute: ColecoesSlugRoute,
   MarcasSlugRoute: MarcasSlugRoute,
+  PagamentoIdRoute: PagamentoIdRoute,
   PerfumesFiltroRoute: PerfumesFiltroRoute,
   ProdutoSlugRoute: ProdutoSlugRoute,
   ColecoesIndexRoute: ColecoesIndexRoute,
