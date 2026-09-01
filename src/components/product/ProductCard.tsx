@@ -16,20 +16,24 @@ export function ProductCard({ product }: { product: Product }) {
   const { n, value } = installments(current);
   const fav = isFavorite(product.id);
 
-  const badge = product.exclusive
-    ? "Exclusivo"
-    : off > 0
-      ? `${off}% OFF`
-      : product.is_new
-        ? "Novo"
-        : product.bestseller
-          ? "Mais vendido"
-          : product.stock === 1
-            ? "Última unidade"
-            : null;
+  const soldOut = product.stock <= 0;
+
+  const badge = soldOut
+    ? "Esgotado"
+    : product.exclusive
+      ? "Exclusivo"
+      : off > 0
+        ? `${off}% OFF`
+        : product.is_new
+          ? "Novo"
+          : product.bestseller
+            ? "Mais vendido"
+            : product.stock === 1
+              ? "Última unidade"
+              : null;
 
   return (
-    <article className="group relative flex flex-col">
+    <article className={cn("group relative flex flex-col", soldOut && "opacity-60")}>
       <div className="relative overflow-hidden bg-secondary">
         <Link to="/produto/$slug" params={{ slug: product.slug }} className="block">
           <img
@@ -38,12 +42,20 @@ export function ProductCard({ product }: { product: Product }) {
             loading="lazy"
             width={900}
             height={900}
-            className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+            className={cn(
+              "aspect-square w-full object-cover transition-transform duration-700",
+              soldOut ? "grayscale" : "group-hover:scale-[1.04]",
+            )}
           />
         </Link>
 
         {badge && (
-          <span className="absolute top-2 left-2 bg-ink px-2 py-1 text-[0.6rem] tracking-[0.16em] text-gold uppercase">
+          <span
+            className={cn(
+              "absolute top-2 left-2 px-2 py-1 text-[0.6rem] tracking-[0.16em] uppercase",
+              soldOut ? "bg-muted-foreground text-card" : "bg-ink text-gold",
+            )}
+          >
             {badge}
           </span>
         )}
