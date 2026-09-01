@@ -10,4 +10,4 @@ export const discountPercent = (price: number, sale?: number | null) =>
   sale && sale < price ? Math.round((1 - sale / price) * 100) : 0;
 
 export const stockLabel = (stock: number) =>
-  stock <= 0 ? "Esgotado" : stock <= 5 ? "Últimas unidades" : "Em estoque";
+  stock <= 0 ? "Esgotado" : stock === 1 ? "Última unidade" : "Em estoque";
