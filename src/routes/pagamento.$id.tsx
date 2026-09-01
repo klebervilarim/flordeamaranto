@@ -100,15 +100,20 @@ function PaymentPage() {
     const tick = async () => {
       const res = await checkOrderPayment({ data: { orderId: id } });
       if (res.status === "paid") {
-        setPaid(true);
         if (pollRef.current) window.clearInterval(pollRef.current);
+        void navigate({ to: "/pagamento/sucesso/$id", params: { id } });
       }
     };
     pollRef.current = window.setInterval(() => void tick(), 5000);
     return () => {
       if (pollRef.current) window.clearInterval(pollRef.current);
     };
-  }, [pix, paid, id]);
+  }, [pix, paid, id, navigate]);
+
+  // Redirect already-confirmed orders to the success page.
+  useEffect(() => {
+    if (paid) void navigate({ to: "/pagamento/sucesso/$id", params: { id } });
+  }, [paid, id, navigate]);
 
   const subtotal = Number(order?.subtotal ?? 0);
   const shippingPrice = Number(order?.shipping ?? 0);
@@ -194,12 +199,7 @@ function PaymentPage() {
       <div className="mx-auto max-w-3xl px-4 py-24 text-center">
         <div className="rule-gold mx-auto w-24" />
         <h1 className="font-display mt-6 text-4xl">Pagamento aprovado!</h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          Pedido {order.order_number} confirmado. Já estamos preparando seu envio.
-        </p>
-        <Button asChild variant="gold" size="xl" className="mt-8">
-          <Link to="/minha-conta">Ver meus pedidos</Link>
-        </Button>
+        <p className="mt-3 text-sm text-muted-foreground">Redirecionando para a confirmação...</p>
       </div>
     );
   }
