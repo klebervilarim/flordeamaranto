@@ -180,6 +180,42 @@ function PaymentPage() {
             </p>
           </div>
 
+          <div className="border border-border p-6">
+            <h2 className="eyebrow text-muted-foreground">Dados do pagador</h2>
+            <p className="mt-2 text-xs text-muted-foreground">
+              O CPF/CNPJ é obrigatório para gerar o Pix e liberar o botão de pagamento no Mercado Pago.
+            </p>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <label className="block text-sm">
+                <span className="text-muted-foreground">Nome completo</span>
+                <input
+                  className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground"
+                  value={payerName}
+                  onChange={(e) => setPayerName(e.target.value)}
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="text-muted-foreground">E-mail</span>
+                <input
+                  type="email"
+                  className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground"
+                  value={payerEmail}
+                  onChange={(e) => setPayerEmail(e.target.value)}
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="text-muted-foreground">CPF / CNPJ</span>
+                <input
+                  inputMode="numeric"
+                  placeholder="000.000.000-00"
+                  className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground"
+                  value={payerDoc}
+                  onChange={(e) => setPayerDoc(maskDoc(e.target.value))}
+                />
+              </label>
+            </div>
+          </div>
+
           <ul className="space-y-3 text-sm">
             {items.map((it) => (
               <li key={it.id} className="flex justify-between gap-3 border-b border-border pb-3">
