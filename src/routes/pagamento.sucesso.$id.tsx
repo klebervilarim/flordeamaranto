@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { brl } from "@/lib/format";
+import { checkOrderPayment } from "@/lib/payments.functions";
 
 export const Route = createFileRoute("/pagamento/sucesso/$id")({
   head: () => ({
