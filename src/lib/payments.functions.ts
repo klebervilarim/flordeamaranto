@@ -53,11 +53,16 @@ export const processDirectPayment = createServerFn({ method: "POST" })
       .from("order_items")
       .select("product_name, quantity, unit_price")
       .eq("order_id", order.id);
-    if (!items?.length || items.some((item) => Number(item.quantity) < 1 || Number(item.unit_price) <= 0)) {
+    if (
+      !items?.length ||
+      items.some((item) => Number(item.quantity) < 1 || Number(item.unit_price) <= 0)
+    ) {
       return { ok: false as const, error: "O pedido possui itens com valor inválido." };
     }
     const itemsTotal = Number(
-      items.reduce((sum, item) => sum + Number(item.unit_price) * Number(item.quantity), 0).toFixed(2),
+      items
+        .reduce((sum, item) => sum + Number(item.unit_price) * Number(item.quantity), 0)
+        .toFixed(2),
     );
     const total = Number((itemsTotal + Number(order.shipping ?? 0)).toFixed(2));
     if (total <= 0) return { ok: false as const, error: "Valor do pedido inválido." };
@@ -111,7 +116,8 @@ export const processDirectPayment = createServerFn({ method: "POST" })
         },
       };
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Não foi possível processar o pagamento.";
+      const message =
+        err instanceof Error ? err.message : "Não foi possível processar o pagamento.";
       return { ok: false as const, error: message };
     }
   });
@@ -154,10 +160,9 @@ export const startCheckoutPro = createServerFn({ method: "POST" })
     }
 
     const itemsTotal = Number(
-      (items ?? []).reduce(
-        (sum, item) => sum + Number(item.unit_price) * Number(item.quantity),
-        0,
-      ).toFixed(2),
+      (items ?? [])
+        .reduce((sum, item) => sum + Number(item.unit_price) * Number(item.quantity), 0)
+        .toFixed(2),
     );
     const total = Number((itemsTotal + Number(order.shipping)).toFixed(2));
     if (total <= 0) return { ok: false as const, error: "Valor do pedido inválido." };

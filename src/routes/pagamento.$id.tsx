@@ -86,7 +86,11 @@ function maskDoc(value: string) {
 }
 
 function maskCard(value: string) {
-  return value.replace(/\D/g, "").slice(0, 19).replace(/(.{4})/g, "$1 ").trim();
+  return value
+    .replace(/\D/g, "")
+    .slice(0, 19)
+    .replace(/(.{4})/g, "$1 ")
+    .trim();
 }
 
 function maskExpiry(value: string) {
@@ -97,10 +101,14 @@ function maskExpiry(value: string) {
 async function loadMercadoPagoSdk() {
   if (window.MercadoPago) return;
   await new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>('script[src="https://sdk.mercadopago.com/js/v2"]');
+    const existing = document.querySelector<HTMLScriptElement>(
+      'script[src="https://sdk.mercadopago.com/js/v2"]',
+    );
     if (existing) {
       existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("SDK indisponível")), { once: true });
+      existing.addEventListener("error", () => reject(new Error("SDK indisponível")), {
+        once: true,
+      });
       return;
     }
     const script = document.createElement("script");
@@ -247,7 +255,9 @@ function PaymentPage() {
       if (result.data.status === "approved") {
         await navigate({ to: "/pagamento/sucesso/$id", params: { id } });
       } else if (result.data.status === "in_process" || result.data.status === "pending") {
-        toast.success("Pagamento em análise", { description: "A confirmação será atualizada automaticamente." });
+        toast.success("Pagamento em análise", {
+          description: "A confirmação será atualizada automaticamente.",
+        });
         await navigate({ to: "/pagamento/sucesso/$id", params: { id } });
       } else {
         throw new Error("Pagamento recusado. Revise os dados ou tente outro cartão.");
@@ -265,16 +275,25 @@ function PaymentPage() {
     return (
       <div className="mx-auto max-w-3xl px-4 py-24 text-center">
         <h1 className="font-display text-4xl">Entre para pagar</h1>
-        <Button asChild variant="gold" size="xl" className="mt-8"><Link to="/minha-conta">Entrar</Link></Button>
+        <Button asChild variant="gold" size="xl" className="mt-8">
+          <Link to="/minha-conta">Entrar</Link>
+        </Button>
       </div>
     );
   }
-  if (loading) return <div className="mx-auto max-w-3xl px-4 py-24 text-center text-muted-foreground">Carregando pedido...</div>;
+  if (loading)
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-24 text-center text-muted-foreground">
+        Carregando pedido...
+      </div>
+    );
   if (!order) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-24 text-center">
         <h1 className="font-display text-4xl">Pedido não encontrado</h1>
-        <Button asChild variant="gold" size="xl" className="mt-8"><Link to="/perfumes">Continuar comprando</Link></Button>
+        <Button asChild variant="gold" size="xl" className="mt-8">
+          <Link to="/perfumes">Continuar comprando</Link>
+        </Button>
       </div>
     );
   }
@@ -295,10 +314,23 @@ function PaymentPage() {
             <h2 className="eyebrow text-muted-foreground">Dados do pagador</h2>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <PaymentField label="Nome completo" value={payerName} onChange={setPayerName} />
-              <PaymentField label="E-mail" type="email" value={payerEmail} onChange={setPayerEmail} />
+              <PaymentField
+                label="E-mail"
+                type="email"
+                value={payerEmail}
+                onChange={setPayerEmail}
+              />
               <div className="sm:col-span-2">
-                <PaymentField label="CPF / CNPJ" inputMode="numeric" placeholder="000.000.000-00" value={payerDoc} onChange={(value) => setPayerDoc(maskDoc(value))} />
-                {payerDoc.length > 0 && !isValidCpfCnpj(payerDoc) && <p className="mt-1 text-xs text-destructive">CPF/CNPJ inválido</p>}
+                <PaymentField
+                  label="CPF / CNPJ"
+                  inputMode="numeric"
+                  placeholder="000.000.000-00"
+                  value={payerDoc}
+                  onChange={(value) => setPayerDoc(maskDoc(value))}
+                />
+                {payerDoc.length > 0 && !isValidCpfCnpj(payerDoc) && (
+                  <p className="mt-1 text-xs text-destructive">CPF/CNPJ inválido</p>
+                )}
               </div>
             </div>
           </section>
@@ -306,31 +338,91 @@ function PaymentPage() {
           <section className="border border-border p-6">
             <h2 className="eyebrow text-muted-foreground">Forma de pagamento</h2>
             {pix ? (
-              <PixResult pix={pix} onCopy={() => void navigator.clipboard.writeText(pix.qr_code ?? "").then(() => toast.success("Código Pix copiado"))} />
+              <PixResult
+                pix={pix}
+                onCopy={() =>
+                  void navigator.clipboard
+                    .writeText(pix.qr_code ?? "")
+                    .then(() => toast.success("Código Pix copiado"))
+                }
+              />
             ) : (
-              <Tabs value={method} onValueChange={(value) => setMethod(value as "pix" | "card")} className="mt-5">
+              <Tabs
+                value={method}
+                onValueChange={(value) => setMethod(value as "pix" | "card")}
+                className="mt-5"
+              >
                 <TabsList className="grid h-11 w-full grid-cols-2 rounded-none">
-                  <TabsTrigger value="pix" className="gap-2 rounded-none"><QrCode className="size-4" /> Pix</TabsTrigger>
-                  <TabsTrigger value="card" className="gap-2 rounded-none"><CreditCard className="size-4" /> Cartão</TabsTrigger>
+                  <TabsTrigger value="pix" className="gap-2 rounded-none">
+                    <QrCode className="size-4" /> Pix
+                  </TabsTrigger>
+                  <TabsTrigger value="card" className="gap-2 rounded-none">
+                    <CreditCard className="size-4" /> Cartão
+                  </TabsTrigger>
                 </TabsList>
                 <TabsContent value="pix" className="pt-5">
-                  <p className="text-sm text-muted-foreground">O QR Code e o código Pix serão gerados aqui, sem sair da loja. A confirmação ocorre automaticamente.</p>
+                  <p className="text-sm text-muted-foreground">
+                    O QR Code e o código Pix serão gerados aqui, sem sair da loja. A confirmação
+                    ocorre automaticamente.
+                  </p>
                 </TabsContent>
                 <TabsContent value="card" className="pt-5">
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="sm:col-span-2"><PaymentField label="Número do cartão" inputMode="numeric" autoComplete="cc-number" placeholder="0000 0000 0000 0000" value={cardNumber} onChange={(value) => setCardNumber(maskCard(value))} /></div>
-                    <PaymentField label="Nome impresso no cartão" autoComplete="cc-name" value={cardHolder} onChange={setCardHolder} />
+                    <div className="sm:col-span-2">
+                      <PaymentField
+                        label="Número do cartão"
+                        inputMode="numeric"
+                        autoComplete="cc-number"
+                        placeholder="0000 0000 0000 0000"
+                        value={cardNumber}
+                        onChange={(value) => setCardNumber(maskCard(value))}
+                      />
+                    </div>
+                    <PaymentField
+                      label="Nome impresso no cartão"
+                      autoComplete="cc-name"
+                      value={cardHolder}
+                      onChange={setCardHolder}
+                    />
                     <div />
-                    <PaymentField label="Validade" inputMode="numeric" autoComplete="cc-exp" placeholder="MM/AA" value={cardExpiry} onChange={(value) => setCardExpiry(maskExpiry(value))} />
-                    <PaymentField label="Código de segurança" type="password" inputMode="numeric" autoComplete="cc-csc" placeholder="CVV" maxLength={4} value={cardCvv} onChange={(value) => setCardCvv(value.replace(/\D/g, ""))} />
+                    <PaymentField
+                      label="Validade"
+                      inputMode="numeric"
+                      autoComplete="cc-exp"
+                      placeholder="MM/AA"
+                      value={cardExpiry}
+                      onChange={(value) => setCardExpiry(maskExpiry(value))}
+                    />
+                    <PaymentField
+                      label="Código de segurança"
+                      type="password"
+                      inputMode="numeric"
+                      autoComplete="cc-csc"
+                      placeholder="CVV"
+                      maxLength={4}
+                      value={cardCvv}
+                      onChange={(value) => setCardCvv(value.replace(/\D/g, ""))}
+                    />
                     <div className="sm:col-span-2">
                       <Label htmlFor="installments">Parcelas</Label>
-                      <select id="installments" className="mt-1 h-9 w-full border border-input bg-background px-3 text-sm" value={installmentCount} onChange={(event) => setInstallmentCount(Number(event.target.value))}>
-                        {Array.from({ length: 12 }, (_, index) => index + 1).map((count) => <option key={count} value={count}>{count}x de {brl(total / count)}</option>)}
+                      <select
+                        id="installments"
+                        className="mt-1 h-9 w-full border border-input bg-background px-3 text-sm"
+                        value={installmentCount}
+                        onChange={(event) => setInstallmentCount(Number(event.target.value))}
+                      >
+                        {Array.from({ length: 12 }, (_, index) => index + 1).map((count) => (
+                          <option key={count} value={count}>
+                            {count}x de {brl(total / count)}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
-                  <p className="mt-4 text-xs text-muted-foreground">Os dados do cartão são tokenizados pelo Mercado Pago e não ficam armazenados na loja.</p>
+                  <p className="mt-4 text-xs text-muted-foreground">
+                    Os dados do cartão são tokenizados pelo Mercado Pago e não ficam armazenados na
+                    loja.
+                  </p>
                 </TabsContent>
               </Tabs>
             )}
@@ -339,7 +431,9 @@ function PaymentPage() {
           <ul className="space-y-3 text-sm">
             {items.map((item) => (
               <li key={item.id} className="flex justify-between gap-3 border-b border-border pb-3">
-                <span className="min-w-0 truncate text-muted-foreground">{item.quantity}× {item.product_name}</span>
+                <span className="min-w-0 truncate text-muted-foreground">
+                  {item.quantity}× {item.product_name}
+                </span>
                 <span>{brl(item.unit_price * item.quantity)}</span>
               </li>
             ))}
@@ -349,28 +443,57 @@ function PaymentPage() {
         <aside className="h-fit border border-border p-6 lg:sticky lg:top-28">
           <h2 className="eyebrow text-muted-foreground">Resumo</h2>
           <dl className="mt-5 space-y-2 text-sm">
-            <div className="flex justify-between"><dt className="text-muted-foreground">Produtos</dt><dd>{brl(subtotal)}</dd></div>
-            <div className="flex justify-between"><dt className="text-muted-foreground">Frete</dt><dd>{shippingPrice === 0 ? "Grátis" : brl(shippingPrice)}</dd></div>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Produtos</dt>
+              <dd>{brl(subtotal)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Frete</dt>
+              <dd>{shippingPrice === 0 ? "Grátis" : brl(shippingPrice)}</dd>
+            </div>
           </dl>
-          <div className="mt-5 flex items-baseline justify-between border-t border-border pt-5"><span className="text-sm">Total</span><span className="font-display text-3xl">{brl(total)}</span></div>
+          <div className="mt-5 flex items-baseline justify-between border-t border-border pt-5">
+            <span className="text-sm">Total</span>
+            <span className="font-display text-3xl">{brl(total)}</span>
+          </div>
           {!pix && (
-            <Button variant="gold" size="xl" className="mt-6 w-full" onClick={() => void onPay()} disabled={submitting || !payerIsValid || (method === "card" && !cardIsValid)}>
+            <Button
+              variant="gold"
+              size="xl"
+              className="mt-6 w-full"
+              onClick={() => void onPay()}
+              disabled={submitting || !payerIsValid || (method === "card" && !cardIsValid)}
+            >
               {submitting ? "Processando..." : method === "pix" ? "Gerar Pix" : "Pagar com cartão"}
             </Button>
           )}
-          <p className="mt-3 text-center text-xs text-muted-foreground">Pagamento processado com segurança pelo Mercado Pago.</p>
+          <p className="mt-3 text-center text-xs text-muted-foreground">
+            Pagamento processado com segurança pelo Mercado Pago.
+          </p>
         </aside>
       </div>
     </div>
   );
 }
 
-function PaymentField({ label, onChange, ...props }: Omit<React.ComponentProps<typeof Input>, "onChange"> & { label: string; onChange: (value: string) => void }) {
+function PaymentField({
+  label,
+  onChange,
+  ...props
+}: Omit<React.ComponentProps<typeof Input>, "onChange"> & {
+  label: string;
+  onChange: (value: string) => void;
+}) {
   const inputId = `payment-${label.toLowerCase().replace(/\s+/g, "-")}`;
   return (
     <div>
       <Label htmlFor={inputId}>{label}</Label>
-      <Input id={inputId} className="mt-1 rounded-none" onChange={(event) => onChange(event.target.value)} {...props} />
+      <Input
+        id={inputId}
+        className="mt-1 rounded-none"
+        onChange={(event) => onChange(event.target.value)}
+        {...props}
+      />
     </div>
   );
 }
@@ -380,10 +503,37 @@ function PixResult({ pix, onCopy }: { pix: PixData; onCopy: () => void }) {
     <div className="mt-5 text-center">
       <CheckCircle2 className="mx-auto size-8 text-emerald" />
       <h3 className="font-display mt-3 text-2xl">Pix gerado</h3>
-      <p className="mt-2 text-sm text-muted-foreground">Escaneie o QR Code ou copie o código. Esta página confirmará o pagamento automaticamente.</p>
-      {pix.qr_code_base64 && <img src={`data:image/png;base64,${pix.qr_code_base64}`} alt="QR Code Pix do pedido" className="mx-auto mt-5 size-56 border border-border bg-background p-3" />}
-      {pix.qr_code && <div className="mt-5 flex gap-2"><Input readOnly value={pix.qr_code} className="rounded-none font-mono text-xs" /><Button type="button" variant="outline" size="icon" onClick={onCopy} aria-label="Copiar código Pix"><Copy className="size-4" /></Button></div>}
-      {pix.ticket_url && !pix.qr_code_base64 && <Button asChild variant="outline" className="mt-5"><a href={pix.ticket_url} target="_blank" rel="noreferrer">Abrir Pix</a></Button>}
+      <p className="mt-2 text-sm text-muted-foreground">
+        Escaneie o QR Code ou copie o código. Esta página confirmará o pagamento automaticamente.
+      </p>
+      {pix.qr_code_base64 && (
+        <img
+          src={`data:image/png;base64,${pix.qr_code_base64}`}
+          alt="QR Code Pix do pedido"
+          className="mx-auto mt-5 size-56 border border-border bg-background p-3"
+        />
+      )}
+      {pix.qr_code && (
+        <div className="mt-5 flex gap-2">
+          <Input readOnly value={pix.qr_code} className="rounded-none font-mono text-xs" />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={onCopy}
+            aria-label="Copiar código Pix"
+          >
+            <Copy className="size-4" />
+          </Button>
+        </div>
+      )}
+      {pix.ticket_url && !pix.qr_code_base64 && (
+        <Button asChild variant="outline" className="mt-5">
+          <a href={pix.ticket_url} target="_blank" rel="noreferrer">
+            Abrir Pix
+          </a>
+        </Button>
+      )}
     </div>
   );
 }
