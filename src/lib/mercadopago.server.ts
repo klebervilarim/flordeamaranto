@@ -35,30 +35,36 @@ function splitName(name: string) {
   };
 }
 
-export async function createCardToken(card: {
-  number: string;
-  exp: string;
-  cvv: string;
-  holder: string;
-}, document: string) {
+export async function createCardToken(
+  card: {
+    number: string;
+    exp: string;
+    cvv: string;
+    holder: string;
+  },
+  document: string,
+) {
   const digits = card.exp.replace(/\D/g, "");
   const month = Number(digits.slice(0, 2));
   const yearRaw = digits.slice(2);
   const year = yearRaw.length === 2 ? 2000 + Number(yearRaw) : Number(yearRaw);
-  const res = await fetch(`${MP_API}/v1/card_tokens?public_key=${encodeURIComponent(ensurePublicKey())}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      card_number: card.number.replace(/\D/g, ""),
-      security_code: card.cvv.replace(/\D/g, ""),
-      expiration_month: month,
-      expiration_year: year,
-      cardholder: {
-        name: card.holder,
-        identification: { type: docType(document), number: document.replace(/\D/g, "") },
-      },
-    }),
-  });
+  const res = await fetch(
+    `${MP_API}/v1/card_tokens?public_key=${encodeURIComponent(ensurePublicKey())}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        card_number: card.number.replace(/\D/g, ""),
+        security_code: card.cvv.replace(/\D/g, ""),
+        expiration_month: month,
+        expiration_year: year,
+        cardholder: {
+          name: card.holder,
+          identification: { type: docType(document), number: document.replace(/\D/g, "") },
+        },
+      }),
+    },
+  );
   const json = (await res.json()) as { id?: string; message?: string };
   if (!res.ok || !json.id) {
     throw new Error("Não foi possível validar os dados do cartão.");
@@ -81,9 +87,7 @@ export async function createCheckoutPreference(input: {
   payerName: string;
   payerDocument: string;
   payerPhone?: string | undefined;
-  payerAddress?:
-    | { zip_code: string; street_name: string; street_number: string }
-    | undefined;
+  payerAddress?: { zip_code: string; street_name: string; street_number: string } | undefined;
   notificationUrl: string;
   successUrl: string;
   failureUrl: string;
@@ -188,6 +192,8 @@ export async function createMercadoPagoPayment(input: {
   payer: { email: string; name: string; document: string };
   method: "pix" | "card";
   cardToken?: string | undefined;
+  paymentMethodId?: string | undefined;
+  issuerId?: string | undefined;
   installments?: number | undefined;
   metadata?: Record<string, unknown> | undefined;
 }): Promise<PaymentResult> {
@@ -212,6 +218,8 @@ export async function createMercadoPagoPayment(input: {
     body["payment_method_id"] = "pix";
   } else {
     body["token"] = input.cardToken;
+    body["payment_method_id"] = input.paymentMethodId;
+    if (input.issuerId) body["issuer_id"] = input.issuerId;
     body["installments"] = input.installments ?? 1;
   }
 
