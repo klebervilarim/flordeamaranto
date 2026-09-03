@@ -244,11 +244,19 @@ function PaymentPage() {
             <span className="text-sm">Total</span>
             <span className="font-display text-3xl">{brl(total)}</span>
           </div>
-          <Button variant="gold" size="xl" className="mt-6 w-full" onClick={() => void onPay()} disabled={submitting}>
+          <Button
+            variant="gold"
+            size="xl"
+            className="mt-6 w-full"
+            onClick={() => void onPay()}
+            disabled={submitting || !canPay}
+          >
             {submitting ? "Redirecionando..." : "Pagar com Mercado Pago"}
           </Button>
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            Ambiente seguro Mercado Pago — Pix, cartão e mais.
+            {canPay
+              ? "Ambiente seguro Mercado Pago — Pix, cartão e mais."
+              : "Preencha nome, e-mail e CPF/CNPJ para continuar."}
           </p>
         </aside>
       </div>
