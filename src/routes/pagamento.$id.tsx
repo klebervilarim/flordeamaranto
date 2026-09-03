@@ -68,6 +68,9 @@ function PaymentPage() {
   const [items, setItems] = useState<ItemRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [payerName, setPayerName] = useState("");
+  const [payerEmail, setPayerEmail] = useState("");
+  const [payerDoc, setPayerDoc] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -75,7 +78,7 @@ function PaymentPage() {
       const [{ data: orderData }, { data: itemData }] = await Promise.all([
         supabase
           .from("orders")
-          .select("id, order_number, subtotal, shipping, total, payment_status")
+          .select("id, order_number, subtotal, shipping, total, payment_status, shipping_address")
           .eq("id", id)
           .maybeSingle(),
         supabase
