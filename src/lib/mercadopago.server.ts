@@ -105,7 +105,24 @@ export async function createCheckoutPreference(input: {
     },
     body: JSON.stringify({
       items,
-      payer: { email: input.payerEmail, name: first_name, surname: last_name },
+      payer: {
+        email: input.payerEmail,
+        name: first_name,
+        surname: last_name,
+        identification: {
+          type: docType(input.payerDocument),
+          number: input.payerDocument.replace(/\D/g, ""),
+        },
+        ...(input.payerPhone
+          ? {
+              phone: {
+                area_code: input.payerPhone.replace(/\D/g, "").slice(0, 2),
+                number: input.payerPhone.replace(/\D/g, "").slice(2),
+              },
+            }
+          : {}),
+        ...(input.payerAddress ? { address: input.payerAddress } : {}),
+      },
       external_reference: input.orderId,
       statement_descriptor: "FLOR DE AMARANTO",
       notification_url: input.notificationUrl,
