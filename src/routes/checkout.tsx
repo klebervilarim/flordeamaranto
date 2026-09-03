@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { ShippingOptions, useShippingQuote } from "@/components/cart/ShippingCalculator";
@@ -27,10 +27,13 @@ export const Route = createFileRoute("/checkout")({
   component: CheckoutPage,
 });
 
-const schema = z.object({
+const personalSchema = z.object({
   name: z.string().trim().min(3, "Informe seu nome completo").max(120),
   email: z.string().trim().email("E-mail inválido").max(255),
   phone: z.string().trim().min(10, "Telefone inválido").max(20),
+});
+
+const addressSchema = z.object({
   zip: z.string().trim().min(8, "CEP inválido").max(9),
   street: z.string().trim().min(3, "Endereço inválido").max(160),
   number: z.string().trim().min(1, "Informe o número").max(10),
@@ -40,6 +43,38 @@ const schema = z.object({
   state: z.string().trim().min(2, "UF inválida").max(2),
 });
 
+const schema = personalSchema.merge(addressSchema);
+
+type FormState = {
+  name: string;
+  email: string;
+  phone: string;
+  street: string;
+  number: string;
+  complement: string;
+  district: string;
+  city: string;
+  state: string;
+};
+
+function validateStep<Shape extends z.ZodRawShape>(
+  partialSchema: z.ZodObject<Shape>,
+  data: Record<string, unknown>,
+  setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>,
+) {
+  const parsed = partialSchema.safeParse(data);
+  const fields = Object.keys(partialSchema.shape);
+  setErrors((prev) => {
+    const next = { ...prev };
+    for (const f of fields) delete next[f];
+    if (!parsed.success) {
+      for (const issue of parsed.error.issues) next[String(issue.path[0])] = issue.message;
+    }
+    return next;
+  });
+  return parsed.success;
+}
+
 function CheckoutPage() {
   const { lines, subtotal, clear, shipping, setShipping } = useCart();
   const { user } = useAuth();
@@ -47,12 +82,37 @@ function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [cep, setCep] = useState(shipping?.cep ? maskCep(shipping.cep) : "");
-  const formRef = useRef<HTMLFormElement>(null);
   const { quote, loading: quoting, result: quoteResult, error: quoteError } = useShippingQuote();
+
+  const [form, setForm] = useState<FormState>({
+    name: "",
+    email: user?.email ?? "",
+    phone: "",
+    street: "",
+    number: "",
+    complement: "",
+    district: "",
+    city: "",
+    state: "",
+  });
+  const updateField = (name: keyof FormState, value: string) =>
+    setForm((prev) => ({ ...prev, [name]: value }));
+
+  const [step1Done, setStep1Done] = useState(false);
+  const [step2Done, setStep2Done] = useState(false);
 
   const shippingPrice = shipping?.price ?? 0;
   const discount = 0;
   const total = subtotal + shippingPrice;
+
+  const isStep1Filled =
+    form.name.trim() !== "" && form.email.trim() !== "" && form.phone.trim() !== "";
+  const isStep2Filled =
+    cepDigits(cep).length === 8 &&
+    form.street.trim() !== "" &&
+    form.number.trim() !== "" &&
+    form.city.trim() !== "" &&
+    form.state.trim() !== "";
 
   const onCepChange = (value: string) => {
     const masked = maskCep(value);
@@ -61,23 +121,23 @@ function CheckoutPage() {
     if (digits.length === 8) {
       void quote(digits).then((res) => {
         if (!res) return;
-        const form = formRef.current;
-        if (form) {
-          const set = (name: string, v: string) => {
-            const el = form.elements.namedItem(name);
-            if (el instanceof HTMLInputElement && v) el.value = v;
-          };
-          set("street", res.address.street);
-          set("district", res.address.district);
-          set("city", res.address.city);
-          set("state", res.address.state);
-        }
-        if (res.options.length > 0) {
-          const cheapest = res.options.reduce((a, b) => (a.price <= b.price ? a : b));
-          setShipping({ cep: digits, ...cheapest });
-        }
+        setForm((prev) => ({
+          ...prev,
+          street: res.address.street || prev.street,
+          district: res.address.district || prev.district,
+          city: res.address.city || prev.city,
+          state: res.address.state || prev.state,
+        }));
       });
     }
+  };
+
+  const onSaveStep1 = () => {
+    if (validateStep(personalSchema, form, setErrors)) setStep1Done(true);
+  };
+
+  const onSaveStep2 = () => {
+    if (validateStep(addressSchema, { ...form, zip: cep }, setErrors)) setStep2Done(true);
   };
 
   if (!user) {
@@ -107,8 +167,7 @@ function CheckoutPage() {
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    const parsed = schema.safeParse(Object.fromEntries(form) as Record<string, string>);
+    const parsed = schema.safeParse({ ...form, zip: cep });
     if (!parsed.success) {
       const next: Record<string, string> = {};
       for (const issue of parsed.error.issues) next[String(issue.path[0])] = issue.message;
@@ -116,8 +175,8 @@ function CheckoutPage() {
       return;
     }
     if (!shipping) {
-      toast.error("Calcule o frete", {
-        description: "Informe o CEP e escolha uma opção de entrega.",
+      toast.error("Escolha a forma de envio", {
+        description: "Selecione uma opção de entrega para continuar.",
       });
       return;
     }
@@ -183,61 +242,170 @@ function CheckoutPage() {
       <div className="rule-gold" />
       <h1 className="font-display mt-4 text-4xl">Checkout</h1>
 
-      <form ref={formRef} onSubmit={onSubmit} className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="space-y-10">
-          <fieldset>
-            <legend className="eyebrow text-muted-foreground">Seus dados</legend>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <Field name="name" label="Nome completo" error={errors['name']} />
-              <Field name="email" label="E-mail" type="email" defaultValue={user?.email ?? ""} error={errors['email']} />
-              <Field name="phone" label="Telefone / WhatsApp" error={errors['phone']} />
-            </div>
-          </fieldset>
+      <form onSubmit={onSubmit} className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="space-y-6">
+          {/* Etapa 1 — Dados pessoais */}
+          <StepSection number={1} title="Dados pessoais" status={step1Done ? "done" : "active"}>
+            {step1Done ? (
+              <StepSummary onEdit={() => setStep1Done(false)}>
+                {form.name} · {form.email} · {form.phone}
+              </StepSummary>
+            ) : (
+              <>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field
+                    name="name"
+                    label="Nome completo"
+                    value={form.name}
+                    onChange={(v) => updateField("name", v)}
+                    error={errors["name"]}
+                  />
+                  <Field
+                    name="email"
+                    label="E-mail"
+                    type="email"
+                    value={form.email}
+                    onChange={(v) => updateField("email", v)}
+                    error={errors["email"]}
+                  />
+                  <Field
+                    name="phone"
+                    label="Telefone / WhatsApp"
+                    value={form.phone}
+                    onChange={(v) => updateField("phone", v)}
+                    error={errors["phone"]}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="gold"
+                  className="mt-5"
+                  disabled={!isStep1Filled}
+                  onClick={onSaveStep1}
+                >
+                  Salvar e continuar
+                </Button>
+              </>
+            )}
+          </StepSection>
 
-          <fieldset>
-            <legend className="eyebrow text-muted-foreground">Entrega</legend>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <Field
-                name="zip"
-                label="CEP"
-                error={errors['zip']}
-                value={cep}
-                onChange={onCepChange}
-                placeholder="00000-000"
-                inputMode="numeric"
+          {/* Etapa 2 — Endereço de entrega */}
+          <StepSection
+            number={2}
+            title="Endereço de entrega"
+            status={!step1Done ? "locked" : step2Done ? "done" : "active"}
+          >
+            {!step1Done ? (
+              <LockedNotice />
+            ) : step2Done ? (
+              <StepSummary onEdit={() => setStep2Done(false)}>
+                {form.street}, {form.number}
+                {form.complement ? ` - ${form.complement}` : ""} —{" "}
+                {form.district ? `${form.district}, ` : ""}
+                {form.city}/{form.state} — CEP {cep}
+              </StepSummary>
+            ) : (
+              <>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field
+                    name="zip"
+                    label="CEP"
+                    error={errors["zip"]}
+                    value={cep}
+                    onChange={onCepChange}
+                    placeholder="00000-000"
+                    inputMode="numeric"
+                  />
+                  <Field
+                    name="street"
+                    label="Rua"
+                    value={form.street}
+                    onChange={(v) => updateField("street", v)}
+                    error={errors["street"]}
+                  />
+                  <Field
+                    name="number"
+                    label="Número"
+                    value={form.number}
+                    onChange={(v) => updateField("number", v)}
+                    error={errors["number"]}
+                  />
+                  <Field
+                    name="complement"
+                    label="Complemento (opcional)"
+                    placeholder="Apto, bloco, casa..."
+                    value={form.complement}
+                    onChange={(v) => updateField("complement", v)}
+                  />
+                  <Field
+                    name="district"
+                    label="Bairro"
+                    value={form.district}
+                    onChange={(v) => updateField("district", v)}
+                  />
+                  <Field
+                    name="city"
+                    label="Cidade"
+                    value={form.city}
+                    onChange={(v) => updateField("city", v)}
+                    error={errors["city"]}
+                  />
+                  <Field
+                    name="state"
+                    label="UF"
+                    value={form.state}
+                    onChange={(v) => updateField("state", v)}
+                    error={errors["state"]}
+                  />
+                </div>
+                {quoting && (
+                  <p className="mt-3 text-xs text-muted-foreground">Calculando frete...</p>
+                )}
+                {quoteError && <p className="mt-3 text-xs text-destructive">{quoteError}</p>}
+                <Button
+                  type="button"
+                  variant="gold"
+                  className="mt-5"
+                  disabled={!isStep2Filled}
+                  onClick={onSaveStep2}
+                >
+                  Salvar e continuar
+                </Button>
+              </>
+            )}
+          </StepSection>
+
+          {/* Etapa 3 — Forma de envio */}
+          <StepSection number={3} title="Forma de envio" status={!step2Done ? "locked" : "active"}>
+            {!step2Done ? (
+              <LockedNotice />
+            ) : quoteResult ? (
+              <ShippingOptions
+                options={quoteResult.options}
+                selectedId={shipping?.cep === quoteResult.cep ? shipping.id : undefined}
+                onSelect={(opt) => setShipping({ cep: quoteResult.cep, ...opt })}
               />
-              <Field name="street" label="Rua" error={errors['street']} />
-              <Field name="number" label="Número" error={errors['number']} />
-              <Field name="complement" label="Complemento (opcional)" placeholder="Apto, bloco, casa..." />
-              <Field name="district" label="Bairro" />
-              <Field name="city" label="Cidade" error={errors['city']} />
-              <Field name="state" label="UF" error={errors['state']} />
-            </div>
-            {quoting && (
-              <p className="mt-3 text-xs text-muted-foreground">Calculando frete...</p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Não foi possível calcular o frete para este CEP. Volte à etapa anterior e confira o
+                endereço.
+              </p>
             )}
-            {quoteError && <p className="mt-3 text-xs text-destructive">{quoteError}</p>}
-            {quoteResult && (
-              <div className="mt-4">
-                <p className="eyebrow mb-3 text-muted-foreground">Opções de entrega</p>
-                <ShippingOptions
-                  options={quoteResult.options}
-                  selectedId={shipping?.cep === quoteResult.cep ? shipping.id : undefined}
-                  onSelect={(opt) => setShipping({ cep: quoteResult.cep, ...opt })}
-                />
-              </div>
-            )}
-          </fieldset>
+          </StepSection>
 
-          <div className="border border-border p-5 text-sm text-muted-foreground">
-            <p className="eyebrow text-muted-foreground">Pagamento</p>
-            <p className="mt-3">
-              Na próxima etapa você conclui o pagamento no ambiente seguro do{" "}
-              <strong className="text-foreground">Mercado Pago</strong> — com{" "}
-              <strong className="text-foreground">Pix</strong> ou{" "}
-              <strong className="text-foreground">cartão de crédito</strong> em até 12x.
-            </p>
-          </div>
+          {/* Etapa 4 — Pagamento */}
+          <StepSection number={4} title="Pagamento" status={!shipping ? "locked" : "active"}>
+            {!shipping ? (
+              <LockedNotice />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Na próxima etapa você conclui o pagamento no ambiente seguro do{" "}
+                <strong className="text-foreground">Mercado Pago</strong> — com{" "}
+                <strong className="text-foreground">Pix</strong> ou{" "}
+                <strong className="text-foreground">cartão de crédito</strong> em até 12x.
+              </p>
+            )}
+          </StepSection>
         </div>
 
         <aside className="h-fit border border-border p-6 lg:sticky lg:top-28">
@@ -290,11 +458,11 @@ function CheckoutPage() {
               ? "Processando..."
               : shipping
                 ? "Ir para o pagamento"
-                : "Calcule o frete para continuar"}
+                : "Complete as etapas acima para continuar"}
           </Button>
           {!shipping && (
             <p className="mt-2 text-center text-xs text-muted-foreground">
-              Informe o CEP e selecione uma opção de entrega para finalizar.
+              Preencha seus dados, endereço e escolha a forma de envio para finalizar.
             </p>
           )}
         </aside>
@@ -303,11 +471,62 @@ function CheckoutPage() {
   );
 }
 
+function StepSection({
+  number,
+  title,
+  status,
+  children,
+}: {
+  number: number;
+  title: string;
+  status: "locked" | "active" | "done";
+  children: React.ReactNode;
+}) {
+  return (
+    <fieldset className={status === "locked" ? "opacity-60" : undefined}>
+      <legend className="flex w-full items-center gap-3">
+        <span
+          className={
+            "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-medium " +
+            (status === "done" ? "bg-gold/40 text-gold-foreground" : "bg-gold text-gold-foreground")
+          }
+        >
+          {status === "done" ? "✓" : number}
+        </span>
+        <span className="eyebrow text-muted-foreground">{title}</span>
+      </legend>
+      <div className="mt-5 border-t border-border pt-5">{children}</div>
+    </fieldset>
+  );
+}
+
+function LockedNotice() {
+  return (
+    <p className="border border-border bg-muted/30 p-4 text-center text-sm text-muted-foreground">
+      Finalize a etapa anterior para continuar.
+    </p>
+  );
+}
+
+function StepSummary({ children, onEdit }: { children: React.ReactNode; onEdit: () => void }) {
+  return (
+    <div className="flex items-start justify-between gap-4 text-sm">
+      <p className="text-muted-foreground">{children}</p>
+      <button
+        type="button"
+        onClick={onEdit}
+        className="shrink-0 text-xs font-medium underline underline-offset-2"
+      >
+        Alterar
+      </button>
+    </div>
+  );
+}
+
 function Field({
   name,
   label,
   type = "text",
-  defaultValue,
   value,
   onChange,
   placeholder,
@@ -317,9 +536,8 @@ function Field({
   name: string;
   label: string;
   type?: string | undefined;
-  defaultValue?: string | undefined;
-  value?: string | undefined;
-  onChange?: ((value: string) => void) | undefined;
+  value: string;
+  onChange: (value: string) => void;
   placeholder?: string | undefined;
   inputMode?: "numeric" | "text" | undefined;
   error?: string | undefined;
@@ -329,28 +547,16 @@ function Field({
       <Label htmlFor={name} className="text-xs tracking-[0.12em] uppercase">
         {label}
       </Label>
-      {value !== undefined ? (
-        <Input
-          id={name}
-          name={name}
-          type={type}
-          value={value}
-          onChange={(e) => onChange?.(e.target.value)}
-          placeholder={placeholder}
-          inputMode={inputMode}
-          className="mt-2"
-        />
-      ) : (
-        <Input
-          id={name}
-          name={name}
-          type={type}
-          defaultValue={defaultValue}
-          placeholder={placeholder}
-          inputMode={inputMode}
-          className="mt-2"
-        />
-      )}
+      <Input
+        id={name}
+        name={name}
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        inputMode={inputMode}
+        className="mt-2"
+      />
       {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
     </div>
   );
