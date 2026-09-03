@@ -4,7 +4,22 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const startCheckoutPro = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ orderId: z.string().uuid() }).parse(data))
+  .inputValidator((data) =>
+    z
+      .object({
+        orderId: z.string().uuid(),
+        name: z.string().trim().min(3).max(120),
+        email: z.string().trim().email().max(255),
+        document: z
+          .string()
+          .trim()
+          .refine((v) => {
+            const d = v.replace(/\D/g, "");
+            return d.length === 11 || d.length === 14;
+          }, "CPF/CNPJ inválido"),
+      })
+      .parse(data),
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: order, error } = await supabase
