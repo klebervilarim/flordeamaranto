@@ -68,6 +68,11 @@ export async function createCheckoutPreference(input: {
   shippingPrice: number;
   payerEmail: string;
   payerName: string;
+  payerDocument: string;
+  payerPhone?: string | undefined;
+  payerAddress?:
+    | { zip_code: string; street_name: string; street_number: string }
+    | undefined;
   notificationUrl: string;
   successUrl: string;
   failureUrl: string;
