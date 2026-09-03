@@ -188,6 +188,8 @@ export async function createMercadoPagoPayment(input: {
   payer: { email: string; name: string; document: string };
   method: "pix" | "card";
   cardToken?: string | undefined;
+  paymentMethodId?: string | undefined;
+  issuerId?: string | undefined;
   installments?: number | undefined;
   metadata?: Record<string, unknown> | undefined;
 }): Promise<PaymentResult> {
@@ -212,6 +214,8 @@ export async function createMercadoPagoPayment(input: {
     body["payment_method_id"] = "pix";
   } else {
     body["token"] = input.cardToken;
+    body["payment_method_id"] = input.paymentMethodId;
+    if (input.issuerId) body["issuer_id"] = input.issuerId;
     body["installments"] = input.installments ?? 1;
   }
 
