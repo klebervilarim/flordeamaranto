@@ -87,7 +87,11 @@ function PaymentPage() {
           .eq("order_id", id),
       ]);
       if (!active) return;
-      setOrder((orderData as OrderRow | null) ?? null);
+      const row = (orderData as OrderRow | null) ?? null;
+      setOrder(row);
+      const addr = row?.shipping_address ?? {};
+      setPayerName(addr["name"] ?? "");
+      setPayerEmail(addr["email"] ?? user?.email ?? "");
       setItems((itemData as ItemRow[] | null) ?? []);
       setLoading(false);
     })();
