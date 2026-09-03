@@ -30,7 +30,28 @@ type OrderRow = {
   shipping: number;
   total: number;
   payment_status: string;
+  shipping_address: Record<string, string> | null;
 };
+
+function maskDoc(value: string) {
+  const d = value.replace(/\D/g, "").slice(0, 14);
+  if (d.length <= 11) {
+    return d
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+  }
+  return d
+    .replace(/(\d{2})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1/$2")
+    .replace(/(\d{4})(\d{1,2})$/, "$1-$2");
+}
+
+function validDoc(value: string) {
+  const d = value.replace(/\D/g, "");
+  return d.length === 11 || d.length === 14;
+}
 
 type ItemRow = {
   id: string;
