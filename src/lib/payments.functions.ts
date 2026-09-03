@@ -57,8 +57,18 @@ export const startCheckoutPro = createServerFn({ method: "POST" })
           price: Number(it.unit_price ?? 0),
         })),
         shippingPrice: Number(order.shipping ?? 0),
-        payerEmail: addr["email"] ?? "",
-        payerName: addr["name"] ?? "Cliente",
+        payerEmail: data.email,
+        payerName: data.name,
+        payerDocument: data.document,
+        payerPhone: addr["phone"] ?? undefined,
+        payerAddress:
+          addr["zip"] && addr["street"]
+            ? {
+                zip_code: String(addr["zip"]).replace(/\D/g, ""),
+                street_name: String(addr["street"]),
+                street_number: String(addr["number"] ?? "0"),
+              }
+            : undefined,
         notificationUrl: `${origin}/api/public/mercadopago-webhook`,
         successUrl: `${origin}/pagamento/sucesso/${order.id}`,
         failureUrl: `${origin}/pagamento/${order.id}`,
