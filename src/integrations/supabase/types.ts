@@ -549,9 +549,6 @@ export type Database = {
           payment_method: string | null
           payment_provider: string | null
           payment_status: string
-          payment_email_sent_at: string | null
-          payment_whatsapp_sent_at: string | null
-          pix_email_sent_at: string | null
           pix_expires_at: string | null
           pix_qr_code: string | null
           pix_qr_code_base64: string | null
@@ -577,9 +574,6 @@ export type Database = {
           payment_method?: string | null
           payment_provider?: string | null
           payment_status?: string
-          payment_email_sent_at?: string | null
-          payment_whatsapp_sent_at?: string | null
-          pix_email_sent_at?: string | null
           pix_expires_at?: string | null
           pix_qr_code?: string | null
           pix_qr_code_base64?: string | null
@@ -605,9 +599,6 @@ export type Database = {
           payment_method?: string | null
           payment_provider?: string | null
           payment_status?: string
-          payment_email_sent_at?: string | null
-          payment_whatsapp_sent_at?: string | null
-          pix_email_sent_at?: string | null
           pix_expires_at?: string | null
           pix_qr_code?: string | null
           pix_qr_code_base64?: string | null
@@ -1125,42 +1116,6 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
-        }
-        Relationships: []
-      }
-      whatsapp_api_configs: {
-        Row: {
-          api_base_url: string
-          client_token: string | null
-          created_at: string
-          created_by: string | null
-          id: string
-          instance_name: string | null
-          instance_token: string
-          is_active: boolean
-          updated_at: string
-        }
-        Insert: {
-          api_base_url: string
-          client_token?: string | null
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          instance_name?: string | null
-          instance_token: string
-          is_active?: boolean
-          updated_at?: string
-        }
-        Update: {
-          api_base_url?: string
-          client_token?: string | null
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          instance_name?: string | null
-          instance_token?: string
-          is_active?: boolean
-          updated_at?: string
         }
         Relationships: []
       }
