@@ -1,3 +1,5 @@
+import { documentDigits } from "./brazil-document";
+
 const MP_API = "https://api.mercadopago.com";
 
 function ensureToken() {
@@ -13,7 +15,16 @@ function ensurePublicKey() {
 }
 
 export function docType(document: string) {
-  return document.replace(/\D/g, "").length > 11 ? "CNPJ" : "CPF";
+  return documentDigits(document).length > 11 ? "CNPJ" : "CPF";
+}
+
+function brazilPhoneParts(value: string) {
+  let digits = value.replace(/\D/g, "");
+  if ((digits.length === 12 || digits.length === 13) && digits.startsWith("55")) {
+    digits = digits.slice(2);
+  }
+  if (digits.length < 10) return null;
+  return { area_code: digits.slice(0, 2), number: digits.slice(2) };
 }
 
 function splitName(name: string) {
@@ -79,6 +90,7 @@ export async function createCheckoutPreference(input: {
   pendingUrl: string;
 }): Promise<PreferenceResult> {
   const { first_name, last_name } = splitName(input.payerName);
+  const phone = input.payerPhone ? brazilPhoneParts(input.payerPhone) : null;
   const items = [
     ...input.items.map((it) => ({
       title: it.name.slice(0, 250),
@@ -97,6 +109,15 @@ export async function createCheckoutPreference(input: {
         ]
       : []),
   ];
+  const preferenceTotal = Number(
+    items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0).toFixed(2),
+  );
+  if (items.length === 0 || items.some((item) => item.quantity < 1 || item.unit_price <= 0)) {
+    throw new Error("O pedido possui itens com valor inválido.");
+  }
+  if (preferenceTotal !== Number(input.amount.toFixed(2))) {
+    throw new Error("O total do pedido não corresponde aos itens e ao frete.");
+  }
   const res = await fetch(`${MP_API}/checkout/preferences`, {
     method: "POST",
     headers: {
@@ -113,14 +134,7 @@ export async function createCheckoutPreference(input: {
           type: docType(input.payerDocument),
           number: input.payerDocument.replace(/\D/g, ""),
         },
-        ...(input.payerPhone
-          ? {
-              phone: {
-                area_code: input.payerPhone.replace(/\D/g, "").slice(0, 2),
-                number: input.payerPhone.replace(/\D/g, "").slice(2),
-              },
-            }
-          : {}),
+        ...(phone ? { phone } : {}),
         ...(input.payerAddress ? { address: input.payerAddress } : {}),
       },
       external_reference: input.orderId,
@@ -135,9 +149,20 @@ export async function createCheckoutPreference(input: {
       metadata: { order_id: input.orderId },
     }),
   });
-  const json = (await res.json()) as { id?: string; init_point?: string; message?: string };
+  const json = (await res.json()) as {
+    id?: string;
+    init_point?: string;
+    message?: string;
+    error?: string;
+    cause?: Array<{ code?: string | number; description?: string }>;
+  };
   if (!res.ok || !json.id || !json.init_point) {
-    console.error("mercadopago preference error", res.status, json.message);
+    console.error("mercadopago preference error", {
+      status: res.status,
+      error: json.error,
+      message: json.message,
+      cause: json.cause,
+    });
     throw new Error("Não foi possível iniciar o pagamento.");
   }
   return { id: json.id, init_point: json.init_point };
