@@ -495,7 +495,7 @@ function CheckoutPage() {
               ? "Processando..."
               : checkoutComplete
                 ? "Ir para o pagamento"
-                : "Complete as etapas acima para continuar"}
+                : "Complete as etapas"}
           </Button>
           {!checkoutComplete && (
             <p className="mt-2 text-center text-xs text-muted-foreground">
