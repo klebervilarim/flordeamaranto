@@ -30,7 +30,28 @@ type OrderRow = {
   shipping: number;
   total: number;
   payment_status: string;
+  shipping_address: Record<string, string> | null;
 };
+
+function maskDoc(value: string) {
+  const d = value.replace(/\D/g, "").slice(0, 14);
+  if (d.length <= 11) {
+    return d
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+  }
+  return d
+    .replace(/(\d{2})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1/$2")
+    .replace(/(\d{4})(\d{1,2})$/, "$1-$2");
+}
+
+function validDoc(value: string) {
+  const d = value.replace(/\D/g, "");
+  return d.length === 11 || d.length === 14;
+}
 
 type ItemRow = {
   id: string;
@@ -47,6 +68,9 @@ function PaymentPage() {
   const [items, setItems] = useState<ItemRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [payerName, setPayerName] = useState("");
+  const [payerEmail, setPayerEmail] = useState("");
+  const [payerDoc, setPayerDoc] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -54,7 +78,7 @@ function PaymentPage() {
       const [{ data: orderData }, { data: itemData }] = await Promise.all([
         supabase
           .from("orders")
-          .select("id, order_number, subtotal, shipping, total, payment_status")
+          .select("id, order_number, subtotal, shipping, total, payment_status, shipping_address")
           .eq("id", id)
           .maybeSingle(),
         supabase
@@ -63,14 +87,18 @@ function PaymentPage() {
           .eq("order_id", id),
       ]);
       if (!active) return;
-      setOrder((orderData as OrderRow | null) ?? null);
+      const row = (orderData as OrderRow | null) ?? null;
+      setOrder(row);
+      const addr = row?.shipping_address ?? {};
+      setPayerName(addr["name"] ?? "");
+      setPayerEmail(addr["email"] ?? user?.email ?? "");
       setItems((itemData as ItemRow[] | null) ?? []);
       setLoading(false);
     })();
     return () => {
       active = false;
     };
-  }, [id]);
+  }, [id, user?.email]);
 
   // Redirect already-paid orders to the success page.
   useEffect(() => {
@@ -83,7 +111,14 @@ function PaymentPage() {
     if (!order) return;
     setSubmitting(true);
     try {
-      const res = await startCheckoutPro({ data: { orderId: order.id } });
+      const res = await startCheckoutPro({
+        data: {
+          orderId: order.id,
+          name: payerName.trim(),
+          email: payerEmail.trim(),
+          document: payerDoc,
+        },
+      });
       if (!res.ok) {
         toast.error("Não foi possível iniciar o pagamento", { description: res.error });
         return;
@@ -122,6 +157,8 @@ function PaymentPage() {
     );
   }
 
+  const canPay =
+    payerName.trim().length >= 3 && /\S+@\S+\.\S+/.test(payerEmail.trim()) && validDoc(payerDoc);
   const subtotal = Number(order.subtotal ?? 0);
   const shippingPrice = Number(order.shipping ?? 0);
   const total = subtotal + shippingPrice;
@@ -143,6 +180,42 @@ function PaymentPage() {
               <strong className="text-foreground">cartão de crédito</strong> em até 12x ou outras
               formas disponíveis. Após a confirmação, você volta automaticamente para a loja.
             </p>
+          </div>
+
+          <div className="border border-border p-6">
+            <h2 className="eyebrow text-muted-foreground">Dados do pagador</h2>
+            <p className="mt-2 text-xs text-muted-foreground">
+              O CPF/CNPJ é obrigatório para gerar o Pix e liberar o botão de pagamento no Mercado Pago.
+            </p>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <label className="block text-sm">
+                <span className="text-muted-foreground">Nome completo</span>
+                <input
+                  className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground"
+                  value={payerName}
+                  onChange={(e) => setPayerName(e.target.value)}
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="text-muted-foreground">E-mail</span>
+                <input
+                  type="email"
+                  className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground"
+                  value={payerEmail}
+                  onChange={(e) => setPayerEmail(e.target.value)}
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="text-muted-foreground">CPF / CNPJ</span>
+                <input
+                  inputMode="numeric"
+                  placeholder="000.000.000-00"
+                  className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground"
+                  value={payerDoc}
+                  onChange={(e) => setPayerDoc(maskDoc(e.target.value))}
+                />
+              </label>
+            </div>
           </div>
 
           <ul className="space-y-3 text-sm">
@@ -173,11 +246,19 @@ function PaymentPage() {
             <span className="text-sm">Total</span>
             <span className="font-display text-3xl">{brl(total)}</span>
           </div>
-          <Button variant="gold" size="xl" className="mt-6 w-full" onClick={() => void onPay()} disabled={submitting}>
+          <Button
+            variant="gold"
+            size="xl"
+            className="mt-6 w-full"
+            onClick={() => void onPay()}
+            disabled={submitting || !canPay}
+          >
             {submitting ? "Redirecionando..." : "Pagar com Mercado Pago"}
           </Button>
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            Ambiente seguro Mercado Pago — Pix, cartão e mais.
+            {canPay
+              ? "Ambiente seguro Mercado Pago — Pix, cartão e mais."
+              : "Preencha nome, e-mail e CPF/CNPJ para continuar."}
           </p>
         </aside>
       </div>

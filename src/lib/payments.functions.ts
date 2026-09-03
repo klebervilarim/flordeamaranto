@@ -4,7 +4,22 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const startCheckoutPro = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ orderId: z.string().uuid() }).parse(data))
+  .inputValidator((data) =>
+    z
+      .object({
+        orderId: z.string().uuid(),
+        name: z.string().trim().min(3).max(120),
+        email: z.string().trim().email().max(255),
+        document: z
+          .string()
+          .trim()
+          .refine((v) => {
+            const d = v.replace(/\D/g, "");
+            return d.length === 11 || d.length === 14;
+          }, "CPF/CNPJ inválido"),
+      })
+      .parse(data),
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: order, error } = await supabase
@@ -42,8 +57,18 @@ export const startCheckoutPro = createServerFn({ method: "POST" })
           price: Number(it.unit_price ?? 0),
         })),
         shippingPrice: Number(order.shipping ?? 0),
-        payerEmail: addr["email"] ?? "",
-        payerName: addr["name"] ?? "Cliente",
+        payerEmail: data.email,
+        payerName: data.name,
+        payerDocument: data.document,
+        payerPhone: addr["phone"] ?? undefined,
+        payerAddress:
+          addr["zip"] && addr["street"]
+            ? {
+                zip_code: String(addr["zip"]).replace(/\D/g, ""),
+                street_name: String(addr["street"]),
+                street_number: String(addr["number"] ?? "0"),
+              }
+            : undefined,
         notificationUrl: `${origin}/api/public/mercadopago-webhook`,
         successUrl: `${origin}/pagamento/sucesso/${order.id}`,
         failureUrl: `${origin}/pagamento/${order.id}`,
