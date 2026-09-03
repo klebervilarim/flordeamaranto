@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { brl } from "@/lib/format";
+import { checkOrderPayment } from "@/lib/payments.functions";
 
 export const Route = createFileRoute("/pagamento/sucesso/$id")({
   head: () => ({
@@ -56,6 +57,13 @@ function SuccessPage() {
   useEffect(() => {
     let active = true;
     void (async () => {
+      // Sync status with Mercado Pago on return (webhook backup).
+      try {
+        await checkOrderPayment({ data: { orderId: id } });
+      } catch {
+        // ignore — page still renders current status
+      }
+      if (!active) return;
       const { data } = await supabase
         .from("orders")
         .select(
