@@ -157,6 +157,8 @@ function PaymentPage() {
     );
   }
 
+  const canPay =
+    payerName.trim().length >= 3 && /\S+@\S+\.\S+/.test(payerEmail.trim()) && validDoc(payerDoc);
   const subtotal = Number(order.subtotal ?? 0);
   const shippingPrice = Number(order.shipping ?? 0);
   const total = subtotal + shippingPrice;
