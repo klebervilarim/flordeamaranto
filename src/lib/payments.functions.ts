@@ -2,38 +2,14 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const schema = z.object({
-  orderId: z.string().uuid(),
-  buyer: z.object({
-    name: z.string().min(3).max(120),
-    email: z.string().email().max(255),
-    document: z.string().min(11).max(20),
-  }),
-  payment: z.discriminatedUnion("method", [
-    z.object({
-      method: z.literal("pix"),
-    }),
-    z.object({
-      method: z.literal("card"),
-      installments: z.number().int().min(1).max(12),
-      card: z.object({
-        number: z.string().min(12).max(25),
-        exp: z.string().min(4).max(7),
-        cvv: z.string().min(3).max(4),
-        holder: z.string().min(2).max(120),
-      }),
-    }),
-  ]),
-});
-
-export const payOrder = createServerFn({ method: "POST" })
+export const startCheckoutPro = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => schema.parse(data))
+  .inputValidator((data) => z.object({ orderId: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: order, error } = await supabase
       .from("orders")
-      .select("id, order_number, subtotal, shipping, payment_status, user_id")
+      .select("id, order_number, subtotal, shipping, payment_status, user_id, shipping_address")
       .eq("id", data.orderId)
       .maybeSingle();
     if (error || !order) return { ok: false as const, error: "Pedido não encontrado." };
@@ -42,65 +18,52 @@ export const payOrder = createServerFn({ method: "POST" })
       return { ok: false as const, error: "Este pedido já foi pago." };
     }
 
-    const isPix = data.payment.method === "pix";
-    const discount = isPix ? Number((Number(order.subtotal) * 0.05).toFixed(2)) : 0;
-    const total = Number((Number(order.subtotal) + Number(order.shipping) - discount).toFixed(2));
+    const { data: items } = await supabase
+      .from("order_items")
+      .select("product_name, quantity, unit_price")
+      .eq("order_id", order.id);
+
+    const total = Number((Number(order.subtotal) + Number(order.shipping)).toFixed(2));
     if (total <= 0) return { ok: false as const, error: "Valor do pedido inválido." };
 
-    const { createMercadoPagoPayment, createCardToken } = await import("./mercadopago.server");
+    const { createCheckoutPreference } = await import("./mercadopago.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     try {
-      let cardToken: string | undefined;
-      if (data.payment.method === "card") {
-        cardToken = await createCardToken(data.payment.card, data.buyer.document);
-      }
-
+      const addr = (order.shipping_address ?? {}) as Record<string, string>;
       const origin = process.env["PUBLIC_SITE_URL"] ?? "https://flordeamaranto.lovable.app";
-      const result = await createMercadoPagoPayment({
+      const pref = await createCheckoutPreference({
+        orderId: order.id,
+        orderNumber: String(order.order_number),
         amount: total,
-        description: `Pedido ${order.order_number} — Flor de Amaranto`,
-        externalReference: `${order.id}:${userId}`,
+        items: (items ?? []).map((it) => ({
+          name: String(it.product_name ?? "Produto"),
+          quantity: Number(it.quantity ?? 1),
+          price: Number(it.unit_price ?? 0),
+        })),
+        shippingPrice: Number(order.shipping ?? 0),
+        payerEmail: addr["email"] ?? "",
+        payerName: addr["name"] ?? "Cliente",
         notificationUrl: `${origin}/api/public/mercadopago-webhook`,
-        payer: data.buyer,
-        method: isPix ? "pix" : "card",
-        cardToken,
-        installments: data.payment.method === "card" ? data.payment.installments : undefined,
-        metadata: { order_id: order.id, user_id: userId },
+        successUrl: `${origin}/pagamento/sucesso/${order.id}`,
+        failureUrl: `${origin}/pagamento/${order.id}`,
+        pendingUrl: `${origin}/pagamento/sucesso/${order.id}`,
       });
 
-      const paid = result.status === "approved";
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       await supabaseAdmin
         .from("orders")
         .update({
-          payment_method: isPix ? "pix" : "cartao",
           payment_provider: "mercadopago",
-          payment_id: result.id,
-          payment_status: paid ? "paid" : result.status === "rejected" ? "failed" : "pending",
-          installments: data.payment.method === "card" ? data.payment.installments : null,
-          discount,
+          payment_method: "checkout_pro",
+          payment_status: "pending",
+          discount: 0,
           total,
-          pix_qr_code: result.pix?.qr_code ?? null,
-          pix_qr_code_base64: result.pix?.qr_code_base64 ?? null,
-          pix_ticket_url: result.pix?.ticket_url ?? null,
-          pix_expires_at: result.pix?.expires_at ?? null,
-          ...(paid ? { status: "paid" as const } : {}),
         })
         .eq("id", order.id);
 
-      return {
-        ok: true as const,
-        data: {
-          paymentId: result.id,
-          status: result.status,
-          statusDetail: result.status_detail,
-          total,
-          discount,
-          pix: result.pix ?? null,
-        },
-      };
+      return { ok: true as const, data: { initPoint: pref.init_point } };
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Falha no pagamento.";
+      const message = err instanceof Error ? err.message : "Falha ao iniciar pagamento.";
       return { ok: false as const, error: message };
     }
   });

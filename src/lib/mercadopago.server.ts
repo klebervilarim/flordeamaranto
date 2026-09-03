@@ -55,17 +55,71 @@ export async function createCardToken(card: {
   return json.id;
 }
 
-export type PaymentResult = {
+export type PreferenceResult = {
   id: string;
-  status: string;
-  status_detail: string;
-  pix?: {
-    qr_code: string | null;
-    qr_code_base64: string | null;
-    ticket_url: string | null;
-    expires_at: string | null;
-  };
+  init_point: string;
 };
+
+export async function createCheckoutPreference(input: {
+  orderId: string;
+  orderNumber: string;
+  amount: number;
+  items: { name: string; quantity: number; price: number }[];
+  shippingPrice: number;
+  payerEmail: string;
+  payerName: string;
+  notificationUrl: string;
+  successUrl: string;
+  failureUrl: string;
+  pendingUrl: string;
+}): Promise<PreferenceResult> {
+  const { first_name, last_name } = splitName(input.payerName);
+  const items = [
+    ...input.items.map((it) => ({
+      title: it.name.slice(0, 250),
+      quantity: it.quantity,
+      unit_price: Number(it.price.toFixed(2)),
+      currency_id: "BRL",
+    })),
+    ...(input.shippingPrice > 0
+      ? [
+          {
+            title: "Frete",
+            quantity: 1,
+            unit_price: Number(input.shippingPrice.toFixed(2)),
+            currency_id: "BRL",
+          },
+        ]
+      : []),
+  ];
+  const res = await fetch(`${MP_API}/checkout/preferences`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${ensureToken()}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      items,
+      payer: { email: input.payerEmail, name: first_name, surname: last_name },
+      external_reference: input.orderId,
+      statement_descriptor: "FLOR DE AMARANTO",
+      notification_url: input.notificationUrl,
+      back_urls: {
+        success: input.successUrl,
+        failure: input.failureUrl,
+        pending: input.pendingUrl,
+      },
+      auto_return: "approved",
+      metadata: { order_id: input.orderId },
+    }),
+  });
+  const json = (await res.json()) as { id?: string; init_point?: string; message?: string };
+  if (!res.ok || !json.id || !json.init_point) {
+    console.error("mercadopago preference error", res.status, json.message);
+    throw new Error("Não foi possível iniciar o pagamento.");
+  }
+  return { id: json.id, init_point: json.init_point };
+}
 
 export async function createMercadoPagoPayment(input: {
   amount: number;
