@@ -98,7 +98,7 @@ function PaymentPage() {
     return () => {
       active = false;
     };
-  }, [id]);
+  }, [id, user?.email]);
 
   // Redirect already-paid orders to the success page.
   useEffect(() => {
