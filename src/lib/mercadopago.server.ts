@@ -121,6 +121,18 @@ export async function createCheckoutPreference(input: {
   return { id: json.id, init_point: json.init_point };
 }
 
+export type PaymentResult = {
+  id: string;
+  status: string;
+  status_detail: string;
+  pix?: {
+    qr_code: string | null;
+    qr_code_base64: string | null;
+    ticket_url: string | null;
+    expires_at: string | null;
+  };
+};
+
 export async function createMercadoPagoPayment(input: {
   amount: number;
   description: string;
