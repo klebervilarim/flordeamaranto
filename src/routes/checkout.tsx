@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { brl } from "@/lib/format";
 import { cepDigits, maskCep } from "@/lib/shipping";
+import { CheckoutFooter } from "@/components/layout/CheckoutFooter";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -504,6 +505,8 @@ function CheckoutPage() {
           )}
         </aside>
       </form>
+
+      <CheckoutFooter />
     </div>
   );
 }
