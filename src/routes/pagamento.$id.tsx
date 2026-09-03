@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { brl } from "@/lib/format";
+import { isValidCpfCnpj } from "@/lib/brazil-document";
 import { startCheckoutPro } from "@/lib/payments.functions";
 
 export const Route = createFileRoute("/pagamento/$id")({
@@ -46,11 +47,6 @@ function maskDoc(value: string) {
     .replace(/(\d{3})(\d)/, "$1.$2")
     .replace(/(\d{3})(\d)/, "$1/$2")
     .replace(/(\d{4})(\d{1,2})$/, "$1-$2");
-}
-
-function validDoc(value: string) {
-  const d = value.replace(/\D/g, "");
-  return d.length === 11 || d.length === 14;
 }
 
 type ItemRow = {
@@ -158,7 +154,9 @@ function PaymentPage() {
   }
 
   const canPay =
-    payerName.trim().length >= 3 && /\S+@\S+\.\S+/.test(payerEmail.trim()) && validDoc(payerDoc);
+    payerName.trim().length >= 3 &&
+    /\S+@\S+\.\S+/.test(payerEmail.trim()) &&
+    isValidCpfCnpj(payerDoc);
   const subtotal = Number(order.subtotal ?? 0);
   const shippingPrice = Number(order.shipping ?? 0);
   const total = subtotal + shippingPrice;
@@ -213,7 +211,11 @@ function PaymentPage() {
                   className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground"
                   value={payerDoc}
                   onChange={(e) => setPayerDoc(maskDoc(e.target.value))}
+                  aria-invalid={payerDoc.length > 0 && !isValidCpfCnpj(payerDoc)}
                 />
+                {payerDoc.length > 0 && !isValidCpfCnpj(payerDoc) && (
+                  <span className="mt-1 block text-xs text-destructive">CPF/CNPJ inválido</span>
+                )}
               </label>
             </div>
           </div>

@@ -100,6 +100,7 @@ function CheckoutPage() {
 
   const [step1Done, setStep1Done] = useState(false);
   const [step2Done, setStep2Done] = useState(false);
+  const [step3Done, setStep3Done] = useState(false);
 
   const shippingPrice = shipping?.price ?? 0;
   const discount = 0;
@@ -117,6 +118,9 @@ function CheckoutPage() {
   const onCepChange = (value: string) => {
     const masked = maskCep(value);
     setCep(masked);
+    setShipping(null);
+    setStep2Done(false);
+    setStep3Done(false);
     const digits = cepDigits(masked);
     if (digits.length === 8) {
       void quote(digits).then((res) => {
@@ -136,9 +140,20 @@ function CheckoutPage() {
     if (validateStep(personalSchema, form, setErrors)) setStep1Done(true);
   };
 
-  const onSaveStep2 = () => {
-    if (validateStep(addressSchema, { ...form, zip: cep }, setErrors)) setStep2Done(true);
+  const onSaveStep2 = async () => {
+    if (!validateStep(addressSchema, { ...form, zip: cep }, setErrors)) return;
+    const digits = cepDigits(cep);
+    const currentQuote = quoteResult?.cep === digits ? quoteResult : await quote(digits);
+    if (!currentQuote) {
+      toast.error("Não foi possível calcular o frete", {
+        description: "Confira o CEP e tente novamente.",
+      });
+      return;
+    }
+    setStep2Done(true);
   };
+
+  const checkoutComplete = step1Done && step2Done && step3Done && Boolean(shipping);
 
   if (!user) {
     return (
@@ -187,7 +202,7 @@ function CheckoutPage() {
       const { data: order, error } = await supabase
         .from("orders")
         .insert({
-          user_id: user!.id,
+          user_id: user.id,
           shipping_address: {
             name: d.name,
             email: d.email,
@@ -298,7 +313,12 @@ function CheckoutPage() {
             {!step1Done ? (
               <LockedNotice />
             ) : step2Done ? (
-              <StepSummary onEdit={() => setStep2Done(false)}>
+              <StepSummary
+                onEdit={() => {
+                  setStep2Done(false);
+                  setStep3Done(false);
+                }}
+              >
                 {form.street}, {form.number}
                 {form.complement ? ` - ${form.complement}` : ""} —{" "}
                 {form.district ? `${form.district}, ` : ""}
@@ -366,8 +386,8 @@ function CheckoutPage() {
                   type="button"
                   variant="gold"
                   className="mt-5"
-                  disabled={!isStep2Filled}
-                  onClick={onSaveStep2}
+                  disabled={!isStep2Filled || quoting}
+                  onClick={() => void onSaveStep2()}
                 >
                   Salvar e continuar
                 </Button>
@@ -376,14 +396,25 @@ function CheckoutPage() {
           </StepSection>
 
           {/* Etapa 3 — Forma de envio */}
-          <StepSection number={3} title="Forma de envio" status={!step2Done ? "locked" : "active"}>
+          <StepSection
+            number={3}
+            title="Forma de envio"
+            status={!step2Done ? "locked" : step3Done ? "done" : "active"}
+          >
             {!step2Done ? (
               <LockedNotice />
+            ) : step3Done && shipping ? (
+              <StepSummary onEdit={() => setStep3Done(false)}>
+                {shipping.name} · {shipping.eta} · {shipping.price === 0 ? "Grátis" : brl(shipping.price)}
+              </StepSummary>
             ) : quoteResult ? (
               <ShippingOptions
                 options={quoteResult.options}
                 selectedId={shipping?.cep === quoteResult.cep ? shipping.id : undefined}
-                onSelect={(opt) => setShipping({ cep: quoteResult.cep, ...opt })}
+                onSelect={(opt) => {
+                  setShipping({ cep: quoteResult.cep, ...opt });
+                  setStep3Done(true);
+                }}
               />
             ) : (
               <p className="text-sm text-muted-foreground">
@@ -394,8 +425,8 @@ function CheckoutPage() {
           </StepSection>
 
           {/* Etapa 4 — Pagamento */}
-          <StepSection number={4} title="Pagamento" status={!shipping ? "locked" : "active"}>
-            {!shipping ? (
+          <StepSection number={4} title="Pagamento" status={!step3Done ? "locked" : "active"}>
+            {!step3Done ? (
               <LockedNotice />
             ) : (
               <p className="text-sm text-muted-foreground">
@@ -452,15 +483,15 @@ function CheckoutPage() {
             variant="gold"
             size="xl"
             className="mt-6 w-full"
-            disabled={submitting || !shipping}
+            disabled={submitting || !checkoutComplete}
           >
             {submitting
               ? "Processando..."
-              : shipping
+              : checkoutComplete
                 ? "Ir para o pagamento"
                 : "Complete as etapas acima para continuar"}
           </Button>
-          {!shipping && (
+          {!checkoutComplete && (
             <p className="mt-2 text-center text-xs text-muted-foreground">
               Preencha seus dados, endereço e escolha a forma de envio para finalizar.
             </p>
@@ -512,13 +543,15 @@ function StepSummary({ children, onEdit }: { children: React.ReactNode; onEdit: 
   return (
     <div className="flex items-start justify-between gap-4 text-sm">
       <p className="text-muted-foreground">{children}</p>
-      <button
+      <Button
         type="button"
+        variant="link"
+        size="sm"
         onClick={onEdit}
-        className="shrink-0 text-xs font-medium underline underline-offset-2"
+        className="h-auto shrink-0 p-0 text-xs"
       >
         Alterar
-      </button>
+      </Button>
     </div>
   );
 }

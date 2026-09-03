@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { isValidCpfCnpj } from "@/lib/brazil-document";
 
 export const startCheckoutPro = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -13,10 +14,7 @@ export const startCheckoutPro = createServerFn({ method: "POST" })
         document: z
           .string()
           .trim()
-          .refine((v) => {
-            const d = v.replace(/\D/g, "");
-            return d.length === 11 || d.length === 14;
-          }, "CPF/CNPJ inválido"),
+          .refine(isValidCpfCnpj, "CPF/CNPJ inválido"),
       })
       .parse(data),
   )
@@ -38,7 +36,13 @@ export const startCheckoutPro = createServerFn({ method: "POST" })
       .select("product_name, quantity, unit_price")
       .eq("order_id", order.id);
 
-    const total = Number((Number(order.subtotal) + Number(order.shipping)).toFixed(2));
+    const itemsTotal = Number(
+      (items ?? []).reduce(
+        (sum, item) => sum + Number(item.unit_price) * Number(item.quantity),
+        0,
+      ).toFixed(2),
+    );
+    const total = Number((itemsTotal + Number(order.shipping)).toFixed(2));
     if (total <= 0) return { ok: false as const, error: "Valor do pedido inválido." };
 
     const { createCheckoutPreference } = await import("./mercadopago.server");
