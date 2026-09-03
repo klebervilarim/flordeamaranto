@@ -182,6 +182,12 @@ function CheckoutPage() {
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!checkoutComplete) {
+      toast.error("Complete todas as etapas", {
+        description: "Salve seus dados, endereço e escolha a forma de envio.",
+      });
+      return;
+    }
     const parsed = schema.safeParse({ ...form, zip: cep });
     if (!parsed.success) {
       const next: Record<string, string> = {};
@@ -425,7 +431,7 @@ function CheckoutPage() {
           </StepSection>
 
           {/* Etapa 4 — Pagamento */}
-          <StepSection number={4} title="Pagamento" status={!step3Done ? "locked" : "active"}>
+          <StepSection number={4} title="Pagamento" status={!step3Done ? "locked" : "done"}>
             {!step3Done ? (
               <LockedNotice />
             ) : (

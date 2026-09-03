@@ -36,6 +36,13 @@ export const startCheckoutPro = createServerFn({ method: "POST" })
       .select("product_name, quantity, unit_price")
       .eq("order_id", order.id);
 
+    if (
+      !items?.length ||
+      items.some((item) => Number(item.quantity) < 1 || Number(item.unit_price) <= 0)
+    ) {
+      return { ok: false as const, error: "O pedido possui itens com valor inválido." };
+    }
+
     const itemsTotal = Number(
       (items ?? []).reduce(
         (sum, item) => sum + Number(item.unit_price) * Number(item.quantity),

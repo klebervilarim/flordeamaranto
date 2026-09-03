@@ -1,6 +1,6 @@
-const MP_API = "https://api.mercadopago.com";
-
 import { documentDigits } from "./brazil-document";
+
+const MP_API = "https://api.mercadopago.com";
 
 function ensureToken() {
   const token = process.env["MERCADOPAGO_ACCESS_TOKEN"];
@@ -109,6 +109,15 @@ export async function createCheckoutPreference(input: {
         ]
       : []),
   ];
+  const preferenceTotal = Number(
+    items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0).toFixed(2),
+  );
+  if (items.length === 0 || items.some((item) => item.quantity < 1 || item.unit_price <= 0)) {
+    throw new Error("O pedido possui itens com valor inválido.");
+  }
+  if (preferenceTotal !== Number(input.amount.toFixed(2))) {
+    throw new Error("O total do pedido não corresponde aos itens e ao frete.");
+  }
   const res = await fetch(`${MP_API}/checkout/preferences`, {
     method: "POST",
     headers: {
