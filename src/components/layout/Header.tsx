@@ -158,6 +158,13 @@ export function Header() {
                     >
                       Estoque
                     </Link>
+                    <Link
+                      to="/estoque/whatsapp"
+                      onClick={() => setMenuOpen(false)}
+                      className="text-sm text-muted-foreground"
+                    >
+                      API WhatsApp
+                    </Link>
                   </nav>
                   <p className="eyebrow mt-8 text-gold">Cadastros</p>
                   <nav className="mt-3 flex flex-col gap-2">
@@ -383,6 +390,12 @@ export function Header() {
                     className="text-sm text-foreground transition-colors hover:text-gold"
                   >
                     Estoque
+                  </Link>
+                  <Link
+                    to="/estoque/whatsapp"
+                    className="text-sm text-foreground transition-colors hover:text-gold"
+                  >
+                    API WhatsApp
                   </Link>
                 </div>
               </div>

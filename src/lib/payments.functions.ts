@@ -107,6 +107,15 @@ export const processDirectPayment = createServerFn({ method: "POST" })
         })
         .eq("id", order.id);
 
+      if (data.method === "pix" && payment.pix) {
+        const { notifyPixGenerated } = await import("./order-notifications.server");
+        await notifyPixGenerated(order.id, { qr_code: payment.pix.qr_code });
+      }
+      if (paid) {
+        const { notifyPaymentConfirmed } = await import("./order-notifications.server");
+        await notifyPaymentConfirmed(order.id);
+      }
+
       return {
         ok: true as const,
         data: {
@@ -242,6 +251,8 @@ export const checkOrderPayment = createServerFn({ method: "POST" })
         .from("orders")
         .update({ payment_status: "paid", status: "paid" })
         .eq("id", order.id);
+      const { notifyPaymentConfirmed } = await import("./order-notifications.server");
+      await notifyPaymentConfirmed(order.id);
       return { status: "paid" as const };
     }
     if (payment.status === "rejected" || payment.status === "cancelled") {

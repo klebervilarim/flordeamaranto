@@ -51,6 +51,8 @@ export const Route = createFileRoute("/api/public/mercadopago-webhook")({
               .from("orders")
               .update({ payment_status: "paid", status: "paid", payment_id: String(payment.id) })
               .eq("id", orderId);
+            const { notifyPaymentConfirmed } = await import("@/lib/order-notifications.server");
+            await notifyPaymentConfirmed(orderId);
           } else if (payment.status === "rejected" || payment.status === "cancelled") {
             await supabaseAdmin
               .from("orders")
