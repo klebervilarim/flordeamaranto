@@ -232,8 +232,10 @@ function CheckoutPage() {
           <div className="border border-border p-5 text-sm text-muted-foreground">
             <p className="eyebrow text-muted-foreground">Pagamento</p>
             <p className="mt-3">
-              Na próxima etapa você escolhe entre <strong className="text-foreground">Pix</strong> (5% de desconto) ou
-              <strong className="text-foreground"> cartão de crédito</strong> em até 12x.
+              Na próxima etapa você conclui o pagamento no ambiente seguro do{" "}
+              <strong className="text-foreground">Mercado Pago</strong> — com{" "}
+              <strong className="text-foreground">Pix</strong> ou{" "}
+              <strong className="text-foreground">cartão de crédito</strong> em até 12x.
             </p>
           </div>
         </div>
