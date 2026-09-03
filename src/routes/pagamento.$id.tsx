@@ -111,7 +111,14 @@ function PaymentPage() {
     if (!order) return;
     setSubmitting(true);
     try {
-      const res = await startCheckoutPro({ data: { orderId: order.id } });
+      const res = await startCheckoutPro({
+        data: {
+          orderId: order.id,
+          name: payerName.trim(),
+          email: payerEmail.trim(),
+          document: payerDoc,
+        },
+      });
       if (!res.ok) {
         toast.error("Não foi possível iniciar o pagamento", { description: res.error });
         return;
