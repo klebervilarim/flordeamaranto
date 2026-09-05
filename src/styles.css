@@ -11,8 +11,8 @@
  */
 
 @theme inline {
-  --font-display: "Cormorant Garamond", Georgia, serif;
-  --font-sans: "Jost", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -170,7 +170,7 @@
   h3,
   .font-display {
     font-family: var(--font-display);
-    font-weight: 300;
+    font-weight: 700;
     letter-spacing: -0.01em;
   }
 }

@@ -105,6 +105,8 @@ export function ProductCard({ product }: { product: Product }) {
           </p>
         </div>
 
+        <div className="flex-1" />
+
         <Button
           variant="outlineInk"
           size="pill"
