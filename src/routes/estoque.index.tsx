@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Loader2,
   Pencil,
+  Plus,
   ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -166,6 +167,11 @@ function StockPanel() {
           <h1 className="mt-2 font-display text-4xl">Estoque</h1>
         </div>
         <div className="flex items-center gap-3">
+          <Button asChild variant="gold" size="pill">
+            <Link to="/estoque/produto/novo">
+              <Plus className="mr-2 h-4 w-4" /> Novo produto
+            </Link>
+          </Button>
           <Button
             variant="outlineInk"
             size="pill"

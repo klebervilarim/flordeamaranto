@@ -309,6 +309,96 @@ export const updateProduct = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const productCreateSchema = z.object({
+  name: z.string().trim().min(2).max(200),
+  sku: z.string().trim().min(1).max(60),
+  slug: z.string().trim().min(2).max(200),
+  brandId: z.string().uuid().nullable(),
+  productType: z.string().trim().min(1).max(60),
+  volume: z.string().trim().max(40).nullable(),
+  gender: z.string().trim().max(30).nullable(),
+  origin: z.string().trim().max(30).nullable(),
+  price: z.number().positive(),
+  salePrice: z.number().positive().nullable(),
+  costPrice: z.number().positive().nullable(),
+  stock: z.number().int().min(0),
+  purchaseLocation: z.string().trim().min(2).max(60),
+  inspiration: z.string().trim().max(200).nullable(),
+  shortDescription: z.string().trim().max(600).nullable(),
+  description: z.string().trim().max(8000).nullable(),
+  imageUrl: z.string().trim().max(600).nullable(),
+  secondaryImageUrl: z.string().trim().max(600).nullable(),
+  status: z.enum(["active", "draft", "archived"]),
+  featured: z.boolean(),
+  bestseller: z.boolean(),
+  isNew: z.boolean(),
+});
+
+export const createProduct = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => productCreateSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { data: row, error } = await context.supabase
+      .from("products")
+      .insert({
+        name: data.name,
+        sku: data.sku,
+        slug: data.slug,
+        brand_id: data.brandId,
+        product_type: data.productType || "perfume",
+        volume: data.volume || null,
+        gender: data.gender || null,
+        origin: data.origin || null,
+        price: data.price,
+        sale_price: data.salePrice,
+        stock: data.stock,
+        purchase_location: data.purchaseLocation,
+        inspiration: data.inspiration || null,
+        short_description: data.shortDescription || null,
+        description: data.description || null,
+        image_url: data.imageUrl || null,
+        status: data.status,
+        featured: data.featured,
+        bestseller: data.bestseller,
+        is_new: data.isNew,
+      })
+      .select("id")
+      .single();
+    if (error) {
+      throw new Error(
+        error.message.includes("duplicate")
+          ? "Já existe um produto com esse SKU ou slug."
+          : "Falha ao criar o produto.",
+      );
+    }
+    if (data.stock > 0) {
+      await recordStockMovement(context.supabase, {
+        productId: row.id,
+        previousQuantity: 0,
+        newQuantity: data.stock,
+        createdBy: context.userId,
+      });
+    }
+    if (data.secondaryImageUrl) {
+      await context.supabase.from("product_images").insert({
+        product_id: row.id,
+        url: data.secondaryImageUrl,
+        alt: FRAGRANTICA_ALT,
+        sort_order: 1,
+      });
+    }
+    if (data.costPrice != null) {
+      await context.supabase.from("product_costs").upsert({
+        product_id: row.id,
+        cost_price: data.costPrice,
+        suggested_price: Math.round(data.costPrice * 1.4 * 100) / 100,
+        updated_at: new Date().toISOString(),
+      });
+    }
+    return { ok: true, id: row.id as string };
+  });
+
 const imageUploadSchema = z.object({
   productId: z.string().uuid(),
   fileName: z.string().min(1).max(120),

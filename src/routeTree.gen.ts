@@ -46,6 +46,7 @@ import { Route as PerfumesFiltroRouteImport } from './routes/perfumes.$filtro'
 import { Route as ProdutoSlugRouteImport } from './routes/produto.$slug'
 import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api/public/mercadopago-webhook'
 import { Route as EstoqueProdutoIdRouteImport } from './routes/estoque.produto.$id'
+import { Route as EstoqueProdutoNovoRouteImport } from './routes/estoque.produto.novo'
 import { Route as PagamentoSucessoIdRouteImport } from './routes/pagamento.sucesso.$id'
 import { Route as ApiPublicProductImageSplatRouteImport } from './routes/api/public/product-image/$'
 
@@ -235,6 +236,11 @@ const EstoqueProdutoIdRoute = EstoqueProdutoIdRouteImport.update({
   path: '/produto/$id',
   getParentRoute: () => EstoqueRoute,
 } as any)
+const EstoqueProdutoNovoRoute = EstoqueProdutoNovoRouteImport.update({
+  id: '/produto/novo',
+  path: '/produto/novo',
+  getParentRoute: () => EstoqueRoute,
+} as any)
 const PagamentoSucessoIdRoute = PagamentoSucessoIdRouteImport.update({
   id: '/pagamento/sucesso/$id',
   path: '/pagamento/sucesso/$id',
@@ -285,6 +291,7 @@ export interface FileRoutesByFullPath {
   '/perfumes/': typeof PerfumesIndexRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
+  '/estoque/produto/novo': typeof EstoqueProdutoNovoRoute
   '/pagamento/sucesso/$id': typeof PagamentoSucessoIdRoute
   '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
 }
@@ -325,6 +332,7 @@ export interface FileRoutesByTo {
   '/perfumes': typeof PerfumesIndexRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
+  '/estoque/produto/novo': typeof EstoqueProdutoNovoRoute
   '/pagamento/sucesso/$id': typeof PagamentoSucessoIdRoute
   '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
 }
@@ -367,6 +375,7 @@ export interface FileRoutesById {
   '/perfumes/': typeof PerfumesIndexRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
+  '/estoque/produto/novo': typeof EstoqueProdutoNovoRoute
   '/pagamento/sucesso/$id': typeof PagamentoSucessoIdRoute
   '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
 }
@@ -410,6 +419,7 @@ export interface FileRouteTypes {
     | '/perfumes/'
     | '/api/public/mercadopago-webhook'
     | '/estoque/produto/$id'
+    | '/estoque/produto/novo'
     | '/pagamento/sucesso/$id'
     | '/api/public/product-image/$'
   fileRoutesByTo: FileRoutesByTo
@@ -450,6 +460,7 @@ export interface FileRouteTypes {
     | '/perfumes'
     | '/api/public/mercadopago-webhook'
     | '/estoque/produto/$id'
+    | '/estoque/produto/novo'
     | '/pagamento/sucesso/$id'
     | '/api/public/product-image/$'
   id:
@@ -491,6 +502,7 @@ export interface FileRouteTypes {
     | '/perfumes/'
     | '/api/public/mercadopago-webhook'
     | '/estoque/produto/$id'
+    | '/estoque/produto/novo'
     | '/pagamento/sucesso/$id'
     | '/api/public/product-image/$'
   fileRoutesById: FileRoutesById
@@ -790,6 +802,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EstoqueProdutoIdRouteImport
       parentRoute: typeof EstoqueRoute
     }
+    '/estoque/produto/novo': {
+      id: '/estoque/produto/novo'
+      path: '/produto/novo'
+      fullPath: '/estoque/produto/novo'
+      preLoaderRoute: typeof EstoqueProdutoNovoRouteImport
+      parentRoute: typeof EstoqueRoute
+    }
     '/pagamento/sucesso/$id': {
       id: '/pagamento/sucesso/$id'
       path: '/pagamento/sucesso/$id'
@@ -816,6 +835,7 @@ interface EstoqueRouteChildren {
   EstoqueWhatsappRoute: typeof EstoqueWhatsappRoute
   EstoqueIndexRoute: typeof EstoqueIndexRoute
   EstoqueProdutoIdRoute: typeof EstoqueProdutoIdRoute
+  EstoqueProdutoNovoRoute: typeof EstoqueProdutoNovoRoute
 }
 
 const EstoqueRouteChildren: EstoqueRouteChildren = {
@@ -827,6 +847,7 @@ const EstoqueRouteChildren: EstoqueRouteChildren = {
   EstoqueWhatsappRoute: EstoqueWhatsappRoute,
   EstoqueIndexRoute: EstoqueIndexRoute,
   EstoqueProdutoIdRoute: EstoqueProdutoIdRoute,
+  EstoqueProdutoNovoRoute: EstoqueProdutoNovoRoute,
 }
 
 const EstoqueRouteWithChildren =
