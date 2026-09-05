@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -71,6 +71,7 @@ function num(value: string): number | null {
 
 function NewProductEditor({ brands }: { brands: { id: string; name: string }[] }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const createFn = useServerFn(createProduct);
 
   const [name, setName] = useState("");
@@ -141,6 +142,7 @@ function NewProductEditor({ brands }: { brands: { id: string; name: string }[] }
     },
     onSuccess: (res) => {
       toast.success("Produto criado.");
+      queryClient.invalidateQueries({ queryKey: ["stock-list"] });
       navigate({ to: "/estoque/produto/$id", params: { id: res.id } });
     },
     onError: (e) => toast.error(e.message),

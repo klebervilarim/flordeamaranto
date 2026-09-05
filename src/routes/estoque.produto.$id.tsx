@@ -160,7 +160,7 @@ function ProductEditor({
           volume: volume.trim() || null,
           gender: gender === NONE ? null : gender,
           origin: origin === NONE ? null : origin,
-          categorySlug: null,
+          categorySlug: product.category_slug,
           price: priceNum,
           salePrice: num(salePrice),
           costPrice: cost,
