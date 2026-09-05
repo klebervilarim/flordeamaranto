@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { ArrowLeft, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -114,6 +114,7 @@ function ProductEditor({
   brands: { id: string; name: string }[];
 }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const saveFn = useServerFn(updateProduct);
   const uploadFn = useServerFn(uploadProductImage);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -179,6 +180,8 @@ function ProductEditor({
     },
     onSuccess: () => {
       toast.success("Produto salvo.");
+      queryClient.removeQueries({ queryKey: ["stock-product", product.id] });
+      queryClient.invalidateQueries({ queryKey: ["stock-list"] });
       navigate({ to: "/estoque" });
     },
     onError: (e) => toast.error(e.message),
@@ -421,7 +424,11 @@ function ProductEditor({
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Field label="Preço de custo">
-              <Input value={costPrice} inputMode="decimal" onChange={(e) => setCostPrice(e.target.value)} />
+              <Input
+                value={costPrice}
+                inputMode="decimal"
+                onChange={(e) => setCostPrice(e.target.value)}
+              />
             </Field>
             <Field label="Sugerido (+40%)">
               <div className="flex h-10 items-center border border-border bg-secondary/40 px-3 text-sm">
@@ -458,7 +465,12 @@ function ProductEditor({
 
           <div className="flex flex-wrap gap-6">
             <Check id="featured" label="Destaque" checked={featured} onChange={setFeatured} />
-            <Check id="bestseller" label="Mais vendido" checked={bestseller} onChange={setBestseller} />
+            <Check
+              id="bestseller"
+              label="Mais vendido"
+              checked={bestseller}
+              onChange={setBestseller}
+            />
             <Check id="isNew" label="Novidade" checked={isNew} onChange={setIsNew} />
           </div>
 
@@ -470,10 +482,7 @@ function ProductEditor({
             />
           </Field>
           <Field label="Descrição curta">
-            <Input
-              value={shortDescription}
-              onChange={(e) => setShortDescription(e.target.value)}
-            />
+            <Input value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} />
           </Field>
           <Field label="Descrição completa">
             <Textarea
