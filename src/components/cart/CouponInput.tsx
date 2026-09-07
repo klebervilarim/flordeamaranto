@@ -72,7 +72,7 @@ export function CouponInput() {
           id="coupon-code"
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="FLORDEAMARANTO..."
+          placeholder="BEMVINDO5"
           className="font-mono"
         />
         <Button

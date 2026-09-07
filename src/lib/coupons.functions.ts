@@ -15,7 +15,7 @@ export type CouponRow = {
   created_at: string;
 };
 
-const CODE_PREFIX = "FLORDEAMARANTO";
+const CODE_PREFIX = "BEMVINDO";
 const CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
 function randomSuffix(length = 6): string {

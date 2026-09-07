@@ -406,7 +406,7 @@ function CuponsPanel() {
                 id="coupon-search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="FLORDEAMARANTO..."
+                placeholder="BEMVINDO..."
                 className="w-56 pr-9"
               />
               <Search className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
