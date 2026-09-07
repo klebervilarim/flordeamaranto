@@ -101,7 +101,6 @@ function CheckoutPage() {
 
   const [step1Done, setStep1Done] = useState(false);
   const [step2Done, setStep2Done] = useState(false);
-  const [step3Done, setStep3Done] = useState(false);
 
   const shippingPrice = shipping?.price ?? 0;
   const discount = 0;
@@ -121,7 +120,6 @@ function CheckoutPage() {
     setCep(masked);
     setShipping(null);
     setStep2Done(false);
-    setStep3Done(false);
     const digits = cepDigits(masked);
     if (digits.length === 8) {
       void quote(digits).then((res) => {
@@ -154,7 +152,7 @@ function CheckoutPage() {
     setStep2Done(true);
   };
 
-  const checkoutComplete = step1Done && step2Done && step3Done && Boolean(shipping);
+  const checkoutComplete = step1Done && step2Done && Boolean(shipping);
 
   if (!user) {
     return (
@@ -320,12 +318,7 @@ function CheckoutPage() {
             {!step1Done ? (
               <LockedNotice />
             ) : step2Done ? (
-              <StepSummary
-                onEdit={() => {
-                  setStep2Done(false);
-                  setStep3Done(false);
-                }}
-              >
+              <StepSummary onEdit={() => setStep2Done(false)}>
                 {form.street}, {form.number}
                 {form.complement ? ` - ${form.complement}` : ""} —{" "}
                 {form.district ? `${form.district}, ` : ""}
@@ -406,23 +399,21 @@ function CheckoutPage() {
           <StepSection
             number={3}
             title="Forma de envio"
-            status={!step2Done ? "locked" : step3Done ? "done" : "active"}
+            status={!step2Done ? "locked" : shipping ? "done" : "active"}
           >
             {!step2Done ? (
               <LockedNotice />
-            ) : step3Done && shipping ? (
-              <StepSummary onEdit={() => setStep3Done(false)}>
-                {shipping.name} · {shipping.eta} · {shipping.price === 0 ? "Grátis" : brl(shipping.price)}
-              </StepSummary>
             ) : quoteResult ? (
-              <ShippingOptions
-                options={quoteResult.options}
-                selectedId={shipping?.cep === quoteResult.cep ? shipping.id : undefined}
-                onSelect={(opt) => {
-                  setShipping({ cep: quoteResult.cep, ...opt });
-                  setStep3Done(true);
-                }}
-              />
+              <>
+                <ShippingOptions
+                  options={quoteResult.options}
+                  selectedId={shipping?.cep === quoteResult.cep ? shipping.id : undefined}
+                  onSelect={(opt) => setShipping({ cep: quoteResult.cep, ...opt })}
+                />
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Você pode trocar a forma de envio a qualquer momento antes de pagar.
+                </p>
+              </>
             ) : (
               <p className="text-sm text-muted-foreground">
                 Não foi possível calcular o frete para este CEP. Volte à etapa anterior e confira o
@@ -432,8 +423,8 @@ function CheckoutPage() {
           </StepSection>
 
           {/* Etapa 4 — Pagamento */}
-          <StepSection number={4} title="Pagamento" status={!step3Done ? "locked" : "done"}>
-            {!step3Done ? (
+          <StepSection number={4} title="Pagamento" status={!shipping ? "locked" : "done"}>
+            {!shipping ? (
               <LockedNotice />
             ) : (
               <p className="text-sm text-muted-foreground">
