@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Lock, Package, ShoppingBag, Truck, Users, Wallet } from "lucide-react";
+import { Loader2, Lock, Package, ShoppingBag, Ticket, Truck, Users, Wallet } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { brl } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -136,6 +136,11 @@ function Dashboard({ data }: { data: AdminDashboard }) {
           <Button asChild variant="outlineInk" size="pill">
             <Link to="/estoque/pedidos">
               <Truck className="mr-2 h-4 w-4" /> Pedidos
+            </Link>
+          </Button>
+          <Button asChild variant="outlineInk" size="pill">
+            <Link to="/estoque/cupons">
+              <Ticket className="mr-2 h-4 w-4" /> Cupons
             </Link>
           </Button>
           <Button asChild variant="outlineInk" size="pill">

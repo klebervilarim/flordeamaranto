@@ -10,6 +10,7 @@ import {
   Pencil,
   Plus,
   ShieldCheck,
+  Ticket,
   Truck,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -189,6 +190,11 @@ function StockPanel() {
           <Button asChild variant="outlineInk" size="pill">
             <Link to="/estoque/pedidos">
               <Truck className="mr-2 h-4 w-4" /> Pedidos
+            </Link>
+          </Button>
+          <Button asChild variant="outlineInk" size="pill">
+            <Link to="/estoque/cupons">
+              <Ticket className="mr-2 h-4 w-4" /> Cupons
             </Link>
           </Button>
           <Button asChild variant="outlineInk" size="pill">

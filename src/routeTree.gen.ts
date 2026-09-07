@@ -33,6 +33,7 @@ import { Route as ColecoesIndexRouteImport } from './routes/colecoes.index'
 import { Route as ColecoesSlugRouteImport } from './routes/colecoes.$slug'
 import { Route as EstoqueIndexRouteImport } from './routes/estoque.index'
 import { Route as EstoqueCategoriasRouteImport } from './routes/estoque.categorias'
+import { Route as EstoqueCuponsRouteImport } from './routes/estoque.cupons'
 import { Route as EstoqueFornecedoresRouteImport } from './routes/estoque.fornecedores'
 import { Route as EstoqueMarcasRouteImport } from './routes/estoque.marcas'
 import { Route as EstoquePedidosRouteImport } from './routes/estoque.pedidos'
@@ -171,6 +172,11 @@ const EstoqueCategoriasRoute = EstoqueCategoriasRouteImport.update({
   path: '/categorias',
   getParentRoute: () => EstoqueRoute,
 } as any)
+const EstoqueCuponsRoute = EstoqueCuponsRouteImport.update({
+  id: '/cupons',
+  path: '/cupons',
+  getParentRoute: () => EstoqueRoute,
+} as any)
 const EstoqueFornecedoresRoute = EstoqueFornecedoresRouteImport.update({
   id: '/fornecedores',
   path: '/fornecedores',
@@ -282,6 +288,7 @@ export interface FileRoutesByFullPath {
   '/trocas-e-devolucoes': typeof TrocasEDevolucoesRoute
   '/colecoes/$slug': typeof ColecoesSlugRoute
   '/estoque/categorias': typeof EstoqueCategoriasRoute
+  '/estoque/cupons': typeof EstoqueCuponsRoute
   '/estoque/fornecedores': typeof EstoqueFornecedoresRoute
   '/estoque/marcas': typeof EstoqueMarcasRoute
   '/estoque/pedidos': typeof EstoquePedidosRoute
@@ -324,6 +331,7 @@ export interface FileRoutesByTo {
   '/trocas-e-devolucoes': typeof TrocasEDevolucoesRoute
   '/colecoes/$slug': typeof ColecoesSlugRoute
   '/estoque/categorias': typeof EstoqueCategoriasRoute
+  '/estoque/cupons': typeof EstoqueCuponsRoute
   '/estoque/fornecedores': typeof EstoqueFornecedoresRoute
   '/estoque/marcas': typeof EstoqueMarcasRoute
   '/estoque/pedidos': typeof EstoquePedidosRoute
@@ -368,6 +376,7 @@ export interface FileRoutesById {
   '/trocas-e-devolucoes': typeof TrocasEDevolucoesRoute
   '/colecoes/$slug': typeof ColecoesSlugRoute
   '/estoque/categorias': typeof EstoqueCategoriasRoute
+  '/estoque/cupons': typeof EstoqueCuponsRoute
   '/estoque/fornecedores': typeof EstoqueFornecedoresRoute
   '/estoque/marcas': typeof EstoqueMarcasRoute
   '/estoque/pedidos': typeof EstoquePedidosRoute
@@ -413,6 +422,7 @@ export interface FileRouteTypes {
     | '/trocas-e-devolucoes'
     | '/colecoes/$slug'
     | '/estoque/categorias'
+    | '/estoque/cupons'
     | '/estoque/fornecedores'
     | '/estoque/marcas'
     | '/estoque/pedidos'
@@ -455,6 +465,7 @@ export interface FileRouteTypes {
     | '/trocas-e-devolucoes'
     | '/colecoes/$slug'
     | '/estoque/categorias'
+    | '/estoque/cupons'
     | '/estoque/fornecedores'
     | '/estoque/marcas'
     | '/estoque/pedidos'
@@ -498,6 +509,7 @@ export interface FileRouteTypes {
     | '/trocas-e-devolucoes'
     | '/colecoes/$slug'
     | '/estoque/categorias'
+    | '/estoque/cupons'
     | '/estoque/fornecedores'
     | '/estoque/marcas'
     | '/estoque/pedidos'
@@ -723,6 +735,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EstoqueCategoriasRouteImport
       parentRoute: typeof EstoqueRoute
     }
+    '/estoque/cupons': {
+      id: '/estoque/cupons'
+      path: '/cupons'
+      fullPath: '/estoque/cupons'
+      preLoaderRoute: typeof EstoqueCuponsRouteImport
+      parentRoute: typeof EstoqueRoute
+    }
     '/estoque/fornecedores': {
       id: '/estoque/fornecedores'
       path: '/fornecedores'
@@ -847,6 +866,7 @@ declare module '@tanstack/react-router' {
 
 interface EstoqueRouteChildren {
   EstoqueCategoriasRoute: typeof EstoqueCategoriasRoute
+  EstoqueCuponsRoute: typeof EstoqueCuponsRoute
   EstoqueFornecedoresRoute: typeof EstoqueFornecedoresRoute
   EstoqueMarcasRoute: typeof EstoqueMarcasRoute
   EstoquePedidosRoute: typeof EstoquePedidosRoute
@@ -860,6 +880,7 @@ interface EstoqueRouteChildren {
 
 const EstoqueRouteChildren: EstoqueRouteChildren = {
   EstoqueCategoriasRoute: EstoqueCategoriasRoute,
+  EstoqueCuponsRoute: EstoqueCuponsRoute,
   EstoqueFornecedoresRoute: EstoqueFornecedoresRoute,
   EstoqueMarcasRoute: EstoqueMarcasRoute,
   EstoquePedidosRoute: EstoquePedidosRoute,
