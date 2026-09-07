@@ -46,7 +46,7 @@ export const listOrdersForAdmin = createServerFn({ method: "GET" })
         "id, order_number, created_at, status, total, tracking_code, carrier, shipping_address, order_items(product_name, quantity)",
       )
       .order("created_at", { ascending: false })
-      .limit(term ? 1000 : 60);
+      .limit(2000);
     if (error) throw new Error("Falha ao carregar pedidos.");
 
     const mapped: AdminOrder[] = (rows ?? []).map((r) => ({
@@ -63,19 +63,17 @@ export const listOrdersForAdmin = createServerFn({ method: "GET" })
 
     if (!term) return mapped;
     const termDigits = term.replace(/\D/g, "");
-    return mapped
-      .filter((o) => {
-        const name = (o.address.name ?? "").toLowerCase();
-        const phone = (o.address.phone ?? "").toLowerCase();
-        const phoneDigits = phone.replace(/\D/g, "");
-        return (
-          o.order_number.toLowerCase().includes(term) ||
-          name.includes(term) ||
-          phone.includes(term) ||
-          (termDigits.length > 0 && phoneDigits.includes(termDigits))
-        );
-      })
-      .slice(0, 200);
+    return mapped.filter((o) => {
+      const name = (o.address.name ?? "").toLowerCase();
+      const phone = (o.address.phone ?? "").toLowerCase();
+      const phoneDigits = phone.replace(/\D/g, "");
+      return (
+        o.order_number.toLowerCase().includes(term) ||
+        name.includes(term) ||
+        phone.includes(term) ||
+        (termDigits.length > 0 && phoneDigits.includes(termDigits))
+      );
+    });
   });
 
 export const ORDER_STATUSES = [
