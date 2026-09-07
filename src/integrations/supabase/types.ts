@@ -538,6 +538,8 @@ export type Database = {
       }
       orders: {
         Row: {
+          admin_new_order_email_sent_at: string | null
+          carrier: string | null
           coupon_code: string | null
           created_at: string
           discount: number
@@ -556,6 +558,7 @@ export type Database = {
           pix_qr_code: string | null
           pix_qr_code_base64: string | null
           pix_ticket_url: string | null
+          shipped_whatsapp_sent_at: string | null
           shipping: number
           shipping_address: Json | null
           status: Database["public"]["Enums"]["order_status"]
@@ -566,6 +569,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          admin_new_order_email_sent_at?: string | null
+          carrier?: string | null
           coupon_code?: string | null
           created_at?: string
           discount?: number
@@ -584,6 +589,7 @@ export type Database = {
           pix_qr_code?: string | null
           pix_qr_code_base64?: string | null
           pix_ticket_url?: string | null
+          shipped_whatsapp_sent_at?: string | null
           shipping?: number
           shipping_address?: Json | null
           status?: Database["public"]["Enums"]["order_status"]
@@ -594,6 +600,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          admin_new_order_email_sent_at?: string | null
+          carrier?: string | null
           coupon_code?: string | null
           created_at?: string
           discount?: number
@@ -612,6 +620,7 @@ export type Database = {
           pix_qr_code?: string | null
           pix_qr_code_base64?: string | null
           pix_ticket_url?: string | null
+          shipped_whatsapp_sent_at?: string | null
           shipping?: number
           shipping_address?: Json | null
           status?: Database["public"]["Enums"]["order_status"]
@@ -1187,6 +1196,7 @@ export type Database = {
         | "in_transit"
         | "delivered"
         | "cancelled"
+        | "out_of_stock"
       product_status: "active" | "draft" | "archived"
     }
     CompositeTypes: {
@@ -1324,6 +1334,7 @@ export const Constants = {
         "in_transit",
         "delivered",
         "cancelled",
+        "out_of_stock",
       ],
       product_status: ["active", "draft", "archived"],
     },

@@ -10,6 +10,7 @@ import {
   Pencil,
   Plus,
   ShieldCheck,
+  Truck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { brl } from "@/lib/format";
@@ -183,6 +184,11 @@ function StockPanel() {
           <Button asChild variant="outlineInk" size="pill">
             <Link to="/estoque/planilha">
               <FileSpreadsheet className="mr-2 h-4 w-4" /> Planilha
+            </Link>
+          </Button>
+          <Button asChild variant="outlineInk" size="pill">
+            <Link to="/estoque/pedidos">
+              <Truck className="mr-2 h-4 w-4" /> Pedidos
             </Link>
           </Button>
           <Button asChild variant="outlineInk" size="pill">

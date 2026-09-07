@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Lock, Package, ShoppingBag, Users, Wallet } from "lucide-react";
+import { Loader2, Lock, Package, ShoppingBag, Truck, Users, Wallet } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { brl } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ const STATUS_LABELS: Record<string, string> = {
   in_transit: "Em trânsito",
   delivered: "Entregue",
   cancelled: "Cancelado",
+  out_of_stock: "Em falta",
 };
 
 const PAYMENT_LABELS: Record<string, string> = {
@@ -131,11 +132,18 @@ function Dashboard({ data }: { data: AdminDashboard }) {
           <p className="eyebrow text-gold">Painel administrativo</p>
           <h1 className="mt-2 font-display text-4xl">Dashboard</h1>
         </div>
-        <Button asChild variant="outlineInk" size="pill">
-          <Link to="/estoque">
-            <Package className="mr-2 h-4 w-4" /> Estoque
-          </Link>
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button asChild variant="outlineInk" size="pill">
+            <Link to="/estoque/pedidos">
+              <Truck className="mr-2 h-4 w-4" /> Pedidos
+            </Link>
+          </Button>
+          <Button asChild variant="outlineInk" size="pill">
+            <Link to="/estoque">
+              <Package className="mr-2 h-4 w-4" /> Estoque
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">

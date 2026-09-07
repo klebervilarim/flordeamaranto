@@ -35,6 +35,7 @@ import { Route as EstoqueIndexRouteImport } from './routes/estoque.index'
 import { Route as EstoqueCategoriasRouteImport } from './routes/estoque.categorias'
 import { Route as EstoqueFornecedoresRouteImport } from './routes/estoque.fornecedores'
 import { Route as EstoqueMarcasRouteImport } from './routes/estoque.marcas'
+import { Route as EstoquePedidosRouteImport } from './routes/estoque.pedidos'
 import { Route as EstoquePlanilhaRouteImport } from './routes/estoque.planilha'
 import { Route as EstoqueTiposProdutoRouteImport } from './routes/estoque.tipos-produto'
 import { Route as EstoqueWhatsappRouteImport } from './routes/estoque.whatsapp'
@@ -180,6 +181,11 @@ const EstoqueMarcasRoute = EstoqueMarcasRouteImport.update({
   path: '/marcas',
   getParentRoute: () => EstoqueRoute,
 } as any)
+const EstoquePedidosRoute = EstoquePedidosRouteImport.update({
+  id: '/pedidos',
+  path: '/pedidos',
+  getParentRoute: () => EstoqueRoute,
+} as any)
 const EstoquePlanilhaRoute = EstoquePlanilhaRouteImport.update({
   id: '/planilha',
   path: '/planilha',
@@ -278,6 +284,7 @@ export interface FileRoutesByFullPath {
   '/estoque/categorias': typeof EstoqueCategoriasRoute
   '/estoque/fornecedores': typeof EstoqueFornecedoresRoute
   '/estoque/marcas': typeof EstoqueMarcasRoute
+  '/estoque/pedidos': typeof EstoquePedidosRoute
   '/estoque/planilha': typeof EstoquePlanilhaRoute
   '/estoque/tipos-produto': typeof EstoqueTiposProdutoRoute
   '/estoque/whatsapp': typeof EstoqueWhatsappRoute
@@ -319,6 +326,7 @@ export interface FileRoutesByTo {
   '/estoque/categorias': typeof EstoqueCategoriasRoute
   '/estoque/fornecedores': typeof EstoqueFornecedoresRoute
   '/estoque/marcas': typeof EstoqueMarcasRoute
+  '/estoque/pedidos': typeof EstoquePedidosRoute
   '/estoque/planilha': typeof EstoquePlanilhaRoute
   '/estoque/tipos-produto': typeof EstoqueTiposProdutoRoute
   '/estoque/whatsapp': typeof EstoqueWhatsappRoute
@@ -362,6 +370,7 @@ export interface FileRoutesById {
   '/estoque/categorias': typeof EstoqueCategoriasRoute
   '/estoque/fornecedores': typeof EstoqueFornecedoresRoute
   '/estoque/marcas': typeof EstoqueMarcasRoute
+  '/estoque/pedidos': typeof EstoquePedidosRoute
   '/estoque/planilha': typeof EstoquePlanilhaRoute
   '/estoque/tipos-produto': typeof EstoqueTiposProdutoRoute
   '/estoque/whatsapp': typeof EstoqueWhatsappRoute
@@ -406,6 +415,7 @@ export interface FileRouteTypes {
     | '/estoque/categorias'
     | '/estoque/fornecedores'
     | '/estoque/marcas'
+    | '/estoque/pedidos'
     | '/estoque/planilha'
     | '/estoque/tipos-produto'
     | '/estoque/whatsapp'
@@ -447,6 +457,7 @@ export interface FileRouteTypes {
     | '/estoque/categorias'
     | '/estoque/fornecedores'
     | '/estoque/marcas'
+    | '/estoque/pedidos'
     | '/estoque/planilha'
     | '/estoque/tipos-produto'
     | '/estoque/whatsapp'
@@ -489,6 +500,7 @@ export interface FileRouteTypes {
     | '/estoque/categorias'
     | '/estoque/fornecedores'
     | '/estoque/marcas'
+    | '/estoque/pedidos'
     | '/estoque/planilha'
     | '/estoque/tipos-produto'
     | '/estoque/whatsapp'
@@ -725,6 +737,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EstoqueMarcasRouteImport
       parentRoute: typeof EstoqueRoute
     }
+    '/estoque/pedidos': {
+      id: '/estoque/pedidos'
+      path: '/pedidos'
+      fullPath: '/estoque/pedidos'
+      preLoaderRoute: typeof EstoquePedidosRouteImport
+      parentRoute: typeof EstoqueRoute
+    }
     '/estoque/planilha': {
       id: '/estoque/planilha'
       path: '/planilha'
@@ -830,6 +849,7 @@ interface EstoqueRouteChildren {
   EstoqueCategoriasRoute: typeof EstoqueCategoriasRoute
   EstoqueFornecedoresRoute: typeof EstoqueFornecedoresRoute
   EstoqueMarcasRoute: typeof EstoqueMarcasRoute
+  EstoquePedidosRoute: typeof EstoquePedidosRoute
   EstoquePlanilhaRoute: typeof EstoquePlanilhaRoute
   EstoqueTiposProdutoRoute: typeof EstoqueTiposProdutoRoute
   EstoqueWhatsappRoute: typeof EstoqueWhatsappRoute
@@ -842,6 +862,7 @@ const EstoqueRouteChildren: EstoqueRouteChildren = {
   EstoqueCategoriasRoute: EstoqueCategoriasRoute,
   EstoqueFornecedoresRoute: EstoqueFornecedoresRoute,
   EstoqueMarcasRoute: EstoqueMarcasRoute,
+  EstoquePedidosRoute: EstoquePedidosRoute,
   EstoquePlanilhaRoute: EstoquePlanilhaRoute,
   EstoqueTiposProdutoRoute: EstoqueTiposProdutoRoute,
   EstoqueWhatsappRoute: EstoqueWhatsappRoute,

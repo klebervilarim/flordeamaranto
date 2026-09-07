@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -10,6 +11,7 @@ import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { brl } from "@/lib/format";
+import { notifyNewOrder } from "@/lib/order-notifications.functions";
 import { cepDigits, maskCep } from "@/lib/shipping";
 import { CheckoutFooter } from "@/components/layout/CheckoutFooter";
 
@@ -84,6 +86,7 @@ function CheckoutPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [cep, setCep] = useState(shipping?.cep ? maskCep(shipping.cep) : "");
   const { quote, loading: quoting, result: quoteResult, error: quoteError } = useShippingQuote();
+  const notifyNewOrderFn = useServerFn(notifyNewOrder);
 
   const [form, setForm] = useState<FormState>({
     name: "",
@@ -247,6 +250,7 @@ function CheckoutPage() {
 
       clear();
       toast.success("Pedido criado!", { description: "Escolha a forma de pagamento." });
+      notifyNewOrderFn({ data: { orderId: order.id } }).catch(() => undefined);
       void navigate({ to: "/pagamento/$id", params: { id: order.id } });
     } catch {
       toast.error("Não foi possível concluir o pedido", {
