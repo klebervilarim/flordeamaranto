@@ -159,6 +159,13 @@ export function Header() {
                       Estoque
                     </Link>
                     <Link
+                      to="/estoque/pedidos"
+                      onClick={() => setMenuOpen(false)}
+                      className="text-sm text-muted-foreground"
+                    >
+                      Pedidos
+                    </Link>
+                    <Link
                       to="/estoque/whatsapp"
                       onClick={() => setMenuOpen(false)}
                       className="text-sm text-muted-foreground"
@@ -390,6 +397,12 @@ export function Header() {
                     className="text-sm text-foreground transition-colors hover:text-gold"
                   >
                     Estoque
+                  </Link>
+                  <Link
+                    to="/estoque/pedidos"
+                    className="text-sm text-foreground transition-colors hover:text-gold"
+                  >
+                    Pedidos
                   </Link>
                   <Link
                     to="/estoque/whatsapp"
