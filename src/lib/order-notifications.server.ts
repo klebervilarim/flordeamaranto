@@ -66,7 +66,7 @@ export async function notifyPaymentConfirmed(orderId: string): Promise<void> {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: order } = await supabaseAdmin
       .from("orders")
-      .select("order_number, total, shipping_address")
+      .select("order_number, total, shipping_address, created_at")
       .eq("id", orderId)
       .maybeSingle();
     if (!order) return;
@@ -95,13 +95,44 @@ export async function notifyPaymentConfirmed(orderId: string): Promise<void> {
       const { getActiveWhatsAppConfig, sendWhatsAppText } = await import("./whatsapp.server");
       const config = await getActiveWhatsAppConfig(supabaseAdmin);
       if (config) {
+        const { data: items } = await supabaseAdmin
+          .from("order_items")
+          .select("product_name, quantity")
+          .eq("order_id", orderId);
+
         const firstName = (addr.name ?? "").trim().split(/\s+/)[0] ?? "";
-        const greeting = firstName ? `Olá, ${firstName}! ` : "Olá! ";
-        await sendWhatsAppText(
-          config,
-          addr.phone,
-          `${greeting}Seu pagamento do pedido ${order.order_number} foi confirmado. Obrigada pela compra na Flor de Amaranto! 🌸`,
-        );
+        const orderDate = new Date(order.created_at).toLocaleDateString("pt-BR", {
+          timeZone: "America/Sao_Paulo",
+        });
+        const productsList = (items ?? [])
+          .map((i) => `• ${i.product_name} — ${i.quantity}`)
+          .join("\n");
+
+        const message = [
+          "🌸 Flor de Amaranto — Pedido Confirmado! ✨",
+          "",
+          `Olá${firstName ? `, ${firstName}` : ""}! 💐`,
+          "",
+          "Seu pagamento foi confirmado com sucesso e seu pedido já está em preparação. 🥰",
+          "",
+          `📦 Nº do Pedido: ${order.order_number}`,
+          `📅 Data do Pedido: ${orderDate}`,
+          "",
+          "🛍️ Produtos adquiridos:",
+          productsList,
+          "",
+          "✨ Já estamos organizando tudo com muito carinho para preparar sua mercadoria e deixar seu pedido pronto para o envio.",
+          "",
+          "Assim que o pedido for despachado, você receberá as informações de envio e rastreamento para acompanhar a entrega. 📦🚚",
+          "",
+          "💖 Obrigada por escolher a Flor de Amaranto!",
+          "Sua beleza merece uma experiência especial.",
+          "",
+          "🌸 Flor de Amaranto",
+          "Cosméticos e Beleza",
+        ].join("\n");
+
+        await sendWhatsAppText(config, addr.phone, message);
       }
     }
   } catch (err) {
