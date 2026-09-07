@@ -96,6 +96,13 @@ export async function notifyPaymentConfirmed(orderId: string): Promise<void> {
     if (!order) return;
     const addr = (order.shipping_address ?? {}) as ShippingAddress;
 
+    try {
+      const { deductStockForOrder } = await import("./stock.server");
+      await deductStockForOrder(orderId);
+    } catch (err) {
+      console.error("notifyPaymentConfirmed: falha ao baixar estoque", err);
+    }
+
     const emailClaimed = await claimNotification(supabaseAdmin, orderId, "payment_email_sent_at");
     if (emailClaimed && addr.email) {
       const { sendEmail, paymentConfirmedEmailHtml } = await import("./email.server");

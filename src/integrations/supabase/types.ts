@@ -562,6 +562,7 @@ export type Database = {
           shipping: number
           shipping_address: Json | null
           status: Database["public"]["Enums"]["order_status"]
+          stock_deducted_at: string | null
           subtotal: number
           total: number
           tracking_code: string | null
@@ -593,6 +594,7 @@ export type Database = {
           shipping?: number
           shipping_address?: Json | null
           status?: Database["public"]["Enums"]["order_status"]
+          stock_deducted_at?: string | null
           subtotal?: number
           total?: number
           tracking_code?: string | null
@@ -624,6 +626,7 @@ export type Database = {
           shipping?: number
           shipping_address?: Json | null
           status?: Database["public"]["Enums"]["order_status"]
+          stock_deducted_at?: string | null
           subtotal?: number
           total?: number
           tracking_code?: string | null
@@ -1178,6 +1181,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decrement_product_stock: {
+        Args: {
+          p_product_id: string
+          p_qty: number
+        }
+        Returns: { previous_stock: number; new_stock: number }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
