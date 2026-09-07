@@ -22,7 +22,8 @@ type NotificationClaimColumn =
   | "payment_email_sent_at"
   | "payment_whatsapp_sent_at"
   | "shipped_whatsapp_sent_at"
-  | "admin_new_order_email_sent_at";
+  | "admin_new_order_email_sent_at"
+  | "coupon_applied_at";
 
 /** Marca `column` como enviada de forma atômica; retorna false se já tinha sido marcada (ou o pedido não existe). */
 async function claimNotification(
@@ -90,7 +91,7 @@ export async function notifyPaymentConfirmed(orderId: string): Promise<void> {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: order } = await supabaseAdmin
       .from("orders")
-      .select("order_number, total, shipping_address, created_at")
+      .select("order_number, total, shipping_address, created_at, coupon_code")
       .eq("id", orderId)
       .maybeSingle();
     if (!order) return;
@@ -101,6 +102,18 @@ export async function notifyPaymentConfirmed(orderId: string): Promise<void> {
       await deductStockForOrder(orderId);
     } catch (err) {
       console.error("notifyPaymentConfirmed: falha ao baixar estoque", err);
+    }
+
+    if (order.coupon_code) {
+      const couponClaimed = await claimNotification(supabaseAdmin, orderId, "coupon_applied_at");
+      if (couponClaimed) {
+        try {
+          const { incrementCouponUsage } = await import("./coupons.functions");
+          await incrementCouponUsage(order.coupon_code);
+        } catch (err) {
+          console.error("notifyPaymentConfirmed: falha ao registrar uso do cupom", err);
+        }
+      }
     }
 
     const emailClaimed = await claimNotification(supabaseAdmin, orderId, "payment_email_sent_at");

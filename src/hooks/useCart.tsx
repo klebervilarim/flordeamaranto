@@ -21,15 +21,25 @@ export type ShippingChoice = {
   eta: string;
 };
 
+export type AppliedCoupon = {
+  code: string;
+  type: string;
+  value: number;
+  minOrder: number;
+};
+
 type CartState = {
   lines: CartLine[];
   count: number;
   subtotal: number;
   shipping: ShippingChoice | null;
+  coupon: AppliedCoupon | null;
+  discount: number;
   add: (product: Product, quantity?: number) => void;
   remove: (id: string) => void;
   setQuantity: (id: string, quantity: number) => void;
   setShipping: (shipping: ShippingChoice | null) => void;
+  setCoupon: (coupon: AppliedCoupon | null) => void;
   clear: () => void;
 };
 
@@ -39,6 +49,7 @@ const CartContext = createContext<CartState | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [shipping, setShipping] = useState<ShippingChoice | null>(null);
+  const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -50,9 +61,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
           // formato antigo: apenas a lista de itens
           setLines(parsed as CartLine[]);
         } else if (parsed && typeof parsed === "object") {
-          const stored = parsed as { lines?: CartLine[]; shipping?: ShippingChoice | null };
+          const stored = parsed as {
+            lines?: CartLine[];
+            shipping?: ShippingChoice | null;
+            coupon?: AppliedCoupon | null;
+          };
           setLines(stored.lines ?? []);
           setShipping(stored.shipping ?? null);
+          setCoupon(stored.coupon ?? null);
         }
       }
     } catch {
@@ -62,16 +78,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (hydrated) window.localStorage.setItem(KEY, JSON.stringify({ lines, shipping }));
-  }, [lines, shipping, hydrated]);
+    if (hydrated) window.localStorage.setItem(KEY, JSON.stringify({ lines, shipping, coupon }));
+  }, [lines, shipping, coupon, hydrated]);
 
   const value = useMemo<CartState>(() => {
     const subtotal = lines.reduce((sum, l) => sum + l.price * l.quantity, 0);
+    const rawDiscount = !coupon
+      ? 0
+      : coupon.type === "percent"
+        ? subtotal * (coupon.value / 100)
+        : coupon.value;
+    const discount =
+      coupon && subtotal >= coupon.minOrder
+        ? Math.min(Math.round(rawDiscount * 100) / 100, subtotal)
+        : 0;
     return {
       lines,
       count: lines.reduce((sum, l) => sum + l.quantity, 0),
       subtotal,
       shipping,
+      coupon,
+      discount,
       add: (product, quantity = 1) => {
         setLines((prev) => {
           const existing = prev.find((l) => l.id === product.id);
@@ -104,12 +131,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
             : prev.map((l) => (l.id === id ? { ...l, quantity } : l)),
         ),
       setShipping,
+      setCoupon,
       clear: () => {
         setLines([]);
         setShipping(null);
+        setCoupon(null);
       },
     };
-  }, [lines, shipping]);
+  }, [lines, shipping, coupon]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

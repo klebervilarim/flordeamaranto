@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { brl } from "./format";
 import type { UserSupabase } from "./stock.server";
 import { assertAdmin } from "./stock.server";
 
@@ -132,3 +133,72 @@ export const deleteCoupon = createServerFn({ method: "POST" })
     if (error) throw new Error("Falha ao excluir cupom.");
     return { ok: true };
   });
+
+// ---------- Aplicação pelo cliente (sacola/checkout) ----------
+
+export type CouponApplyResult =
+  | { ok: true; code: string; type: string; value: number; minOrder: number; discount: number }
+  | { ok: false; error: string };
+
+/** Verifica e calcula o desconto de um cupom para o subtotal informado. Não exige login. */
+export const validateCoupon = createServerFn({ method: "GET" })
+  .inputValidator((input) =>
+    z.object({ code: z.string().trim().min(1).max(40), subtotal: z.number().min(0) }).parse(input),
+  )
+  .handler(async ({ data }): Promise<CouponApplyResult> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const code = data.code.trim().toUpperCase();
+    const { data: coupon } = await supabaseAdmin
+      .from("coupons")
+      .select("code, type, value, min_order, starts_at, ends_at, max_uses, used_count, active")
+      .eq("code", code)
+      .maybeSingle();
+    if (!coupon || !coupon.active) {
+      return { ok: false, error: "Cupom inválido ou expirado." };
+    }
+    const now = new Date();
+    if (coupon.starts_at && new Date(coupon.starts_at) > now) {
+      return { ok: false, error: "Este cupom ainda não está disponível." };
+    }
+    if (coupon.ends_at && new Date(coupon.ends_at) < now) {
+      return { ok: false, error: "Cupom inválido ou expirado." };
+    }
+    if (coupon.max_uses != null && coupon.used_count >= coupon.max_uses) {
+      return { ok: false, error: "Este cupom atingiu o limite de usos." };
+    }
+    if (data.subtotal < coupon.min_order) {
+      return {
+        ok: false,
+        error: `Pedido mínimo de ${brl(coupon.min_order)} para usar este cupom.`,
+      };
+    }
+
+    const discount =
+      coupon.type === "percent"
+        ? Math.round(data.subtotal * (coupon.value / 100) * 100) / 100
+        : Math.min(coupon.value, data.subtotal);
+
+    return {
+      ok: true,
+      code: coupon.code,
+      type: coupon.type,
+      value: coupon.value,
+      minOrder: coupon.min_order,
+      discount,
+    };
+  });
+
+/** Incrementa o contador de usos de um cupom. Chamado quando o pagamento é confirmado. */
+export async function incrementCouponUsage(code: string): Promise<void> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: coupon } = await supabaseAdmin
+    .from("coupons")
+    .select("id, used_count")
+    .eq("code", code.trim().toUpperCase())
+    .maybeSingle();
+  if (!coupon) return;
+  await supabaseAdmin
+    .from("coupons")
+    .update({ used_count: coupon.used_count + 1 })
+    .eq("id", coupon.id);
+}

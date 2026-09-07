@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import placeholder from "@/assets/product-placeholder.jpg";
+import { CouponInput } from "@/components/cart/CouponInput";
 import { ShippingCalculator } from "@/components/cart/ShippingCalculator";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
@@ -23,9 +24,9 @@ export const Route = createFileRoute("/carrinho")({
 });
 
 function CartPage() {
-  const { lines, subtotal, setQuantity, remove, shipping } = useCart();
+  const { lines, subtotal, setQuantity, remove, shipping, discount } = useCart();
   const shippingPrice = shipping?.price ?? 0;
-  const total = subtotal + shippingPrice;
+  const total = Math.max(subtotal + shippingPrice - discount, 0);
   const parc = installments(total);
 
   if (lines.length === 0) {
@@ -74,9 +75,7 @@ function CartPage() {
                     >
                       {line.name}
                     </Link>
-                    {line.volume && (
-                      <p className="text-xs text-muted-foreground">{line.volume}</p>
-                    )}
+                    {line.volume && <p className="text-xs text-muted-foreground">{line.volume}</p>}
                   </div>
                   <button
                     aria-label="Remover item"
@@ -113,17 +112,16 @@ function CartPage() {
 
         <aside className="h-fit border border-border p-6 lg:sticky lg:top-28">
           <ShippingCalculator />
+          <div className="mt-6">
+            <CouponInput />
+          </div>
           <h2 className="eyebrow mt-6 text-muted-foreground">Resumo</h2>
           <dl className="mt-5 space-y-3 text-sm">
             <Row label="Subtotal" value={brl(subtotal)} />
             <Row
               label="Frete"
               value={
-                shipping
-                  ? shipping.price === 0
-                    ? "Grátis"
-                    : brl(shipping.price)
-                  : "Informe o CEP"
+                shipping ? (shipping.price === 0 ? "Grátis" : brl(shipping.price)) : "Informe o CEP"
               }
             />
             {shipping && (
@@ -131,6 +129,7 @@ function CartPage() {
                 {shipping.name} — {shipping.eta}
               </p>
             )}
+            {discount > 0 && <Row label="Desconto" value={`-${brl(discount)}`} />}
           </dl>
           {subtotal < FREE_SHIPPING_OVER && (
             <p className="mt-4 bg-sand px-3 py-2 text-xs text-cocoa">

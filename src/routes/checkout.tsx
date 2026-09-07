@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { CouponInput } from "@/components/cart/CouponInput";
 import { ShippingOptions, useShippingQuote } from "@/components/cart/ShippingCalculator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -79,7 +80,7 @@ function validateStep<Shape extends z.ZodRawShape>(
 }
 
 function CheckoutPage() {
-  const { lines, subtotal, clear, shipping, setShipping } = useCart();
+  const { lines, subtotal, clear, shipping, setShipping, coupon, discount } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
@@ -106,8 +107,7 @@ function CheckoutPage() {
   const [step2Done, setStep2Done] = useState(false);
 
   const shippingPrice = shipping?.price ?? 0;
-  const discount = 0;
-  const total = subtotal + shippingPrice;
+  const total = Math.max(subtotal + shippingPrice - discount, 0);
 
   const isStep1Filled =
     form.name.trim() !== "" && form.email.trim() !== "" && form.phone.trim() !== "";
@@ -229,6 +229,7 @@ function CheckoutPage() {
           subtotal,
           shipping: shipping.price,
           discount,
+          coupon_code: coupon?.code ?? null,
           total,
           status: "pending",
           notes: `Entrega: ${shipping.name} — ${shipping.eta} (CEP ${shipping.cep})`,
@@ -442,7 +443,8 @@ function CheckoutPage() {
         </div>
 
         <aside className="h-fit border border-border p-6 lg:sticky lg:top-28">
-          <h2 className="eyebrow text-muted-foreground">Resumo</h2>
+          <CouponInput />
+          <h2 className="eyebrow mt-6 text-muted-foreground">Resumo</h2>
           <ul className="mt-5 space-y-3 text-sm">
             {lines.map((l) => (
               <li key={l.id} className="flex justify-between gap-3">
@@ -471,7 +473,7 @@ function CheckoutPage() {
             )}
             {discount > 0 && (
               <div className="flex justify-between text-emerald">
-                <dt>Desconto Pix</dt>
+                <dt>Desconto{coupon ? ` (${coupon.code})` : ""}</dt>
                 <dd>-{brl(discount)}</dd>
               </div>
             )}
