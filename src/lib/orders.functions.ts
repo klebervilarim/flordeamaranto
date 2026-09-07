@@ -47,7 +47,7 @@ export const listOrdersForAdmin = createServerFn({ method: "GET" })
       )
       .order("created_at", { ascending: false })
       .limit(2000);
-    if (error) throw new Error("Falha ao carregar pedidos.");
+    if (error) throw new Error(`Falha ao carregar pedidos: ${error.message}`);
 
     const mapped: AdminOrder[] = (rows ?? []).map((r) => ({
       id: r.id,

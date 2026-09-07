@@ -161,6 +161,8 @@ function PedidosPanel() {
           <div className="grid place-items-center py-16">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
+        ) : ordersQuery.isError ? (
+          <p className="py-16 text-center text-sm text-destructive">{ordersQuery.error.message}</p>
         ) : orders.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">
             Nenhum pedido encontrado.
