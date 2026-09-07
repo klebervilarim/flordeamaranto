@@ -184,6 +184,12 @@ export async function quoteForCep(
       eta: t.sedex[1],
       price: round(t.sedex[0] + t.perKgSedex * (kg - 1)),
     },
+    {
+      id: "retirada",
+      name: "Retirada na loja",
+      eta: "Combinamos o horário após a confirmação",
+      price: 0,
+    },
   ];
 
   return {

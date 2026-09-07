@@ -105,7 +105,10 @@ export function ShippingCalculator() {
     if (digits.length === 8) {
       void quote(digits).then((res) => {
         if (res && res.options.length > 0) {
-          const cheapest = res.options.reduce((a, b) => (a.price <= b.price ? a : b));
+          const deliveryOptions = res.options.filter((o) => o.id !== "retirada");
+          const cheapest = (deliveryOptions.length > 0 ? deliveryOptions : res.options).reduce(
+            (a, b) => (a.price <= b.price ? a : b),
+          );
           setShipping({ cep: digits, ...cheapest });
         }
       });

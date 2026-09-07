@@ -1,6 +1,6 @@
 // Tipos e helpers de frete (seguros para o cliente)
 export type ShippingOption = {
-  id: "pac" | "sedex";
+  id: "pac" | "sedex" | "retirada";
   name: string;
   eta: string;
   price: number;
