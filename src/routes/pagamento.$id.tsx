@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { CheckCircle2, Copy, CreditCard, QrCode } from "lucide-react";
+import { CheckCircle2, Copy, CreditCard, Loader2, QrCode, Tag, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { isValidCpfCnpj } from "@/lib/brazil-document";
+import { applyCouponToOrder } from "@/lib/coupons.functions";
 import { brl } from "@/lib/format";
 import {
   checkOrderPayment,
@@ -38,6 +39,8 @@ type OrderRow = {
   order_number: string;
   subtotal: number;
   shipping: number;
+  discount: number;
+  coupon_code: string | null;
   total: number;
   payment_status: string;
   shipping_address: Record<string, string> | null;
@@ -148,7 +151,9 @@ function PaymentPage() {
       const [{ data: orderData }, { data: itemData }] = await Promise.all([
         supabase
           .from("orders")
-          .select("id, order_number, subtotal, shipping, total, payment_status, shipping_address")
+          .select(
+            "id, order_number, subtotal, shipping, discount, coupon_code, total, payment_status, shipping_address",
+          )
           .eq("id", id)
           .maybeSingle(),
         supabase
@@ -300,7 +305,8 @@ function PaymentPage() {
 
   const subtotal = Number(order.subtotal ?? 0);
   const shippingPrice = Number(order.shipping ?? 0);
-  const total = subtotal + shippingPrice;
+  const discount = Number(order.discount ?? 0);
+  const total = Math.max(subtotal + shippingPrice - discount, 0);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
@@ -441,7 +447,18 @@ function PaymentPage() {
         </div>
 
         <aside className="h-fit border border-border p-6 lg:sticky lg:top-28">
-          <h2 className="eyebrow text-muted-foreground">Resumo</h2>
+          <OrderCouponInput
+            orderId={order.id}
+            couponCode={order.coupon_code}
+            discount={discount}
+            disabled={Boolean(pix) || order.payment_status === "paid"}
+            onApplied={(res) =>
+              setOrder((prev) =>
+                prev ? { ...prev, coupon_code: res.code, discount: res.discount } : prev,
+              )
+            }
+          />
+          <h2 className="eyebrow mt-6 text-muted-foreground">Resumo</h2>
           <dl className="mt-5 space-y-2 text-sm">
             <div className="flex justify-between">
               <dt className="text-muted-foreground">Produtos</dt>
@@ -451,6 +468,12 @@ function PaymentPage() {
               <dt className="text-muted-foreground">Frete</dt>
               <dd>{shippingPrice === 0 ? "Grátis" : brl(shippingPrice)}</dd>
             </div>
+            {discount > 0 && (
+              <div className="flex justify-between text-emerald">
+                <dt>Desconto{order.coupon_code ? ` (${order.coupon_code})` : ""}</dt>
+                <dd>-{brl(discount)}</dd>
+              </div>
+            )}
           </dl>
           <div className="mt-5 flex items-baseline justify-between border-t border-border pt-5">
             <span className="text-sm">Total</span>
@@ -472,6 +495,105 @@ function PaymentPage() {
           </p>
         </aside>
       </div>
+    </div>
+  );
+}
+
+function OrderCouponInput({
+  orderId,
+  couponCode,
+  discount,
+  disabled,
+  onApplied,
+}: {
+  orderId: string;
+  couponCode: string | null;
+  discount: number;
+  disabled: boolean;
+  onApplied: (res: { code: string; discount: number }) => void;
+}) {
+  const applyFn = useServerFn(applyCouponToOrder);
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const apply = async () => {
+    if (!code.trim()) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await applyFn({ data: { orderId, code: code.trim() } });
+      if (res.ok) {
+        onApplied({ code: res.code, discount: res.discount });
+        setCode("");
+        toast.success(`Cupom ${res.code} aplicado!`);
+      } else {
+        setError(res.error);
+      }
+    } catch {
+      setError("Não foi possível validar o cupom. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (couponCode) {
+    return (
+      <div>
+        <Label className="text-xs tracking-[0.12em] uppercase">Cupom de desconto</Label>
+        <div className="mt-2 flex items-center justify-between gap-3 border border-gold/40 bg-gold/5 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Tag className="h-4 w-4 text-gold" />
+            <div>
+              <p className="font-mono text-sm">{couponCode}</p>
+              <p className="text-xs text-muted-foreground">-{brl(discount)}</p>
+            </div>
+          </div>
+          {!disabled && (
+            <button
+              type="button"
+              aria-label="Remover cupom"
+              onClick={() => onApplied({ code: "", discount: 0 })}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <Label htmlFor="order-coupon-code" className="text-xs tracking-[0.12em] uppercase">
+        Cupom de desconto
+      </Label>
+      <div className="mt-2 flex gap-2">
+        <Input
+          id="order-coupon-code"
+          value={code}
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              void apply();
+            }
+          }}
+          placeholder="Digite o código do cupom"
+          className="font-mono"
+          disabled={disabled}
+        />
+        <Button
+          type="button"
+          variant="gold"
+          disabled={disabled || loading || !code.trim()}
+          onClick={() => void apply()}
+        >
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Aplicar"}
+        </Button>
+      </div>
+      {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
     </div>
   );
 }

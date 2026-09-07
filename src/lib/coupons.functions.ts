@@ -134,58 +134,90 @@ export const deleteCoupon = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-// ---------- Aplicação pelo cliente (sacola/checkout) ----------
+// ---------- Aplicação pelo cliente (sacola/checkout/pagamento) ----------
 
 export type CouponApplyResult =
   | { ok: true; code: string; type: string; value: number; minOrder: number; discount: number }
   | { ok: false; error: string };
+
+/** Verifica e calcula o desconto de um cupom para o subtotal informado. */
+async function validateCouponCore(rawCode: string, subtotal: number): Promise<CouponApplyResult> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const code = rawCode.trim().toUpperCase();
+  const { data: coupon } = await supabaseAdmin
+    .from("coupons")
+    .select("code, type, value, min_order, starts_at, ends_at, max_uses, used_count, active")
+    .eq("code", code)
+    .maybeSingle();
+  if (!coupon || !coupon.active) {
+    return { ok: false, error: "Cupom inválido ou expirado." };
+  }
+  const now = new Date();
+  if (coupon.starts_at && new Date(coupon.starts_at) > now) {
+    return { ok: false, error: "Este cupom ainda não está disponível." };
+  }
+  if (coupon.ends_at && new Date(coupon.ends_at) < now) {
+    return { ok: false, error: "Cupom inválido ou expirado." };
+  }
+  if (coupon.max_uses != null && coupon.used_count >= coupon.max_uses) {
+    return { ok: false, error: "Este cupom atingiu o limite de usos." };
+  }
+  if (subtotal < coupon.min_order) {
+    return { ok: false, error: `Pedido mínimo de ${brl(coupon.min_order)} para usar este cupom.` };
+  }
+
+  const discount =
+    coupon.type === "percent"
+      ? Math.round(subtotal * (coupon.value / 100) * 100) / 100
+      : Math.min(coupon.value, subtotal);
+
+  return {
+    ok: true,
+    code: coupon.code,
+    type: coupon.type,
+    value: coupon.value,
+    minOrder: coupon.min_order,
+    discount,
+  };
+}
 
 /** Verifica e calcula o desconto de um cupom para o subtotal informado. Não exige login. */
 export const validateCoupon = createServerFn({ method: "GET" })
   .inputValidator((input) =>
     z.object({ code: z.string().trim().min(1).max(40), subtotal: z.number().min(0) }).parse(input),
   )
-  .handler(async ({ data }): Promise<CouponApplyResult> => {
+  .handler(async ({ data }): Promise<CouponApplyResult> =>
+    validateCouponCore(data.code, data.subtotal),
+  );
+
+/** Aplica um cupom a um pedido já criado (tela de pagamento), gravando coupon_code/discount. */
+export const applyCouponToOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({ orderId: z.string().uuid(), code: z.string().trim().min(1).max(40) }).parse(input),
+  )
+  .handler(async ({ data, context }): Promise<CouponApplyResult> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const code = data.code.trim().toUpperCase();
-    const { data: coupon } = await supabaseAdmin
-      .from("coupons")
-      .select("code, type, value, min_order, starts_at, ends_at, max_uses, used_count, active")
-      .eq("code", code)
+    const { data: order } = await supabaseAdmin
+      .from("orders")
+      .select("id, user_id, subtotal, payment_status")
+      .eq("id", data.orderId)
       .maybeSingle();
-    if (!coupon || !coupon.active) {
-      return { ok: false, error: "Cupom inválido ou expirado." };
+    if (!order || order.user_id !== context.userId) {
+      return { ok: false, error: "Pedido não encontrado." };
     }
-    const now = new Date();
-    if (coupon.starts_at && new Date(coupon.starts_at) > now) {
-      return { ok: false, error: "Este cupom ainda não está disponível." };
+    if (order.payment_status === "paid") {
+      return { ok: false, error: "Este pedido já foi pago." };
     }
-    if (coupon.ends_at && new Date(coupon.ends_at) < now) {
-      return { ok: false, error: "Cupom inválido ou expirado." };
-    }
-    if (coupon.max_uses != null && coupon.used_count >= coupon.max_uses) {
-      return { ok: false, error: "Este cupom atingiu o limite de usos." };
-    }
-    if (data.subtotal < coupon.min_order) {
-      return {
-        ok: false,
-        error: `Pedido mínimo de ${brl(coupon.min_order)} para usar este cupom.`,
-      };
-    }
+    const result = await validateCouponCore(data.code, Number(order.subtotal));
+    if (!result.ok) return result;
 
-    const discount =
-      coupon.type === "percent"
-        ? Math.round(data.subtotal * (coupon.value / 100) * 100) / 100
-        : Math.min(coupon.value, data.subtotal);
-
-    return {
-      ok: true,
-      code: coupon.code,
-      type: coupon.type,
-      value: coupon.value,
-      minOrder: coupon.min_order,
-      discount,
-    };
+    const { error } = await supabaseAdmin
+      .from("orders")
+      .update({ coupon_code: result.code, discount: result.discount })
+      .eq("id", data.orderId);
+    if (error) return { ok: false, error: "Falha ao aplicar o cupom." };
+    return result;
   });
 
 /** Incrementa o contador de usos de um cupom. Chamado quando o pagamento é confirmado. */

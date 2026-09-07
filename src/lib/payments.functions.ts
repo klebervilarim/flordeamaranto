@@ -39,7 +39,7 @@ export const processDirectPayment = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: order, error } = await supabase
       .from("orders")
-      .select("id, order_number, shipping, payment_status, user_id")
+      .select("id, order_number, shipping, discount, payment_status, user_id")
       .eq("id", data.orderId)
       .maybeSingle();
     if (error || !order || order.user_id !== userId) {
@@ -64,7 +64,11 @@ export const processDirectPayment = createServerFn({ method: "POST" })
         .reduce((sum, item) => sum + Number(item.unit_price) * Number(item.quantity), 0)
         .toFixed(2),
     );
-    const total = Number((itemsTotal + Number(order.shipping ?? 0)).toFixed(2));
+    const total = Number(
+      Math.max(itemsTotal + Number(order.shipping ?? 0) - Number(order.discount ?? 0), 0).toFixed(
+        2,
+      ),
+    );
     if (total <= 0) return { ok: false as const, error: "Valor do pedido inválido." };
 
     try {
@@ -147,7 +151,9 @@ export const startCheckoutPro = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: order, error } = await supabase
       .from("orders")
-      .select("id, order_number, subtotal, shipping, payment_status, user_id, shipping_address")
+      .select(
+        "id, order_number, subtotal, shipping, discount, payment_status, user_id, shipping_address",
+      )
       .eq("id", data.orderId)
       .maybeSingle();
     if (error || !order) return { ok: false as const, error: "Pedido não encontrado." };
@@ -173,7 +179,9 @@ export const startCheckoutPro = createServerFn({ method: "POST" })
         .reduce((sum, item) => sum + Number(item.unit_price) * Number(item.quantity), 0)
         .toFixed(2),
     );
-    const total = Number((itemsTotal + Number(order.shipping)).toFixed(2));
+    const total = Number(
+      Math.max(itemsTotal + Number(order.shipping) - Number(order.discount ?? 0), 0).toFixed(2),
+    );
     if (total <= 0) return { ok: false as const, error: "Valor do pedido inválido." };
 
     const { createCheckoutPreference } = await import("./mercadopago.server");
@@ -216,7 +224,6 @@ export const startCheckoutPro = createServerFn({ method: "POST" })
           payment_provider: "mercadopago",
           payment_method: "checkout_pro",
           payment_status: "pending",
-          discount: 0,
           total,
         })
         .eq("id", order.id);

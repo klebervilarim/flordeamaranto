@@ -78,7 +78,7 @@ export function CouponInput() {
               void apply();
             }
           }}
-          placeholder="BEMVINDO5"
+          placeholder="Digite o código do cupom"
           className="font-mono"
         />
         <Button
