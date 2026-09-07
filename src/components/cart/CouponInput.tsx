@@ -72,12 +72,18 @@ export function CouponInput() {
           id="coupon-code"
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              void apply();
+            }
+          }}
           placeholder="BEMVINDO5"
           className="font-mono"
         />
         <Button
           type="button"
-          variant="outlineInk"
+          variant="gold"
           disabled={loading || !code.trim()}
           onClick={() => void apply()}
         >
