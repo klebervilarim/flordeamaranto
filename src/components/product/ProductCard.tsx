@@ -71,16 +71,6 @@ export function ProductCard({ product }: { product: Product }) {
         >
           <Heart className={cn("h-4 w-4", fav && "fill-destructive text-destructive")} />
         </button>
-
-        {!soldOut && (
-          <div className="pointer-events-none absolute bottom-0 left-0 w-[150%] origin-center translate-y-1/2 -translate-x-1/2 -rotate-45">
-            <div className="border-y border-gold/70 bg-ink py-1 text-center shadow-md">
-              <span className="text-[0.55rem] font-bold tracking-[0.2em] text-gold uppercase">
-                Original
-              </span>
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="flex flex-1 flex-col pt-3">
