@@ -3,7 +3,7 @@ import { Heart, Star } from "lucide-react";
 import placeholder from "@/assets/product-placeholder.jpg";
 import { cn } from "@/lib/utils";
 import { brl, discountPercent, installments } from "@/lib/format";
-import { ORIGIN_LABELS, PRODUCT_TYPE_LABELS, type Product } from "@/lib/catalog";
+import { GENDER_LABELS, ORIGIN_LABELS, PRODUCT_TYPE_LABELS, type Product } from "@/lib/catalog";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Button } from "@/components/ui/button";
@@ -84,6 +84,12 @@ export function ProductCard({ product }: { product: Product }) {
           {product.origin ? ` · ${ORIGIN_LABELS[product.origin] ?? product.origin}` : ""}
           {product.volume ? ` · ${product.volume}` : ""}
         </p>
+
+        {product.gender && (
+          <p className="mt-0.5 text-xs text-muted-foreground italic">
+            {GENDER_LABELS[product.gender] ?? product.gender}
+          </p>
+        )}
 
         {product.rating > 0 && (
           <p className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
