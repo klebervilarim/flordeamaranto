@@ -559,7 +559,6 @@ export type Database = {
           pix_qr_code: string | null
           pix_qr_code_base64: string | null
           pix_ticket_url: string | null
-          shipped_email_sent_at: string | null
           shipped_whatsapp_sent_at: string | null
           shipping: number
           shipping_address: Json | null
@@ -593,7 +592,6 @@ export type Database = {
           pix_qr_code?: string | null
           pix_qr_code_base64?: string | null
           pix_ticket_url?: string | null
-          shipped_email_sent_at?: string | null
           shipped_whatsapp_sent_at?: string | null
           shipping?: number
           shipping_address?: Json | null
@@ -627,7 +625,6 @@ export type Database = {
           pix_qr_code?: string | null
           pix_qr_code_base64?: string | null
           pix_ticket_url?: string | null
-          shipped_email_sent_at?: string | null
           shipped_whatsapp_sent_at?: string | null
           shipping?: number
           shipping_address?: Json | null
@@ -1187,13 +1184,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      decrement_product_stock: {
-        Args: {
-          p_product_id: string
-          p_qty: number
-        }
-        Returns: { previous_stock: number; new_stock: number }[]
-      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
