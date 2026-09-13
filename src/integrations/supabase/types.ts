@@ -1187,6 +1187,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decrement_product_stock: {
+        Args: { p_product_id: string; p_qty: number }
+        Returns: {
+          new_stock: number
+          previous_stock: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
