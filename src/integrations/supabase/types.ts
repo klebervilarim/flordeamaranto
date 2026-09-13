@@ -559,6 +559,7 @@ export type Database = {
           pix_qr_code: string | null
           pix_qr_code_base64: string | null
           pix_ticket_url: string | null
+          shipped_email_sent_at: string | null
           shipped_whatsapp_sent_at: string | null
           shipping: number
           shipping_address: Json | null
@@ -592,6 +593,7 @@ export type Database = {
           pix_qr_code?: string | null
           pix_qr_code_base64?: string | null
           pix_ticket_url?: string | null
+          shipped_email_sent_at?: string | null
           shipped_whatsapp_sent_at?: string | null
           shipping?: number
           shipping_address?: Json | null
@@ -625,6 +627,7 @@ export type Database = {
           pix_qr_code?: string | null
           pix_qr_code_base64?: string | null
           pix_ticket_url?: string | null
+          shipped_email_sent_at?: string | null
           shipped_whatsapp_sent_at?: string | null
           shipping?: number
           shipping_address?: Json | null

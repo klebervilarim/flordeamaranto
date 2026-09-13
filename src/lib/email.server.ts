@@ -1,7 +1,7 @@
 import logoAsset from "@/assets/logo-flor-de-amaranto.png.asset.json";
 import { brl } from "./format";
 
-const RESEND_API = "https://api.resend.com/emails";
+const STORE_EMAIL = "comercial@flordeamaranto.com.br";
 
 function siteUrl() {
   return process.env["PUBLIC_SITE_URL"] ?? "https://flordeamaranto.lovable.app";
@@ -11,27 +11,35 @@ export function logoUrl() {
   return `${siteUrl()}${logoAsset.url}`;
 }
 
+/** Envia e-mail via SMTP da Hostinger (conexão TCP direta, só existe no runtime do Cloudflare Workers). */
 export async function sendEmail(input: { to: string; subject: string; html: string }) {
-  const apiKey = process.env["RESEND_API_KEY"];
-  if (!apiKey) {
-    console.error("email não enviado: RESEND_API_KEY ausente");
+  const host = process.env["HOSTINGER_SMTP_HOST"] ?? "smtp.hostinger.com";
+  const port = Number(process.env["HOSTINGER_SMTP_PORT"] ?? 465);
+  const username = process.env["HOSTINGER_SMTP_USER"] ?? STORE_EMAIL;
+  const password = process.env["HOSTINGER_SMTP_PASSWORD"];
+  if (!password) {
+    console.error("email não enviado: HOSTINGER_SMTP_PASSWORD ausente");
     return;
   }
-  const from = process.env["RESEND_FROM_EMAIL"] ?? "Flor de Amaranto <onboarding@resend.dev>";
   try {
-    const res = await fetch(RESEND_API, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
+    const { WorkerMailer } = await import("worker-mailer");
+    await WorkerMailer.send(
+      {
+        host,
+        port,
+        secure: port === 465,
+        credentials: { username, password },
+        authType: "plain",
       },
-      body: JSON.stringify({ from, to: input.to, subject: input.subject, html: input.html }),
-    });
-    if (!res.ok) {
-      console.error("resend error", res.status, await res.text());
-    }
+      {
+        from: { name: "Flor de Amaranto", email: username },
+        to: input.to,
+        subject: input.subject,
+        html: input.html,
+      },
+    );
   } catch (err) {
-    console.error("resend request failed", err);
+    console.error("hostinger smtp send failed", err);
   }
 }
 
@@ -84,17 +92,67 @@ export function pixGeneratedEmailHtml(input: {
   return emailShell("Seu Pix foi gerado", body);
 }
 
+function itemsListHtml(items: { name: string; quantity: number }[]) {
+  return items.map((i) => `<li style="margin:0 0 4px;">${i.quantity}× ${i.name}</li>`).join("");
+}
+
 export function paymentConfirmedEmailHtml(input: {
+  firstName: string;
   orderNumber: string;
-  total: number;
+  orderDate: string;
+  items: { name: string; quantity: number }[];
   orderUrl: string;
 }) {
   const body = `
     <p style="font-size:14px;line-height:1.6;margin:0 0 16px;">
-      Seu pagamento do pedido <strong>${input.orderNumber}</strong> foi confirmado. Obrigada pela compra!
+      Olá${input.firstName ? `, ${input.firstName}` : ""}! 💐<br/><br/>
+      Seu pagamento foi confirmado com sucesso e seu pedido já está em preparação. 🥰
     </p>
-    <p style="font-size:28px;margin:0 0 24px;">${brl(input.total)}</p>
+    <p style="font-size:13px;margin:0 0 4px;"><strong>📦 Nº do Pedido:</strong> ${input.orderNumber}</p>
+    <p style="font-size:13px;margin:0 0 16px;"><strong>📅 Data do Pedido:</strong> ${input.orderDate}</p>
+    <p style="font-size:13px;margin:0 0 8px;"><strong>🛍️ Produtos adquiridos:</strong></p>
+    <ul style="font-size:13px;margin:0 0 16px;padding-left:18px;">${itemsListHtml(input.items)}</ul>
+    <p style="font-size:14px;line-height:1.6;margin:0 0 16px;">
+      ✨ Já estamos organizando tudo com muito carinho para preparar sua mercadoria e deixar seu pedido pronto para o envio.
+    </p>
+    <p style="font-size:14px;line-height:1.6;margin:0 0 24px;">
+      Assim que o pedido for despachado, você receberá as informações de envio e rastreamento para acompanhar a entrega. 📦🚚
+    </p>
     <a href="${input.orderUrl}" style="display:inline-block;padding:12px 24px;background:#2a2320;color:#f5f1ea;text-decoration:none;font-size:13px;letter-spacing:0.04em;">Acompanhar pedido</a>
+    <p style="font-size:13px;line-height:1.6;margin:24px 0 0;">
+      💖 Obrigada por escolher a Flor de Amaranto!<br/>Sua beleza merece uma experiência especial.
+    </p>
   `;
-  return emailShell("Pagamento confirmado", body);
+  return emailShell("Pedido confirmado! ✨", body);
+}
+
+export function orderShippedEmailHtml(input: {
+  firstName: string;
+  orderNumber: string;
+  orderDate: string;
+  items: { name: string; quantity: number }[];
+  trackingCode: string | null;
+  carrier: string | null;
+}) {
+  const body = `
+    <p style="font-size:14px;line-height:1.6;margin:0 0 16px;">
+      Olá${input.firstName ? `, ${input.firstName}` : ""}! 💐<br/><br/>
+      Temos uma ótima notícia: seu pedido já foi despachado! 🥰
+    </p>
+    <p style="font-size:13px;margin:0 0 4px;"><strong>📦 Nº do Pedido:</strong> ${input.orderNumber}</p>
+    <p style="font-size:13px;margin:0 0 16px;"><strong>📅 Data do Pedido:</strong> ${input.orderDate}</p>
+    <p style="font-size:13px;margin:0 0 8px;"><strong>🛍️ Produtos enviados:</strong></p>
+    <ul style="font-size:13px;margin:0 0 16px;padding-left:18px;">${itemsListHtml(input.items)}</ul>
+    <p style="font-size:14px;line-height:1.6;margin:0 0 16px;">🚚 Seu pedido já está a caminho!</p>
+    <p style="font-size:13px;margin:0 0 4px;"><strong>🔎 Código de rastreamento:</strong> ${input.trackingCode ?? "-"}</p>
+    <p style="font-size:13px;margin:0 0 24px;"><strong>📍 Transportadora:</strong> ${input.carrier ?? "-"}</p>
+    <p style="font-size:14px;line-height:1.6;margin:0 0 16px;">
+      Você já pode acompanhar o trajeto da sua encomenda através do código de rastreamento acima.
+    </p>
+    <p style="font-size:13px;line-height:1.6;margin:0;">
+      💖 Preparamos tudo com muito carinho e agora é só aguardar a chegada dos seus produtos!<br/><br/>
+      Obrigada por escolher a Flor de Amaranto. 🌸<br/>Esperamos que você ame sua experiência!
+    </p>
+  `;
+  return emailShell("Seu pedido foi enviado! 📦✨", body);
 }

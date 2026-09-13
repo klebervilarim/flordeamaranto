@@ -22,6 +22,7 @@ type NotificationClaimColumn =
   | "payment_email_sent_at"
   | "payment_whatsapp_sent_at"
   | "shipped_whatsapp_sent_at"
+  | "shipped_email_sent_at"
   | "admin_new_order_email_sent_at"
   | "coupon_applied_at";
 
@@ -96,6 +97,14 @@ export async function notifyPaymentConfirmed(orderId: string): Promise<void> {
       .maybeSingle();
     if (!order) return;
     const addr = (order.shipping_address ?? {}) as ShippingAddress;
+    const firstName = firstNameOf(addr);
+    const orderDate = formatOrderDate(order.created_at);
+
+    const { data: itemRows } = await supabaseAdmin
+      .from("order_items")
+      .select("product_name, quantity")
+      .eq("order_id", orderId);
+    const items = (itemRows ?? []).map((i) => ({ name: i.product_name, quantity: i.quantity }));
 
     try {
       const { deductStockForOrder } = await import("./stock.server");
@@ -121,10 +130,12 @@ export async function notifyPaymentConfirmed(orderId: string): Promise<void> {
       const { sendEmail, paymentConfirmedEmailHtml } = await import("./email.server");
       await sendEmail({
         to: addr.email,
-        subject: `Pagamento confirmado — Pedido ${order.order_number}`,
+        subject: `Pedido confirmado — Pedido ${order.order_number}`,
         html: paymentConfirmedEmailHtml({
+          firstName,
           orderNumber: order.order_number,
-          total: Number(order.total),
+          orderDate,
+          items,
           orderUrl: `${siteUrl()}/pagamento/sucesso/${orderId}`,
         }),
       });
@@ -139,16 +150,7 @@ export async function notifyPaymentConfirmed(orderId: string): Promise<void> {
       const { getActiveWhatsAppConfig, sendWhatsAppText } = await import("./whatsapp.server");
       const config = await getActiveWhatsAppConfig(supabaseAdmin);
       if (config) {
-        const { data: items } = await supabaseAdmin
-          .from("order_items")
-          .select("product_name, quantity")
-          .eq("order_id", orderId);
-
-        const firstName = firstNameOf(addr);
-        const orderDate = formatOrderDate(order.created_at);
-        const productsList = (items ?? [])
-          .map((i) => `• ${i.product_name} — ${i.quantity}`)
-          .join("\n");
+        const productsList = items.map((i) => `• ${i.name} — ${i.quantity}`).join("\n");
 
         const message = [
           "🌸 Flor de Amaranto — Pedido Confirmado! ✨",
@@ -243,13 +245,10 @@ export async function notifyAdminNewOrder(orderId: string): Promise<void> {
   }
 }
 
-/** Avisa o cliente por WhatsApp quando o pedido é despachado. */
+/** Avisa o cliente por e-mail e WhatsApp quando o pedido é despachado. */
 export async function notifyOrderShipped(orderId: string): Promise<void> {
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const claimed = await claimNotification(supabaseAdmin, orderId, "shipped_whatsapp_sent_at");
-    if (!claimed) return;
-
     const { data: order } = await supabaseAdmin
       .from("orders")
       .select("order_number, shipping_address, created_at, tracking_code, carrier")
@@ -257,49 +256,75 @@ export async function notifyOrderShipped(orderId: string): Promise<void> {
       .maybeSingle();
     if (!order) return;
     const addr = (order.shipping_address ?? {}) as ShippingAddress;
-    if (!addr.phone) return;
+    const firstName = firstNameOf(addr);
+    const orderDate = formatOrderDate(order.created_at);
 
-    const { getActiveWhatsAppConfig, sendWhatsAppText } = await import("./whatsapp.server");
-    const config = await getActiveWhatsAppConfig(supabaseAdmin);
-    if (!config) return;
-
-    const { data: items } = await supabaseAdmin
+    const { data: itemRows } = await supabaseAdmin
       .from("order_items")
       .select("product_name, quantity")
       .eq("order_id", orderId);
+    const items = (itemRows ?? []).map((i) => ({ name: i.product_name, quantity: i.quantity }));
 
-    const productsList = (items ?? []).map((i) => `• ${i.product_name} — ${i.quantity}`).join("\n");
+    const emailClaimed = await claimNotification(supabaseAdmin, orderId, "shipped_email_sent_at");
+    if (emailClaimed && addr.email) {
+      const { sendEmail, orderShippedEmailHtml } = await import("./email.server");
+      await sendEmail({
+        to: addr.email,
+        subject: `Pedido enviado — Pedido ${order.order_number}`,
+        html: orderShippedEmailHtml({
+          firstName,
+          orderNumber: order.order_number,
+          orderDate,
+          items,
+          trackingCode: order.tracking_code,
+          carrier: order.carrier,
+        }),
+      });
+    }
 
-    const message = [
-      "🌸 Flor de Amaranto — Seu Pedido Foi Enviado! 📦✨",
-      "",
-      `Olá${firstNameOf(addr) ? `, ${firstNameOf(addr)}` : ""}! 💐`,
-      "",
-      "Temos uma ótima notícia: seu pedido já foi despachado! 🥰",
-      "",
-      `📦 Nº do Pedido: ${order.order_number}`,
-      `📅 Data do Pedido: ${formatOrderDate(order.created_at)}`,
-      "",
-      "🛍️ Produtos enviados:",
-      productsList,
-      "",
-      "🚚 Seu pedido já está a caminho!",
-      "",
-      `🔎 Código de rastreamento: ${order.tracking_code ?? "-"}`,
-      `📍 Transportadora: ${order.carrier ?? "-"}`,
-      "",
-      "Você já pode acompanhar o trajeto da sua encomenda através do código de rastreamento acima.",
-      "",
-      "💖 Preparamos tudo com muito carinho e agora é só aguardar a chegada dos seus produtos!",
-      "",
-      "Obrigada por escolher a Flor de Amaranto. 🌸",
-      "Esperamos que você ame sua experiência!",
-      "",
-      "✨ Flor de Amaranto",
-      "Cosméticos e Beleza",
-    ].join("\n");
+    const whatsappClaimed = await claimNotification(
+      supabaseAdmin,
+      orderId,
+      "shipped_whatsapp_sent_at",
+    );
+    if (whatsappClaimed && addr.phone) {
+      const { getActiveWhatsAppConfig, sendWhatsAppText } = await import("./whatsapp.server");
+      const config = await getActiveWhatsAppConfig(supabaseAdmin);
+      if (config) {
+        const productsList = items.map((i) => `• ${i.name} — ${i.quantity}`).join("\n");
 
-    await sendWhatsAppText(config, addr.phone, message);
+        const message = [
+          "🌸 Flor de Amaranto — Seu Pedido Foi Enviado! 📦✨",
+          "",
+          `Olá${firstName ? `, ${firstName}` : ""}! 💐`,
+          "",
+          "Temos uma ótima notícia: seu pedido já foi despachado! 🥰",
+          "",
+          `📦 Nº do Pedido: ${order.order_number}`,
+          `📅 Data do Pedido: ${orderDate}`,
+          "",
+          "🛍️ Produtos enviados:",
+          productsList,
+          "",
+          "🚚 Seu pedido já está a caminho!",
+          "",
+          `🔎 Código de rastreamento: ${order.tracking_code ?? "-"}`,
+          `📍 Transportadora: ${order.carrier ?? "-"}`,
+          "",
+          "Você já pode acompanhar o trajeto da sua encomenda através do código de rastreamento acima.",
+          "",
+          "💖 Preparamos tudo com muito carinho e agora é só aguardar a chegada dos seus produtos!",
+          "",
+          "Obrigada por escolher a Flor de Amaranto. 🌸",
+          "Esperamos que você ame sua experiência!",
+          "",
+          "✨ Flor de Amaranto",
+          "Cosméticos e Beleza",
+        ].join("\n");
+
+        await sendWhatsAppText(config, addr.phone, message);
+      }
+    }
   } catch (err) {
     console.error("notifyOrderShipped failed", err);
   }
