@@ -1,0 +1,1 @@
+ALTER FUNCTION public.decrement_product_stock(uuid, integer) SECURITY INVOKER;
