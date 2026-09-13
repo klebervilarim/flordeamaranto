@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { toast } from "sonner";
 import type { Product } from "@/lib/catalog";
 
 export type CartLine = {
@@ -35,11 +34,14 @@ type CartState = {
   shipping: ShippingChoice | null;
   coupon: AppliedCoupon | null;
   discount: number;
+  cartOpen: boolean;
   add: (product: Product, quantity?: number) => void;
   remove: (id: string) => void;
   setQuantity: (id: string, quantity: number) => void;
   setShipping: (shipping: ShippingChoice | null) => void;
   setCoupon: (coupon: AppliedCoupon | null) => void;
+  openCart: () => void;
+  closeCart: () => void;
   clear: () => void;
 };
 
@@ -50,6 +52,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [shipping, setShipping] = useState<ShippingChoice | null>(null);
   const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
+  const [cartOpen, setCartOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -99,6 +102,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       shipping,
       coupon,
       discount,
+      cartOpen,
       add: (product, quantity = 1) => {
         setLines((prev) => {
           const existing = prev.find((l) => l.id === product.id);
@@ -121,7 +125,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
             },
           ];
         });
-        toast.success("Adicionado à sacola", { description: product.name });
       },
       remove: (id) => setLines((prev) => prev.filter((l) => l.id !== id)),
       setQuantity: (id, quantity) =>
@@ -132,13 +135,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
         ),
       setShipping,
       setCoupon,
+      openCart: () => setCartOpen(true),
+      closeCart: () => setCartOpen(false),
       clear: () => {
         setLines([]);
         setShipping(null);
         setCoupon(null);
       },
     };
-  }, [lines, shipping, coupon]);
+  }, [lines, shipping, coupon, cartOpen]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

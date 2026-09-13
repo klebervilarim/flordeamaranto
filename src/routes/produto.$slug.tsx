@@ -3,10 +3,22 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Heart, Minus, Plus, Star, Truck, ShieldCheck, RotateCcw } from "lucide-react";
 import placeholder from "@/assets/product-placeholder.jpg";
+import { showAddedToCartToast } from "@/components/cart/AddedToCartToast";
 import { Button } from "@/components/ui/button";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { ProductGrid } from "@/components/product/ProductGrid";
-import { fetchProductBySlug, fetchProductImages, fetchProducts, GENDER_LABELS, ORIGIN_LABELS } from "@/lib/catalog";
+import {
+  fetchProductBySlug,
+  fetchProductImages,
+  fetchProducts,
+  GENDER_LABELS,
+  ORIGIN_LABELS,
+} from "@/lib/catalog";
 import { brl, discountPercent, installments, stockLabel } from "@/lib/format";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -20,7 +32,10 @@ export const Route = createFileRoute("/produto/$slug")({
   head: ({ params, loaderData }) => {
     if (!loaderData) {
       return {
-        meta: [{ title: "Produto indisponível | Flor de Amaranto" }, { name: "robots", content: "noindex" }],
+        meta: [
+          { title: "Produto indisponível | Flor de Amaranto" },
+          { name: "robots", content: "noindex" },
+        ],
       };
     }
     const p = loaderData.product;
@@ -49,7 +64,8 @@ export const Route = createFileRoute("/produto/$slug")({
               "@type": "Offer",
               priceCurrency: "BRL",
               price: p.sale_price ?? p.price,
-              availability: p.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+              availability:
+                p.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
             },
           }),
         },
@@ -74,7 +90,7 @@ function Missing() {
 
 function ProductPage() {
   const { product } = Route.useLoaderData();
-  const { add } = useCart();
+  const { add, openCart } = useCart();
   const { isFavorite, toggle } = useFavorites();
   const [qty, setQty] = useState(1);
   const [active, setActive] = useState(0);
@@ -94,7 +110,6 @@ function ProductPage() {
     queryKey: ["related", product.id, product.product_type],
     queryFn: () => fetchProducts({ productTypes: [product.product_type], sort: "rating" }),
   });
-
 
   const specs: [string, string][] = [
     ["Marca", product.brands?.name ?? "—"],
@@ -158,7 +173,6 @@ function ProductPage() {
           )}
         </div>
 
-
         <div>
           {product.brands && (
             <Link
@@ -203,7 +217,9 @@ function ProductPage() {
             <div className="flex items-baseline gap-3">
               <span className="font-display text-4xl">{brl(price)}</span>
               {off > 0 && (
-                <span className="text-sm text-muted-foreground line-through">{brl(product.price)}</span>
+                <span className="text-sm text-muted-foreground line-through">
+                  {brl(product.price)}
+                </span>
               )}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -235,9 +251,12 @@ function ProductPage() {
               size="xl"
               className="flex-1"
               disabled={product.stock <= 0}
-              onClick={() => add(product, qty)}
+              onClick={() => {
+                add(product, qty);
+                showAddedToCartToast(product, qty, openCart);
+              }}
             >
-              {product.stock > 0 ? "Adicionar à sacola" : "Esgotado"}
+              {product.stock > 0 ? "Comprar" : "Esgotado"}
             </Button>
             <Button
               variant="outlineInk"

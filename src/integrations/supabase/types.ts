@@ -540,6 +540,7 @@ export type Database = {
         Row: {
           admin_new_order_email_sent_at: string | null
           carrier: string | null
+          commercial_email_sent_at: string | null
           coupon_applied_at: string | null
           coupon_code: string | null
           created_at: string
@@ -574,6 +575,7 @@ export type Database = {
         Insert: {
           admin_new_order_email_sent_at?: string | null
           carrier?: string | null
+          commercial_email_sent_at?: string | null
           coupon_applied_at?: string | null
           coupon_code?: string | null
           created_at?: string
@@ -608,6 +610,7 @@ export type Database = {
         Update: {
           admin_new_order_email_sent_at?: string | null
           carrier?: string | null
+          commercial_email_sent_at?: string | null
           coupon_applied_at?: string | null
           coupon_code?: string | null
           created_at?: string

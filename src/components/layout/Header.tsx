@@ -51,7 +51,7 @@ const NAV_SIMPLE = [
 ] as const;
 
 export function Header() {
-  const { count } = useCart();
+  const { count, openCart } = useCart();
   const { ids } = useFavorites();
   const { isAdmin } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -284,14 +284,15 @@ export function Header() {
             <Heart className="h-5 w-5" />
             {ids.length > 0 && <Badge value={ids.length} />}
           </Link>
-          <Link
-            to="/carrinho"
+          <button
+            type="button"
+            onClick={openCart}
             aria-label="Sacola"
             className="relative grid h-10 w-10 place-items-center"
           >
-            <ShoppingBag className="h-5 w-5" />
+            <ShoppingBag className="h-6 w-6" />
             {count > 0 && <Badge value={count} />}
-          </Link>
+          </button>
         </div>
       </div>
 

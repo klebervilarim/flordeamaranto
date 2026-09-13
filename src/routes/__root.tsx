@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/hooks/useAuth";
 import { CartProvider } from "@/hooks/useCart";
+import { CartDrawer } from "@/components/cart/CartDrawer";
 import { FavoritesProvider } from "@/hooks/useFavorites";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -147,6 +148,7 @@ function RootComponent() {
             </div>
             <WhatsAppButton />
             <BottomNav />
+            <CartDrawer />
             <Toaster position="top-center" />
           </CartProvider>
         </FavoritesProvider>

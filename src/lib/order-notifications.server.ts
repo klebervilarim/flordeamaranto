@@ -12,6 +12,7 @@ type ShippingAddress = {
 };
 
 const ADMIN_NOTIFICATION_EMAIL = "klebervilarim@hotmail.com";
+const COMMERCIAL_NOTIFICATION_EMAIL = "comercial@flordeamaranto.com.br";
 
 function siteUrl() {
   return process.env["PUBLIC_SITE_URL"] ?? "https://flordeamaranto.lovable.app";
@@ -24,6 +25,7 @@ type NotificationClaimColumn =
   | "shipped_whatsapp_sent_at"
   | "shipped_email_sent_at"
   | "admin_new_order_email_sent_at"
+  | "commercial_email_sent_at"
   | "coupon_applied_at";
 
 /** Marca `column` como enviada de forma atômica; retorna false se já tinha sido marcada (ou o pedido não existe). */
@@ -51,6 +53,53 @@ function formatOrderDate(createdAt: string) {
 
 function firstNameOf(addr: ShippingAddress) {
   return (addr.name ?? "").trim().split(/\s+/)[0] ?? "";
+}
+
+/** Monta o HTML com todos os dados do pedido, usado nos e-mails internos (admin e comercial). */
+function orderSummaryEmailHtml(input: {
+  orderNumber: string;
+  orderDate: string;
+  addr: ShippingAddress;
+  paymentMethod: string | null;
+  subtotal: number;
+  shipping: number;
+  discount: number;
+  couponCode: string | null;
+  total: number;
+  items: { product_name: string; quantity: number; unit_price: number }[];
+}) {
+  const itemsHtml = input.items
+    .map(
+      (i) => `<li>${i.product_name} — ${i.quantity}x (R$ ${Number(i.unit_price).toFixed(2)})</li>`,
+    )
+    .join("");
+  const addressLine = [
+    [input.addr.street, input.addr.number, input.addr.complement].filter(Boolean).join(", "),
+    [input.addr.district, input.addr.city, input.addr.state].filter(Boolean).join(" — "),
+    input.addr.zip,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  return `
+    <h2>Pedido ${input.orderNumber}</h2>
+    <p><strong>Data:</strong> ${input.orderDate}</p>
+    <p><strong>Cliente:</strong> ${input.addr.name ?? "-"}</p>
+    <p><strong>E-mail:</strong> ${input.addr.email ?? "-"}</p>
+    <p><strong>Telefone:</strong> ${input.addr.phone ?? "-"}</p>
+    <p><strong>Endereço:</strong> ${addressLine || "-"}</p>
+    <p><strong>Pagamento:</strong> ${input.paymentMethod ?? "-"}</p>
+    <h3>Produtos</h3>
+    <ul>${itemsHtml}</ul>
+    <p><strong>Subtotal:</strong> R$ ${input.subtotal.toFixed(2)}</p>
+    <p><strong>Frete:</strong> R$ ${input.shipping.toFixed(2)}</p>
+    ${
+      input.discount > 0
+        ? `<p><strong>Desconto${input.couponCode ? ` (${input.couponCode})` : ""}:</strong> -R$ ${input.discount.toFixed(2)}</p>`
+        : ""
+    }
+    <p><strong>Total:</strong> R$ ${input.total.toFixed(2)}</p>
+  `;
 }
 
 export async function notifyPixGenerated(
@@ -111,6 +160,12 @@ export async function notifyPaymentConfirmed(orderId: string): Promise<void> {
       await deductStockForOrder(orderId);
     } catch (err) {
       console.error("notifyPaymentConfirmed: falha ao baixar estoque", err);
+    }
+
+    try {
+      await notifyCommercialOrderCompleted(orderId);
+    } catch (err) {
+      console.error("notifyPaymentConfirmed: falha ao notificar área comercial", err);
     }
 
     if (order.coupon_code) {
@@ -197,7 +252,9 @@ export async function notifyAdminNewOrder(orderId: string): Promise<void> {
 
     const { data: order } = await supabaseAdmin
       .from("orders")
-      .select("order_number, total, shipping_address, created_at, payment_method")
+      .select(
+        "order_number, subtotal, shipping, discount, coupon_code, total, shipping_address, created_at, payment_method",
+      )
       .eq("id", orderId)
       .maybeSingle();
     if (!order) return;
@@ -208,40 +265,69 @@ export async function notifyAdminNewOrder(orderId: string): Promise<void> {
       .select("product_name, quantity, unit_price")
       .eq("order_id", orderId);
 
-    const itemsHtml = (items ?? [])
-      .map(
-        (i) =>
-          `<li>${i.product_name} — ${i.quantity}x (R$ ${Number(i.unit_price).toFixed(2)})</li>`,
-      )
-      .join("");
-    const addressLine = [
-      [addr.street, addr.number, addr.complement].filter(Boolean).join(", "),
-      [addr.district, addr.city, addr.state].filter(Boolean).join(" — "),
-      addr.zip,
-    ]
-      .filter(Boolean)
-      .join(" · ");
-
     const { sendEmail } = await import("./email.server");
     await sendEmail({
       to: ADMIN_NOTIFICATION_EMAIL,
       subject: `Novo pedido — ${order.order_number}`,
-      html: `
-        <h2>Novo pedido recebido</h2>
-        <p><strong>Nº do Pedido:</strong> ${order.order_number}</p>
-        <p><strong>Data:</strong> ${formatOrderDate(order.created_at)}</p>
-        <p><strong>Cliente:</strong> ${addr.name ?? "-"}</p>
-        <p><strong>E-mail:</strong> ${addr.email ?? "-"}</p>
-        <p><strong>Telefone:</strong> ${addr.phone ?? "-"}</p>
-        <p><strong>Endereço:</strong> ${addressLine || "-"}</p>
-        <p><strong>Pagamento:</strong> ${order.payment_method ?? "-"}</p>
-        <p><strong>Total:</strong> R$ ${Number(order.total).toFixed(2)}</p>
-        <h3>Produtos</h3>
-        <ul>${itemsHtml}</ul>
-      `,
+      html: orderSummaryEmailHtml({
+        orderNumber: order.order_number,
+        orderDate: formatOrderDate(order.created_at),
+        addr,
+        paymentMethod: order.payment_method,
+        subtotal: Number(order.subtotal),
+        shipping: Number(order.shipping),
+        discount: Number(order.discount),
+        couponCode: order.coupon_code,
+        total: Number(order.total),
+        items: items ?? [],
+      }),
     });
   } catch (err) {
     console.error("notifyAdminNewOrder failed", err);
+  }
+}
+
+/** Avisa a área comercial por e-mail, com todos os dados do pedido, assim que a compra é finalizada (pagamento confirmado). */
+export async function notifyCommercialOrderCompleted(orderId: string): Promise<void> {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const claimed = await claimNotification(supabaseAdmin, orderId, "commercial_email_sent_at");
+    if (!claimed) return;
+
+    const { data: order } = await supabaseAdmin
+      .from("orders")
+      .select(
+        "order_number, subtotal, shipping, discount, coupon_code, total, shipping_address, created_at, payment_method",
+      )
+      .eq("id", orderId)
+      .maybeSingle();
+    if (!order) return;
+    const addr = (order.shipping_address ?? {}) as ShippingAddress;
+
+    const { data: items } = await supabaseAdmin
+      .from("order_items")
+      .select("product_name, quantity, unit_price")
+      .eq("order_id", orderId);
+
+    const { sendEmail } = await import("./email.server");
+    await sendEmail({
+      to: COMMERCIAL_NOTIFICATION_EMAIL,
+      subject: `Pedido concluído — ${order.order_number}`,
+      html: orderSummaryEmailHtml({
+        orderNumber: order.order_number,
+        orderDate: formatOrderDate(order.created_at),
+        addr,
+        paymentMethod: order.payment_method,
+        subtotal: Number(order.subtotal),
+        shipping: Number(order.shipping),
+        discount: Number(order.discount),
+        couponCode: order.coupon_code,
+        total: Number(order.total),
+        items: items ?? [],
+      }),
+    });
+  } catch (err) {
+    console.error("notifyCommercialOrderCompleted failed", err);
   }
 }
 

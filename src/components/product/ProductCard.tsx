@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Heart, Star } from "lucide-react";
 import placeholder from "@/assets/product-placeholder.jpg";
+import { showAddedToCartToast } from "@/components/cart/AddedToCartToast";
 import { cn } from "@/lib/utils";
 import { brl, discountPercent, installments } from "@/lib/format";
 import { GENDER_LABELS, ORIGIN_LABELS, PRODUCT_TYPE_LABELS, type Product } from "@/lib/catalog";
@@ -9,7 +10,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { Button } from "@/components/ui/button";
 
 export function ProductCard({ product }: { product: Product }) {
-  const { add } = useCart();
+  const { add, openCart } = useCart();
   const { isFavorite, toggle } = useFavorites();
   const off = discountPercent(product.price, product.sale_price);
   const current = product.sale_price ?? product.price;
@@ -118,9 +119,12 @@ export function ProductCard({ product }: { product: Product }) {
           size="pill"
           className="mt-3 w-full"
           disabled={product.stock <= 0}
-          onClick={() => add(product)}
+          onClick={() => {
+            add(product);
+            showAddedToCartToast(product, 1, openCart);
+          }}
         >
-          {product.stock <= 0 ? "Esgotado" : "Adicionar"}
+          {product.stock <= 0 ? "Esgotado" : "Comprar"}
         </Button>
       </div>
     </article>
