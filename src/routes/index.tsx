@@ -131,14 +131,16 @@ function HeroCarousel() {
               {s.text}
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
-              <Button asChild variant="gold" size="xl">
-                <Link
-                  to={s.primary.to as never}
-                  {...(s.primary.params ? { params: s.primary.params as never } : {})}
-                >
-                  {s.primary.label}
-                </Link>
-              </Button>
+              {s.primary && (
+                <Button asChild variant="gold" size="xl">
+                  <Link
+                    to={s.primary.to as never}
+                    {...(s.primary.params ? { params: s.primary.params as never } : {})}
+                  >
+                    {s.primary.label}
+                  </Link>
+                </Button>
+              )}
               {s.secondary && (
                 <Button asChild variant="outlineGold" size="xl">
                   <Link to={s.secondary.to as never}>{s.secondary.label}</Link>
