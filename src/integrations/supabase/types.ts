@@ -1191,11 +1191,11 @@ export type Database = {
     }
     Functions: {
       decrement_product_stock: {
-        Args: {
-          p_product_id: string
-          p_qty: number
-        }
-        Returns: { previous_stock: number; new_stock: number }[]
+        Args: { p_product_id: string; p_qty: number }
+        Returns: {
+          new_stock: number
+          previous_stock: number
+        }[]
       }
       has_role: {
         Args: {

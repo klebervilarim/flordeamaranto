@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.decrement_product_stock(uuid, integer) FROM authenticated;
