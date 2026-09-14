@@ -180,22 +180,6 @@ export async function notifyPaymentConfirmed(orderId: string): Promise<void> {
       }
     }
 
-    const emailClaimed = await claimNotification(supabaseAdmin, orderId, "payment_email_sent_at");
-    if (emailClaimed && addr.email) {
-      const { sendEmail, paymentConfirmedEmailHtml } = await import("./email.server");
-      await sendEmail({
-        to: addr.email,
-        subject: `Pedido confirmado — Pedido ${order.order_number}`,
-        html: paymentConfirmedEmailHtml({
-          firstName,
-          orderNumber: order.order_number,
-          orderDate,
-          items,
-          orderUrl: `${siteUrl()}/pagamento/sucesso/${orderId}`,
-        }),
-      });
-    }
-
     const whatsappClaimed = await claimNotification(
       supabaseAdmin,
       orderId,
