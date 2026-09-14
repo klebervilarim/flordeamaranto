@@ -1,4 +1,9 @@
 import type { ComponentType } from 'react'
+import { template as paymentConfirmed } from './payment-confirmed'
+import { template as pixGenerated } from './pix-generated'
+import { template as orderShipped } from './order-shipped'
+import { template as adminNewOrder } from './admin-new-order'
+import { template as commercialOrderCompleted } from './commercial-order-completed'
 
 export interface TemplateEntry {
   component: ComponentType<any>
