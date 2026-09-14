@@ -63,7 +63,7 @@ type Slide = {
   text: string;
   image: string;
   imageAlt: string;
-  primary: { label: string; to: string; params?: { filtro: string } };
+  primary?: { label: string; to: string; params?: { filtro: string } };
   secondary?: { label: string; to: string };
 };
 
@@ -75,7 +75,6 @@ const SLIDES: Slide[] = [
     image: heroImage,
     imageAlt: "Perfume e cosméticos sobre seda com flores de amaranto",
     primary: { label: "Comprar perfumes", to: "/perfumes" },
-    secondary: { label: "Explorar coleção", to: "/colecoes" },
   },
   {
     eyebrow: "Coleção em destaque",
@@ -91,7 +90,6 @@ const SLIDES: Slide[] = [
     text: "Descontos por tempo limitado na seleção mais desejada da casa.",
     image: beautyImage,
     imageAlt: "Cosméticos e perfumes em oferta",
-    primary: { label: "Ver ofertas", to: "/ofertas" },
   },
 ];
 
@@ -133,14 +131,16 @@ function HeroCarousel() {
               {s.text}
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
-              <Button asChild variant="gold" size="xl">
-                <Link
-                  to={s.primary.to as never}
-                  {...(s.primary.params ? { params: s.primary.params as never } : {})}
-                >
-                  {s.primary.label}
-                </Link>
-              </Button>
+              {s.primary && (
+                <Button asChild variant="gold" size="xl">
+                  <Link
+                    to={s.primary.to as never}
+                    {...(s.primary.params ? { params: s.primary.params as never } : {})}
+                  >
+                    {s.primary.label}
+                  </Link>
+                </Button>
+              )}
               {s.secondary && (
                 <Button asChild variant="outlineGold" size="xl">
                   <Link to={s.secondary.to as never}>{s.secondary.label}</Link>
