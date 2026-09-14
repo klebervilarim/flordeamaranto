@@ -11,35 +11,46 @@ export function logoUrl() {
   return `${siteUrl()}${logoAsset.url}`;
 }
 
-/** Envia e-mail via SMTP da Hostinger (conexão TCP direta, só existe no runtime do Cloudflare Workers). */
+/**
+ * Envia e-mail via SMTP da Hostinger.
+ * O runtime de produção (Cloudflare Workers) não abre conexão TLS implícita na 465,
+ * então tentamos 587 (STARTTLS) primeiro e caímos para 465 como último recurso.
+ */
 export async function sendEmail(input: { to: string; subject: string; html: string }) {
   const host = process.env["HOSTINGER_SMTP_HOST"] ?? "smtp.hostinger.com";
-  const port = Number(process.env["HOSTINGER_SMTP_PORT"] ?? 465);
   const username = process.env["HOSTINGER_SMTP_USER"] ?? STORE_EMAIL;
   const password = process.env["HOSTINGER_SMTP_PASSWORD"];
   if (!password) {
     console.error("email não enviado: HOSTINGER_SMTP_PASSWORD ausente");
     return;
   }
-  try {
-    const { WorkerMailer } = await import("worker-mailer");
-    await WorkerMailer.send(
-      {
-        host,
-        port,
-        secure: port === 465,
-        credentials: { username, password },
-        authType: "plain",
-      },
-      {
-        from: { name: "Flor de Amaranto", email: username },
-        to: input.to,
-        subject: input.subject,
-        html: input.html,
-      },
-    );
-  } catch (err) {
-    console.error("hostinger smtp send failed", err);
+
+  const configured = process.env["HOSTINGER_SMTP_PORT"];
+  const ports = configured ? [Number(configured)] : [587, 465, 2525];
+
+  const { WorkerMailer } = await import("worker-mailer");
+  for (const port of ports) {
+    try {
+      await WorkerMailer.send(
+        {
+          host,
+          port,
+          secure: port === 465,
+          startTls: port !== 465,
+          credentials: { username, password },
+          authType: "plain",
+        },
+        {
+          from: { name: "Flor de Amaranto", email: username },
+          to: input.to,
+          subject: input.subject,
+          html: input.html,
+        },
+      );
+      return;
+    } catch (err) {
+      console.error(`hostinger smtp send failed (porta ${port})`, err);
+    }
   }
 }
 
