@@ -55,8 +55,8 @@ function firstNameOf(addr: ShippingAddress) {
   return (addr.name ?? "").trim().split(/\s+/)[0] ?? "";
 }
 
-/** Monta o HTML com todos os dados do pedido, usado nos e-mails internos (admin e comercial). */
-function orderSummaryEmailHtml(input: {
+/** Monta os dados resumidos do pedido, usados nos e-mails internos (admin e comercial). */
+function orderSummaryTemplateData(input: {
   orderNumber: string;
   orderDate: string;
   addr: ShippingAddress;
@@ -68,11 +68,6 @@ function orderSummaryEmailHtml(input: {
   total: number;
   items: { product_name: string; quantity: number; unit_price: number }[];
 }) {
-  const itemsHtml = input.items
-    .map(
-      (i) => `<li>${i.product_name} — ${i.quantity}x (R$ ${Number(i.unit_price).toFixed(2)})</li>`,
-    )
-    .join("");
   const addressLine = [
     [input.addr.street, input.addr.number, input.addr.complement].filter(Boolean).join(", "),
     [input.addr.district, input.addr.city, input.addr.state].filter(Boolean).join(" — "),
@@ -81,25 +76,21 @@ function orderSummaryEmailHtml(input: {
     .filter(Boolean)
     .join(" · ");
 
-  return `
-    <h2>Pedido ${input.orderNumber}</h2>
-    <p><strong>Data:</strong> ${input.orderDate}</p>
-    <p><strong>Cliente:</strong> ${input.addr.name ?? "-"}</p>
-    <p><strong>E-mail:</strong> ${input.addr.email ?? "-"}</p>
-    <p><strong>Telefone:</strong> ${input.addr.phone ?? "-"}</p>
-    <p><strong>Endereço:</strong> ${addressLine || "-"}</p>
-    <p><strong>Pagamento:</strong> ${input.paymentMethod ?? "-"}</p>
-    <h3>Produtos</h3>
-    <ul>${itemsHtml}</ul>
-    <p><strong>Subtotal:</strong> R$ ${input.subtotal.toFixed(2)}</p>
-    <p><strong>Frete:</strong> R$ ${input.shipping.toFixed(2)}</p>
-    ${
-      input.discount > 0
-        ? `<p><strong>Desconto${input.couponCode ? ` (${input.couponCode})` : ""}:</strong> -R$ ${input.discount.toFixed(2)}</p>`
-        : ""
-    }
-    <p><strong>Total:</strong> R$ ${input.total.toFixed(2)}</p>
-  `;
+  return {
+    orderNumber: input.orderNumber,
+    orderDate: input.orderDate,
+    customerName: input.addr.name ?? "-",
+    customerEmail: input.addr.email ?? "-",
+    customerPhone: input.addr.phone ?? "-",
+    addressLine: addressLine || "-",
+    paymentMethod: input.paymentMethod,
+    subtotal: input.subtotal,
+    shipping: input.shipping,
+    discount: input.discount,
+    couponCode: input.couponCode,
+    total: input.total,
+    items: input.items,
+  };
 }
 
 export async function notifyPixGenerated(
@@ -265,11 +256,9 @@ export async function notifyAdminNewOrder(orderId: string): Promise<void> {
       .select("product_name, quantity, unit_price")
       .eq("order_id", orderId);
 
-    const { sendEmail } = await import("./email.server");
-    await sendEmail({
-      to: ADMIN_NOTIFICATION_EMAIL,
-      subject: `Novo pedido — ${order.order_number}`,
-      html: orderSummaryEmailHtml({
+    const { sendTemplateEmail } = await import("./email-templates/send-email");
+    await sendTemplateEmail("admin-new-order", ADMIN_NOTIFICATION_EMAIL, {
+      templateData: orderSummaryTemplateData({
         orderNumber: order.order_number,
         orderDate: formatOrderDate(order.created_at),
         addr,
@@ -281,6 +270,7 @@ export async function notifyAdminNewOrder(orderId: string): Promise<void> {
         total: Number(order.total),
         items: items ?? [],
       }),
+      idempotencyKey: `admin-new-order-${orderId}`,
     });
   } catch (err) {
     console.error("notifyAdminNewOrder failed", err);
@@ -309,11 +299,9 @@ export async function notifyCommercialOrderCompleted(orderId: string): Promise<v
       .select("product_name, quantity, unit_price")
       .eq("order_id", orderId);
 
-    const { sendEmail } = await import("./email.server");
-    await sendEmail({
-      to: COMMERCIAL_NOTIFICATION_EMAIL,
-      subject: `Pedido concluído — ${order.order_number}`,
-      html: orderSummaryEmailHtml({
+    const { sendTemplateEmail } = await import("./email-templates/send-email");
+    await sendTemplateEmail("commercial-order-completed", COMMERCIAL_NOTIFICATION_EMAIL, {
+      templateData: orderSummaryTemplateData({
         orderNumber: order.order_number,
         orderDate: formatOrderDate(order.created_at),
         addr,
@@ -325,6 +313,7 @@ export async function notifyCommercialOrderCompleted(orderId: string): Promise<v
         total: Number(order.total),
         items: items ?? [],
       }),
+      idempotencyKey: `commercial-order-completed-${orderId}`,
     });
   } catch (err) {
     console.error("notifyCommercialOrderCompleted failed", err);
@@ -353,18 +342,17 @@ export async function notifyOrderShipped(orderId: string): Promise<void> {
 
     const emailClaimed = await claimNotification(supabaseAdmin, orderId, "shipped_email_sent_at");
     if (emailClaimed && addr.email) {
-      const { sendEmail, orderShippedEmailHtml } = await import("./email.server");
-      await sendEmail({
-        to: addr.email,
-        subject: `Pedido enviado — Pedido ${order.order_number}`,
-        html: orderShippedEmailHtml({
+      const { sendTemplateEmail } = await import("./email-templates/send-email");
+      await sendTemplateEmail("order-shipped", addr.email, {
+        templateData: {
           firstName,
           orderNumber: order.order_number,
           orderDate,
           items,
           trackingCode: order.tracking_code,
           carrier: order.carrier,
-        }),
+        },
+        idempotencyKey: `order-shipped-${orderId}`,
       });
     }
 
