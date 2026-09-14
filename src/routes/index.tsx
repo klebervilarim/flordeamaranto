@@ -63,7 +63,7 @@ type Slide = {
   text: string;
   image: string;
   imageAlt: string;
-  primary: { label: string; to: string; params?: { filtro: string } };
+  primary?: { label: string; to: string; params?: { filtro: string } };
   secondary?: { label: string; to: string };
 };
 
