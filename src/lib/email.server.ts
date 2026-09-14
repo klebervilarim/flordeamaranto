@@ -26,7 +26,9 @@ export async function sendEmail(input: { to: string; subject: string; html: stri
   }
 
   const configured = process.env["HOSTINGER_SMTP_PORT"];
-  const ports = configured ? [Number(configured)] : [587, 465, 2525];
+  // Uma única tentativa: várias tentativas estouram o tempo de execução do servidor
+  // e impedem as notificações seguintes (WhatsApp) de rodarem.
+  const ports = configured ? [Number(configured)] : [587];
 
   const { WorkerMailer } = await import("worker-mailer");
   for (const port of ports) {
