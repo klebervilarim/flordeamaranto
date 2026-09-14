@@ -50,7 +50,7 @@ function OrderShippedEmail({
 
 export const template = {
   component: OrderShippedEmail,
-  subject: (data: Record<string, any>) => `Pedido enviado — Pedido ${data.orderNumber ?? ''}`,
+  subject: (data: Record<string, any>) => `Pedido enviado — Pedido ${data['orderNumber'] ?? ''}`,
   displayName: 'Pedido enviado (cliente)',
   previewData: {
     firstName: 'Maria',

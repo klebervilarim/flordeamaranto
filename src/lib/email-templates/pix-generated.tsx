@@ -55,7 +55,7 @@ function PixGeneratedEmail({
 
 export const template = {
   component: PixGeneratedEmail,
-  subject: (data: Record<string, any>) => `Pix gerado — Pedido ${data.orderNumber ?? ''}`,
+  subject: (data: Record<string, any>) => `Pix gerado — Pedido ${data['orderNumber'] ?? ''}`,
   displayName: 'Pix gerado (cliente)',
   previewData: {
     orderNumber: 'OR26091437927',

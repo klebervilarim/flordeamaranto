@@ -47,7 +47,7 @@ function PaymentConfirmedEmail({
 
 export const template = {
   component: PaymentConfirmedEmail,
-  subject: (data: Record<string, any>) => `Pedido confirmado — Pedido ${data.orderNumber ?? ''}`,
+  subject: (data: Record<string, any>) => `Pedido confirmado — Pedido ${data['orderNumber'] ?? ''}`,
   displayName: 'Pagamento confirmado (cliente)',
   previewData: {
     firstName: 'Maria',
