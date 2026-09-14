@@ -120,16 +120,15 @@ export async function notifyPixGenerated(
     const addr = (order.shipping_address ?? {}) as ShippingAddress;
     if (!addr.email) return;
 
-    const { sendEmail, pixGeneratedEmailHtml } = await import("./email.server");
-    await sendEmail({
-      to: addr.email,
-      subject: `Pix gerado — Pedido ${order.order_number}`,
-      html: pixGeneratedEmailHtml({
+    const { sendTemplateEmail } = await import("./email-templates/send-email");
+    await sendTemplateEmail("pix-generated", addr.email, {
+      templateData: {
         orderNumber: order.order_number,
         total: Number(order.total),
         pixCopyPaste: pix.qr_code,
         paymentUrl: `${siteUrl()}/pagamento/${orderId}`,
-      }),
+      },
+      idempotencyKey: `pix-generated-${orderId}`,
     });
   } catch (err) {
     console.error("notifyPixGenerated failed", err);
@@ -214,20 +213,19 @@ export async function notifyPaymentConfirmed(orderId: string): Promise<void> {
       }
     }
 
-    // E-mails por último: se o SMTP falhar/demorar, o WhatsApp já saiu.
+    // E-mails por último: se o envio falhar/demorar, o WhatsApp já saiu.
     const emailClaimed = await claimNotification(supabaseAdmin, orderId, "payment_email_sent_at");
     if (emailClaimed && addr.email) {
-      const { sendEmail, paymentConfirmedEmailHtml } = await import("./email.server");
-      await sendEmail({
-        to: addr.email,
-        subject: `Pedido confirmado — Pedido ${order.order_number}`,
-        html: paymentConfirmedEmailHtml({
+      const { sendTemplateEmail } = await import("./email-templates/send-email");
+      await sendTemplateEmail("payment-confirmed", addr.email, {
+        templateData: {
           firstName,
           orderNumber: order.order_number,
           orderDate,
           items,
           orderUrl: `${siteUrl()}/pagamento/sucesso/${orderId}`,
-        }),
+        },
+        idempotencyKey: `payment-confirmed-${orderId}`,
       });
     }
 
