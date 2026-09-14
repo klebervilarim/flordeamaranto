@@ -4,6 +4,7 @@ import { template as pixGenerated } from './pix-generated'
 import { template as orderShipped } from './order-shipped'
 import { template as adminNewOrder } from './admin-new-order'
 import { template as commercialOrderCompleted } from './commercial-order-completed'
+import { template as outOfStockAlert } from './out-of-stock-alert'
 
 export interface TemplateEntry {
   component: ComponentType<any>
@@ -28,4 +29,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'order-shipped': orderShipped,
   'admin-new-order': adminNewOrder,
   'commercial-order-completed': commercialOrderCompleted,
+  'out-of-stock-alert': outOfStockAlert,
 }

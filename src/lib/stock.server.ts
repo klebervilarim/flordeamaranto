@@ -63,17 +63,30 @@ async function claimStockDeduction(
   return Boolean(data);
 }
 
-/** Dá baixa no estoque dos produtos de um pedido pago, uma única vez por pedido. */
-export async function deductStockForOrder(orderId: string): Promise<void> {
+/** Item vendido com estoque insuficiente (zerado ou abaixo da quantidade comprada) no momento da baixa. */
+export type StockShortfall = {
+  productId: string;
+  productName: string;
+  quantity: number;
+  previousStock: number;
+};
+
+/**
+ * Dá baixa no estoque dos produtos de um pedido pago, uma única vez por pedido.
+ * Retorna os itens vendidos sem estoque suficiente, para alertar a loja.
+ */
+export async function deductStockForOrder(orderId: string): Promise<StockShortfall[]> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const claimed = await claimStockDeduction(supabaseAdmin, orderId);
-  if (!claimed) return;
+  if (!claimed) return [];
 
   const { data: items } = await supabaseAdmin
     .from("order_items")
-    .select("product_id, quantity")
+    .select("product_id, product_name, quantity")
     .eq("order_id", orderId);
-  if (!items) return;
+  if (!items) return [];
+
+  const shortfalls: StockShortfall[] = [];
 
   for (const item of items) {
     if (!item.product_id) continue;
@@ -95,5 +108,15 @@ export async function deductStockForOrder(orderId: string): Promise<void> {
       new_quantity: row.new_stock,
       note: `Pedido ${orderId}`,
     });
+    if (row.previous_stock < item.quantity) {
+      shortfalls.push({
+        productId: item.product_id,
+        productName: item.product_name,
+        quantity: item.quantity,
+        previousStock: row.previous_stock,
+      });
+    }
   }
+
+  return shortfalls;
 }

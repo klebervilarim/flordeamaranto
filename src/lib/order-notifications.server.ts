@@ -147,11 +147,40 @@ export async function notifyPaymentConfirmed(orderId: string): Promise<void> {
 
     try {
       const { deductStockForOrder } = await import("./stock.server");
-      await deductStockForOrder(orderId);
+      const shortfalls = await deductStockForOrder(orderId);
+      if (shortfalls.length > 0) {
+        try {
+          const { sendTemplateEmail } = await import("./email-templates/send-email");
+          const alertData = {
+            orderNumber: order.order_number,
+            orderDate,
+            customerName: addr.name ?? "-",
+            customerPhone: addr.phone ?? "-",
+            customerEmail: addr.email ?? "-",
+            items: shortfalls.map((s) => ({
+              productName: s.productName,
+              quantity: s.quantity,
+              previousStock: s.previousStock,
+            })),
+          };
+          await sendTemplateEmail("out-of-stock-alert", ADMIN_NOTIFICATION_EMAIL, {
+            templateData: alertData,
+            idempotencyKey: `out-of-stock-alert-admin-${orderId}`,
+          });
+          await sendTemplateEmail("out-of-stock-alert", COMMERCIAL_NOTIFICATION_EMAIL, {
+            templateData: alertData,
+            idempotencyKey: `out-of-stock-alert-commercial-${orderId}`,
+          });
+        } catch (err) {
+          console.error(
+            "notifyPaymentConfirmed: falha ao enviar alerta de estoque insuficiente",
+            err,
+          );
+        }
+      }
     } catch (err) {
       console.error("notifyPaymentConfirmed: falha ao baixar estoque", err);
     }
-
 
     if (order.coupon_code) {
       const couponClaimed = await claimNotification(supabaseAdmin, orderId, "coupon_applied_at");
