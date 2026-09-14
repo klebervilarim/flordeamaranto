@@ -51,6 +51,7 @@ import { Route as EstoqueProdutoIdRouteImport } from './routes/estoque.produto.$
 import { Route as EstoqueProdutoNovoRouteImport } from './routes/estoque.produto.novo'
 import { Route as PagamentoSucessoIdRouteImport } from './routes/pagamento.sucesso.$id'
 import { Route as ApiPublicProductImageSplatRouteImport } from './routes/api/public/product-image/$'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -264,6 +265,12 @@ const ApiPublicProductImageSplatRoute =
     path: '/api/public/product-image/$',
     getParentRoute: () => rootRouteImport,
   } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -308,6 +315,7 @@ export interface FileRoutesByFullPath {
   '/estoque/produto/novo': typeof EstoqueProdutoNovoRoute
   '/pagamento/sucesso/$id': typeof PagamentoSucessoIdRoute
   '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -351,6 +359,7 @@ export interface FileRoutesByTo {
   '/estoque/produto/novo': typeof EstoqueProdutoNovoRoute
   '/pagamento/sucesso/$id': typeof PagamentoSucessoIdRoute
   '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -396,6 +405,7 @@ export interface FileRoutesById {
   '/estoque/produto/novo': typeof EstoqueProdutoNovoRoute
   '/pagamento/sucesso/$id': typeof PagamentoSucessoIdRoute
   '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -442,6 +452,7 @@ export interface FileRouteTypes {
     | '/estoque/produto/novo'
     | '/pagamento/sucesso/$id'
     | '/api/public/product-image/$'
+    | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -485,6 +496,7 @@ export interface FileRouteTypes {
     | '/estoque/produto/novo'
     | '/pagamento/sucesso/$id'
     | '/api/public/product-image/$'
+    | '/lovable/email/transactional/preview'
   id:
     | '__root__'
     | '/'
@@ -529,6 +541,7 @@ export interface FileRouteTypes {
     | '/estoque/produto/novo'
     | '/pagamento/sucesso/$id'
     | '/api/public/product-image/$'
+    | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -563,6 +576,7 @@ export interface RootRouteChildren {
   ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
   PagamentoSucessoIdRoute: typeof PagamentoSucessoIdRoute
   ApiPublicProductImageSplatRoute: typeof ApiPublicProductImageSplatRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -861,6 +875,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicProductImageSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -927,6 +948,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
   PagamentoSucessoIdRoute: PagamentoSucessoIdRoute,
   ApiPublicProductImageSplatRoute: ApiPublicProductImageSplatRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
