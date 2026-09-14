@@ -11,7 +11,7 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 // Loads all env vars into process.env for server-side code only
 // (server routes/functions need non-VITE_ vars like LOVABLE_API_KEY).
 // Never expose these via `define` — that would leak secrets to the client.
-Object.assign(process.env, loadEnv(process.env.NODE_ENV ?? "development", process.cwd(), ""));
+Object.assign(process.env, loadEnv(process.env["NODE_ENV"] ?? "development", process.cwd(), ""));
 
 export default defineConfig({
   vite: {
