@@ -75,7 +75,6 @@ const SLIDES: Slide[] = [
     image: heroImage,
     imageAlt: "Perfume e cosméticos sobre seda com flores de amaranto",
     primary: { label: "Comprar perfumes", to: "/perfumes" },
-    secondary: { label: "Explorar coleção", to: "/colecoes" },
   },
   {
     eyebrow: "Coleção em destaque",
@@ -91,7 +90,6 @@ const SLIDES: Slide[] = [
     text: "Descontos por tempo limitado na seleção mais desejada da casa.",
     image: beautyImage,
     imageAlt: "Cosméticos e perfumes em oferta",
-    primary: { label: "Ver ofertas", to: "/ofertas" },
   },
 ];
 
