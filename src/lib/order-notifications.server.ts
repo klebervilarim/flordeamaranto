@@ -162,11 +162,6 @@ export async function notifyPaymentConfirmed(orderId: string): Promise<void> {
       console.error("notifyPaymentConfirmed: falha ao baixar estoque", err);
     }
 
-    try {
-      await notifyCommercialOrderCompleted(orderId);
-    } catch (err) {
-      console.error("notifyPaymentConfirmed: falha ao notificar área comercial", err);
-    }
 
     if (order.coupon_code) {
       const couponClaimed = await claimNotification(supabaseAdmin, orderId, "coupon_applied_at");
