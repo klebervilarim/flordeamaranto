@@ -162,11 +162,6 @@ export async function notifyPaymentConfirmed(orderId: string): Promise<void> {
       console.error("notifyPaymentConfirmed: falha ao baixar estoque", err);
     }
 
-    try {
-      await notifyCommercialOrderCompleted(orderId);
-    } catch (err) {
-      console.error("notifyPaymentConfirmed: falha ao notificar área comercial", err);
-    }
 
     if (order.coupon_code) {
       const couponClaimed = await claimNotification(supabaseAdmin, orderId, "coupon_applied_at");
@@ -178,22 +173,6 @@ export async function notifyPaymentConfirmed(orderId: string): Promise<void> {
           console.error("notifyPaymentConfirmed: falha ao registrar uso do cupom", err);
         }
       }
-    }
-
-    const emailClaimed = await claimNotification(supabaseAdmin, orderId, "payment_email_sent_at");
-    if (emailClaimed && addr.email) {
-      const { sendEmail, paymentConfirmedEmailHtml } = await import("./email.server");
-      await sendEmail({
-        to: addr.email,
-        subject: `Pedido confirmado — Pedido ${order.order_number}`,
-        html: paymentConfirmedEmailHtml({
-          firstName,
-          orderNumber: order.order_number,
-          orderDate,
-          items,
-          orderUrl: `${siteUrl()}/pagamento/sucesso/${orderId}`,
-        }),
-      });
     }
 
     const whatsappClaimed = await claimNotification(
@@ -233,6 +212,29 @@ export async function notifyPaymentConfirmed(orderId: string): Promise<void> {
 
         await sendWhatsAppText(config, addr.phone, message);
       }
+    }
+
+    // E-mails por último: se o SMTP falhar/demorar, o WhatsApp já saiu.
+    const emailClaimed = await claimNotification(supabaseAdmin, orderId, "payment_email_sent_at");
+    if (emailClaimed && addr.email) {
+      const { sendEmail, paymentConfirmedEmailHtml } = await import("./email.server");
+      await sendEmail({
+        to: addr.email,
+        subject: `Pedido confirmado — Pedido ${order.order_number}`,
+        html: paymentConfirmedEmailHtml({
+          firstName,
+          orderNumber: order.order_number,
+          orderDate,
+          items,
+          orderUrl: `${siteUrl()}/pagamento/sucesso/${orderId}`,
+        }),
+      });
+    }
+
+    try {
+      await notifyCommercialOrderCompleted(orderId);
+    } catch (err) {
+      console.error("notifyPaymentConfirmed: falha ao notificar área comercial", err);
     }
   } catch (err) {
     console.error("notifyPaymentConfirmed failed", err);
