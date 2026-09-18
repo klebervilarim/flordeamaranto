@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { brl } from "@/lib/format";
 import { slugify } from "@/lib/utils";
@@ -21,7 +21,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import placeholder from "@/assets/product-placeholder.jpg";
-import { createProduct, listStockBrands } from "@/lib/stock.functions";
+import {
+  createProduct,
+  listStockBrands,
+  updateProduct,
+  uploadProductImage,
+} from "@/lib/stock.functions";
+
+function fileToBase64(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1] ?? "");
+    reader.onerror = () => reject(new Error("Falha ao ler o arquivo."));
+    reader.readAsDataURL(file);
+  });
+}
 
 export const Route = createFileRoute("/estoque/produto/novo")({
   head: () => ({
