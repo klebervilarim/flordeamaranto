@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { isValidCpfCnpj } from "@/lib/brazil-document";
+import { cardChargeAmount } from "@/lib/installments";
 
 const payerSchema = z.object({
   name: z.string().trim().min(3).max(120),
