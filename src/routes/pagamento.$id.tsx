@@ -13,6 +13,11 @@ import { isValidCpfCnpj } from "@/lib/brazil-document";
 import { applyCouponToOrder } from "@/lib/coupons.functions";
 import { brl } from "@/lib/format";
 import {
+  FREE_INSTALLMENTS_THRESHOLD,
+  MAX_INSTALLMENTS,
+  cardChargeAmount,
+} from "@/lib/installments";
+import {
   checkOrderPayment,
   getMercadoPagoPublicConfig,
   processDirectPayment,
