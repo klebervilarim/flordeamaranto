@@ -250,21 +250,55 @@ function NewProductEditor({ brands }: { brands: { id: string; name: string }[] }
 
       <h1 className="mt-4 font-display text-3xl sm:text-4xl">Novo produto</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Preencha os dados e salve. As fotos podem ser enviadas em seguida.
+        Escolha as fotos e preencha os dados: as imagens são enviadas ao criar o produto.
       </p>
 
       <div className="mt-8 grid gap-8 md:grid-cols-[240px_1fr]">
         <div>
           <div className="border border-border bg-secondary/40">
             <img
-              src={imageUrl || placeholder}
+              src={mainPreview || imageUrl || placeholder}
               alt={name || "Novo produto"}
               className="aspect-square w-full object-cover"
             />
           </div>
+          <input
+            ref={mainFileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) pickFile(f, "main");
+              e.target.value = "";
+            }}
+          />
+          <div className="mt-3 flex gap-2">
+            <Button
+              variant="outlineInk"
+              size="sm"
+              className="flex-1"
+              onClick={() => mainFileRef.current?.click()}
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              {mainFile ? "Trocar foto 1" : "Enviar foto 1"}
+            </Button>
+            {mainFile && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setMainFile(null);
+                  setMainPreview("");
+                }}
+              >
+                Remover
+              </Button>
+            )}
+          </div>
           <div className="mt-3">
             <Label htmlFor="imageUrl" className="text-xs text-muted-foreground">
-              URL da imagem
+              Ou cole a URL da imagem
             </Label>
             <Input
               id="imageUrl"
@@ -278,9 +312,50 @@ function NewProductEditor({ brands }: { brands: { id: string; name: string }[] }
             <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">
               2ª foto · Fragrantica
             </p>
+            <div className="mt-2 border border-border bg-secondary/40">
+              <img
+                src={secondaryPreview || secondaryImageUrl || placeholder}
+                alt={`${name || "Novo produto"} — 2ª foto`}
+                className="aspect-square w-full object-cover"
+              />
+            </div>
+            <input
+              ref={secondaryFileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) pickFile(f, "secondary");
+                e.target.value = "";
+              }}
+            />
+            <div className="mt-3 flex gap-2">
+              <Button
+                variant="outlineInk"
+                size="sm"
+                className="flex-1"
+                onClick={() => secondaryFileRef.current?.click()}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                {secondaryFile ? "Trocar foto 2" : "Enviar foto 2"}
+              </Button>
+              {secondaryFile && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSecondaryFile(null);
+                    setSecondaryPreview("");
+                  }}
+                >
+                  Remover
+                </Button>
+              )}
+            </div>
             <div className="mt-2">
               <Label htmlFor="secondaryImageUrl" className="text-xs text-muted-foreground">
-                URL da Fragrantica
+                Ou cole a URL da Fragrantica
               </Label>
               <Input
                 id="secondaryImageUrl"
