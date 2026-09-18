@@ -417,12 +417,29 @@ function PaymentPage() {
                         value={installmentCount}
                         onChange={(event) => setInstallmentCount(Number(event.target.value))}
                       >
-                        {Array.from({ length: 12 }, (_, index) => index + 1).map((count) => (
-                          <option key={count} value={count}>
-                            {count}x de {brl(total / count)}
-                          </option>
-                        ))}
+                        {Array.from({ length: MAX_INSTALLMENTS }, (_, index) => index + 1).map(
+                          (count) => {
+                            const charge = cardChargeAmount(total, count);
+                            const label =
+                              count === 1
+                                ? `À vista — ${brl(total)}`
+                                : total >= FREE_INSTALLMENTS_THRESHOLD
+                                  ? `${count}x de ${brl(charge / count)} — sem juros`
+                                  : `${count}x de ${brl(charge / count)} (total ${brl(charge)}, juros de 5% por parcela)`;
+                            return (
+                              <option key={count} value={count}>
+                                {label}
+                              </option>
+                            );
+                          },
+                        )}
                       </select>
+                      {installmentCount > 1 && total < FREE_INSTALLMENTS_THRESHOLD ? (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          Pedidos a partir de {brl(FREE_INSTALLMENTS_THRESHOLD)} têm até 3x sem
+                          juros.
+                        </p>
+                      ) : null}
                     </div>
                   </div>
                   <p className="mt-4 text-xs text-muted-foreground">
