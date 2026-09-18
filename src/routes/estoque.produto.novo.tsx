@@ -87,6 +87,43 @@ function NewProductEditor({ brands }: { brands: { id: string; name: string }[] }
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const createFn = useServerFn(createProduct);
+  const updateFn = useServerFn(updateProduct);
+  const uploadFn = useServerFn(uploadProductImage);
+
+  const mainFileRef = useRef<HTMLInputElement>(null);
+  const secondaryFileRef = useRef<HTMLInputElement>(null);
+  const [mainFile, setMainFile] = useState<File | null>(null);
+  const [secondaryFile, setSecondaryFile] = useState<File | null>(null);
+  const [mainPreview, setMainPreview] = useState("");
+  const [secondaryPreview, setSecondaryPreview] = useState("");
+
+  const pickFile = (file: File, slot: "main" | "secondary") => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Envie um arquivo de imagem.");
+      return;
+    }
+    if (file.size > 6 * 1024 * 1024) {
+      toast.error("Imagem muito grande (máx. 6 MB).");
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    if (slot === "main") {
+      setMainFile(file);
+      setMainPreview(url);
+    } else {
+      setSecondaryFile(file);
+      setSecondaryPreview(url);
+    }
+  };
+
+  useEffect(
+    () => () => {
+      if (mainPreview) URL.revokeObjectURL(mainPreview);
+      if (secondaryPreview) URL.revokeObjectURL(secondaryPreview);
+    },
+    [mainPreview, secondaryPreview],
+  );
+
 
   const [name, setName] = useState("");
   const [sku, setSku] = useState("");
