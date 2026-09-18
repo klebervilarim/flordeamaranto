@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { isValidCpfCnpj } from "@/lib/brazil-document";
+import { cardChargeAmount } from "@/lib/installments";
 
 const payerSchema = z.object({
   name: z.string().trim().min(3).max(120),
@@ -30,7 +31,7 @@ export const processDirectPayment = createServerFn({ method: "POST" })
           token: z.string().min(10).max(500),
           paymentMethodId: z.string().min(1).max(80),
           issuerId: z.string().max(80).optional(),
-          installments: z.number().int().min(1).max(12),
+          installments: z.number().int().min(1).max(3),
         }),
       ])
       .parse(data),
@@ -75,7 +76,8 @@ export const processDirectPayment = createServerFn({ method: "POST" })
       const { createMercadoPagoPayment } = await import("./mercadopago.server");
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const payment = await createMercadoPagoPayment({
-        amount: total,
+        amount:
+          data.method === "card" ? cardChargeAmount(total, data.installments) : total,
         description: `Pedido ${order.order_number} — Flor de Amaranto`,
         externalReference: order.id,
         notificationUrl: `${process.env["PUBLIC_SITE_URL"] ?? "https://flordeamaranto.lovable.app"}/api/public/mercadopago-webhook`,
