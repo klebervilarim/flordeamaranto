@@ -158,38 +158,78 @@ function NewProductEditor({ brands }: { brands: { id: string; name: string }[] }
   };
 
   const createMutation = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const priceNum = num(price);
       if (!name.trim()) throw new Error("Informe o nome do produto.");
       if (!sku.trim()) throw new Error("Informe o SKU.");
       if (!slug.trim()) throw new Error("Informe o slug.");
       if (priceNum == null || priceNum <= 0) throw new Error("Informe um preço de venda válido.");
-      return createFn({
+      const base = {
+        name: name.trim(),
+        sku: sku.trim(),
+        brandId: brandId === NONE ? null : brandId,
+        productType: productType || "perfume",
+        volume: volume.trim() || null,
+        gender: gender === NONE ? null : gender,
+        origin: origin === NONE ? null : origin,
+        price: priceNum,
+        salePrice: num(salePrice),
+        costPrice: cost,
+        stock: Math.max(0, Math.trunc(num(stock) ?? 0)),
+        purchaseLocation,
+        inspiration: inspiration.trim() || null,
+        shortDescription: shortDescription.trim() || null,
+        description: description.trim() || null,
+        status: status as "active" | "draft" | "archived",
+        featured,
+        bestseller,
+        isNew,
+      };
+      const created = await createFn({
         data: {
-          name: name.trim(),
-          sku: sku.trim(),
+          ...base,
           slug: slug.trim(),
-          brandId: brandId === NONE ? null : brandId,
-          productType: productType || "perfume",
-          volume: volume.trim() || null,
-          gender: gender === NONE ? null : gender,
-          origin: origin === NONE ? null : origin,
-          price: priceNum,
-          salePrice: num(salePrice),
-          costPrice: cost,
-          stock: Math.max(0, Math.trunc(num(stock) ?? 0)),
-          purchaseLocation,
-          inspiration: inspiration.trim() || null,
-          shortDescription: shortDescription.trim() || null,
-          description: description.trim() || null,
           imageUrl: imageUrl.trim() || null,
           secondaryImageUrl: secondaryImageUrl.trim() || null,
-          status: status as "active" | "draft" | "archived",
-          featured,
-          bestseller,
-          isNew,
         },
       });
+
+      if (mainFile || secondaryFile) {
+        let finalMain = imageUrl.trim() || null;
+        let finalSecondary = secondaryImageUrl.trim() || null;
+        if (mainFile) {
+          const res = await uploadFn({
+            data: {
+              productId: created.id,
+              fileName: mainFile.name,
+              contentType: mainFile.type || "image/jpeg",
+              dataBase64: await fileToBase64(mainFile),
+            },
+          });
+          finalMain = res.url;
+        }
+        if (secondaryFile) {
+          const res = await uploadFn({
+            data: {
+              productId: created.id,
+              fileName: secondaryFile.name,
+              contentType: secondaryFile.type || "image/jpeg",
+              dataBase64: await fileToBase64(secondaryFile),
+            },
+          });
+          finalSecondary = res.url;
+        }
+        await updateFn({
+          data: {
+            ...base,
+            id: created.id,
+            categorySlug: null,
+            imageUrl: finalMain,
+            secondaryImageUrl: finalSecondary,
+          },
+        });
+      }
+      return created;
     },
     onSuccess: (res) => {
       toast.success("Produto criado.");
