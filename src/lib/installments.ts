@@ -1,15 +1,14 @@
-// Regra de parcelamento no cartão:
-// - No máximo 3 parcelas.
+// Regra de parcelamento no cartão (sempre sem juros):
 // - Pedidos a partir de R$ 399: até 3x sem juros.
-// - Pedidos abaixo de R$ 399: 5% de juros por parcela (2x = 10%, 3x = 15% sobre o total).
-// - À vista (1x) nunca tem juros.
-export const MAX_INSTALLMENTS = 3;
+// - Pedidos abaixo de R$ 399: até 2x sem juros.
 export const FREE_INSTALLMENTS_THRESHOLD = 399;
-export const INSTALLMENT_RATE = 0.05;
+
+export function maxInstallments(orderTotal: number): number {
+  return orderTotal >= FREE_INSTALLMENTS_THRESHOLD ? 3 : 2;
+}
 
 export function cardChargeAmount(orderTotal: number, installments: number): number {
-  const count = Math.min(Math.max(Math.trunc(installments) || 1, 1), MAX_INSTALLMENTS);
-  if (count <= 1) return Number(orderTotal.toFixed(2));
-  if (orderTotal >= FREE_INSTALLMENTS_THRESHOLD) return Number(orderTotal.toFixed(2));
-  return Number((orderTotal * (1 + INSTALLMENT_RATE * count)).toFixed(2));
+  // Sem juros: o valor cobrado é sempre o total do pedido.
+  void installments;
+  return Number(orderTotal.toFixed(2));
 }

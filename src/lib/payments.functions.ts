@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { isValidCpfCnpj } from "@/lib/brazil-document";
-import { cardChargeAmount } from "@/lib/installments";
+import { cardChargeAmount, maxInstallments } from "@/lib/installments";
 
 const payerSchema = z.object({
   name: z.string().trim().min(3).max(120),
@@ -71,6 +71,12 @@ export const processDirectPayment = createServerFn({ method: "POST" })
       ),
     );
     if (total <= 0) return { ok: false as const, error: "Valor do pedido inválido." };
+    if (data.method === "card" && data.installments > maxInstallments(total)) {
+      return {
+        ok: false as const,
+        error: `Este pedido parcela em até ${maxInstallments(total)}x sem juros.`,
+      };
+    }
 
     try {
       const { createMercadoPagoPayment } = await import("./mercadopago.server");

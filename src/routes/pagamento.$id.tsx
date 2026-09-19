@@ -12,11 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { isValidCpfCnpj } from "@/lib/brazil-document";
 import { applyCouponToOrder } from "@/lib/coupons.functions";
 import { brl } from "@/lib/format";
-import {
-  FREE_INSTALLMENTS_THRESHOLD,
-  MAX_INSTALLMENTS,
-  cardChargeAmount,
-} from "@/lib/installments";
+import { FREE_INSTALLMENTS_THRESHOLD, maxInstallments } from "@/lib/installments";
 import {
   checkOrderPayment,
   getMercadoPagoPublicConfig,
@@ -258,7 +254,7 @@ function PaymentPage() {
           token: token.id,
           paymentMethodId: paymentMethod.id,
           issuerId: paymentMethod.issuer?.id ? String(paymentMethod.issuer.id) : undefined,
-          installments: installmentCount,
+          installments: Math.min(installmentCount, maxInstallments(total)),
         },
       });
       if (!result.ok) throw new Error(result.error);
@@ -422,15 +418,12 @@ function PaymentPage() {
                         value={installmentCount}
                         onChange={(event) => setInstallmentCount(Number(event.target.value))}
                       >
-                        {Array.from({ length: MAX_INSTALLMENTS }, (_, index) => index + 1).map(
+                        {Array.from({ length: maxInstallments(total) }, (_, index) => index + 1).map(
                           (count) => {
-                            const charge = cardChargeAmount(total, count);
                             const label =
                               count === 1
                                 ? `À vista — ${brl(total)}`
-                                : total >= FREE_INSTALLMENTS_THRESHOLD
-                                  ? `${count}x de ${brl(charge / count)} — sem juros`
-                                  : `${count}x de ${brl(charge / count)} (total ${brl(charge)}, juros de 5% por parcela)`;
+                                : `${count}x de ${brl(total / count)} — sem juros`;
                             return (
                               <option key={count} value={count}>
                                 {label}
@@ -439,10 +432,10 @@ function PaymentPage() {
                           },
                         )}
                       </select>
-                      {installmentCount > 1 && total < FREE_INSTALLMENTS_THRESHOLD ? (
+                      {total < FREE_INSTALLMENTS_THRESHOLD ? (
                         <p className="mt-2 text-xs text-muted-foreground">
-                          Pedidos a partir de {brl(FREE_INSTALLMENTS_THRESHOLD)} têm até 3x sem
-                          juros.
+                          Pedidos a partir de {brl(FREE_INSTALLMENTS_THRESHOLD)} parcelam em até 3x
+                          sem juros.
                         </p>
                       ) : null}
                     </div>
