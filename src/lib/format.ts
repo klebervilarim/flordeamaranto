@@ -1,8 +1,8 @@
 export const brl = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value ?? 0);
 
-export const installments = (value: number, max = 6) => {
-  const n = value >= 300 ? max : value >= 150 ? 3 : 2;
+export const installments = (value: number) => {
+  const n = value >= 399 ? 3 : 2;
   return { n, value: value / n };
 };
 
