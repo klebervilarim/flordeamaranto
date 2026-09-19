@@ -254,7 +254,7 @@ function PaymentPage() {
           token: token.id,
           paymentMethodId: paymentMethod.id,
           issuerId: paymentMethod.issuer?.id ? String(paymentMethod.issuer.id) : undefined,
-          installments: installmentCount,
+          installments: Math.min(installmentCount, maxInstallments(total)),
         },
       });
       if (!result.ok) throw new Error(result.error);
