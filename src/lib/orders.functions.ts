@@ -92,7 +92,7 @@ export const listOrdersForAdmin = createServerFn({ method: "GET" })
 
     if (!term) return all;
     const termDigits = term.replace(/\D/g, "");
-    return mapped.filter((o) => {
+    return all.filter((o) => {
       const name = (o.address.name ?? "").toLowerCase();
       const phone = (o.address.phone ?? "").toLowerCase();
       const phoneDigits = phone.replace(/\D/g, "");
