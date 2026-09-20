@@ -96,8 +96,11 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
 
     const orders = ordersRes.data ?? [];
     const valid = orders.filter((o) => o.status !== "cancelled");
-    const revenue = valid.reduce((s, o) => s + Number(o.total ?? 0), 0);
-    const ordersCount = valid.length;
+    const manualSales = manualSalesRes.data ?? [];
+    const revenue =
+      valid.reduce((s, o) => s + Number(o.total ?? 0), 0) +
+      manualSales.reduce((s, s2) => s + Number(s2.total ?? 0), 0);
+    const ordersCount = valid.length + manualSales.length;
 
     const countBy = <K extends string>(rows: K[]): { label: string; value: number }[] => {
       const map = new Map<string, number>();
@@ -131,6 +134,14 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
         cur.orders += 1;
       }
     }
+    for (const s of manualSales) {
+      const d = String(s.created_at).slice(0, 10);
+      const cur = dayMap.get(d);
+      if (cur) {
+        cur.revenue += Number(s.total ?? 0);
+        cur.orders += 1;
+      }
+    }
     for (const [date, v] of dayMap) days.push({ date, ...v });
 
     const prodMap = new Map<
@@ -141,6 +152,14 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
     for (const it of itemsRes.data ?? []) {
       const key = it.product_name;
       const cur = prodMap.get(key) ?? { name: key, brand: it.brand_name, qty: 0, revenue: 0 };
+      cur.qty += it.quantity;
+      cur.revenue += Number(it.total ?? 0);
+      itemsSold += it.quantity;
+      prodMap.set(key, cur);
+    }
+    for (const it of manualItemsRes.data ?? []) {
+      const key = it.product_name;
+      const cur = prodMap.get(key) ?? { name: key, brand: null, qty: 0, revenue: 0 };
       cur.qty += it.quantity;
       cur.revenue += Number(it.total ?? 0);
       itemsSold += it.quantity;
