@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,12 +30,28 @@ export const Route = createFileRoute("/minha-conta")({
   component: AccountPage,
 });
 
+const PASSWORD_RULES = [
+  { key: "length", label: "Mínimo 8 dígitos", test: (p: string) => p.length >= 8 },
+  { key: "upper", label: "Pelo menos 1 letra maiúscula", test: (p: string) => /[A-Z]/.test(p) },
+  { key: "lower", label: "Pelo menos 1 letra minúscula", test: (p: string) => /[a-z]/.test(p) },
+  { key: "number", label: "Pelo menos 1 número", test: (p: string) => /[0-9]/.test(p) },
+  {
+    key: "special",
+    label: "Pelo menos 1 caractere especial",
+    test: (p: string) => /[^A-Za-z0-9]/.test(p),
+  },
+];
+
 function AccountPage() {
   const { user, loading, signOut } = useAuth();
   const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [busy, setBusy] = useState(false);
+
+  const passwordOk = PASSWORD_RULES.every((r) => r.test(password));
+  const confirmOk = confirmPassword.length > 0 && confirmPassword === password;
 
   if (loading) {
     return (
@@ -65,6 +81,16 @@ function AccountPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (mode === "up") {
+      if (!passwordOk) {
+        toast.error("A senha não atende a todos os requisitos abaixo.");
+        return;
+      }
+      if (!confirmOk) {
+        toast.error("A confirmação de senha não confere.");
+        return;
+      }
+    }
     setBusy(true);
     try {
       if (mode === "up") {
@@ -114,13 +140,71 @@ function AccountPage() {
             id="password"
             type="password"
             required
-            minLength={6}
+            minLength={mode === "up" ? 8 : 6}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="mt-2"
           />
+          {mode === "up" && (
+            <ul className="mt-3 space-y-1.5">
+              {PASSWORD_RULES.map((rule) => {
+                const ok = rule.test(password);
+                return (
+                  <li
+                    key={rule.key}
+                    className={`flex items-center gap-2 text-xs ${
+                      ok ? "text-emerald-600" : "text-muted-foreground"
+                    }`}
+                  >
+                    {ok ? (
+                      <Check className="h-3.5 w-3.5" />
+                    ) : (
+                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-current opacity-60" />
+                    )}
+                    {rule.label}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
-        <Button type="submit" variant="gold" size="xl" className="w-full" disabled={busy}>
+        {mode === "up" && (
+          <div>
+            <Label htmlFor="confirm-password" className="text-xs tracking-[0.12em] uppercase">
+              Confirmar senha
+            </Label>
+            <Input
+              id="confirm-password"
+              type="password"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="mt-2"
+            />
+            {confirmPassword.length > 0 && (
+              <p
+                className={`mt-2 flex items-center gap-2 text-xs ${
+                  confirmOk ? "text-emerald-600" : "text-destructive"
+                }`}
+              >
+                {confirmOk ? (
+                  <>
+                    <Check className="h-3.5 w-3.5" /> As senhas conferem
+                  </>
+                ) : (
+                  "As senhas não conferem"
+                )}
+              </p>
+            )}
+          </div>
+        )}
+        <Button
+          type="submit"
+          variant="gold"
+          size="xl"
+          className="w-full"
+          disabled={busy || (mode === "up" && (!passwordOk || !confirmOk))}
+        >
           {mode === "in" ? "Entrar" : "Criar conta"}
         </Button>
       </form>
