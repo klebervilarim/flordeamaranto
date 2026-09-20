@@ -10,6 +10,7 @@ import {
   Pencil,
   Plus,
   ShieldCheck,
+  ShoppingBag,
   Ticket,
   Truck,
 } from "lucide-react";
@@ -190,6 +191,11 @@ function StockPanel() {
           <Button asChild variant="outlineInk" size="pill">
             <Link to="/estoque/pedidos">
               <Truck className="mr-2 h-4 w-4" /> Pedidos
+            </Link>
+          </Button>
+          <Button asChild variant="outlineInk" size="pill">
+            <Link to="/estoque/venda-manual">
+              <ShoppingBag className="mr-2 h-4 w-4" /> Venda manual
             </Link>
           </Button>
           <Button asChild variant="outlineInk" size="pill">

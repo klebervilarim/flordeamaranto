@@ -467,6 +467,87 @@ export type Database = {
         }
         Relationships: []
       }
+      manual_sale_items: {
+        Row: {
+          id: string
+          product_id: string | null
+          product_name: string
+          quantity: number
+          sale_id: string
+          total: number
+          unit_price: number
+        }
+        Insert: {
+          id?: string
+          product_id?: string | null
+          product_name: string
+          quantity: number
+          sale_id: string
+          total: number
+          unit_price: number
+        }
+        Update: {
+          id?: string
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          sale_id?: string
+          total?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_sale_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_sale_items_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "manual_sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      manual_sales: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          customer_name: string
+          customer_phone: string
+          id: string
+          note: string | null
+          payment_method: string
+          sale_number: string
+          total: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          customer_name: string
+          customer_phone: string
+          id?: string
+          note?: string | null
+          payment_method: string
+          sale_number: string
+          total?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          note?: string | null
+          payment_method?: string
+          sale_number?: string
+          total?: number
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string

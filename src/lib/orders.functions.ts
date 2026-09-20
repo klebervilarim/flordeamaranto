@@ -29,6 +29,8 @@ export type AdminOrder = {
   carrier: string | null;
   address: AdminOrderAddress;
   items: AdminOrderItem[];
+  manual?: boolean;
+  payment_method?: string | null;
 };
 
 export const listOrdersForAdmin = createServerFn({ method: "GET" })
@@ -40,16 +42,25 @@ export const listOrdersForAdmin = createServerFn({ method: "GET" })
     await assertAdmin(context.supabase, context.userId);
     const term = data.search?.trim().toLowerCase();
 
-    const { data: rows, error } = await context.supabase
-      .from("orders")
-      .select(
-        "id, order_number, created_at, status, total, tracking_code, carrier, shipping_address, order_items(product_name, quantity)",
-      )
-      .order("created_at", { ascending: false })
-      .limit(2000);
-    if (error) throw new Error(`Falha ao carregar pedidos: ${error.message}`);
+    const [ordersRes, manualRes] = await Promise.all([
+      context.supabase
+        .from("orders")
+        .select(
+          "id, order_number, created_at, status, total, tracking_code, carrier, shipping_address, order_items(product_name, quantity)",
+        )
+        .order("created_at", { ascending: false })
+        .limit(2000),
+      context.supabase
+        .from("manual_sales")
+        .select(
+          "id, sale_number, created_at, total, customer_name, customer_phone, payment_method, manual_sale_items(product_name, quantity)",
+        )
+        .order("created_at", { ascending: false })
+        .limit(1000),
+    ]);
+    if (ordersRes.error) throw new Error(`Falha ao carregar pedidos: ${ordersRes.error.message}`);
 
-    const mapped: AdminOrder[] = (rows ?? []).map((r) => ({
+    const mapped: AdminOrder[] = (ordersRes.data ?? []).map((r) => ({
       id: r.id,
       order_number: r.order_number,
       created_at: r.created_at,
@@ -61,9 +72,27 @@ export const listOrdersForAdmin = createServerFn({ method: "GET" })
       items: (r.order_items ?? []) as AdminOrderItem[],
     }));
 
-    if (!term) return mapped;
+    const manualMapped: AdminOrder[] = (manualRes.data ?? []).map((r) => ({
+      id: r.id,
+      order_number: r.sale_number,
+      created_at: r.created_at,
+      status: "paid" as const,
+      total: Number(r.total),
+      tracking_code: null,
+      carrier: null,
+      address: { name: r.customer_name, phone: r.customer_phone },
+      items: (r.manual_sale_items ?? []) as AdminOrderItem[],
+      manual: true,
+      payment_method: r.payment_method,
+    }));
+
+    const all = [...mapped, ...manualMapped].sort((a, b) =>
+      b.created_at.localeCompare(a.created_at),
+    );
+
+    if (!term) return all;
     const termDigits = term.replace(/\D/g, "");
-    return mapped.filter((o) => {
+    return all.filter((o) => {
       const name = (o.address.name ?? "").toLowerCase();
       const phone = (o.address.phone ?? "").toLowerCase();
       const phoneDigits = phone.replace(/\D/g, "");

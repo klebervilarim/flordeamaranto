@@ -24,6 +24,10 @@ import {
   type AdminOrder,
   type OrderStatus,
 } from "@/lib/orders.functions";
+import {
+  MANUAL_PAYMENT_LABELS,
+  type ManualPaymentMethod,
+} from "@/lib/manual-sales.functions";
 
 export const Route = createFileRoute("/estoque/pedidos")({
   head: () => ({
@@ -178,9 +182,18 @@ function PedidosPanel() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-display text-lg">{o.order_number}</span>
-                      <Badge variant="secondary">
-                        {STATUS_LABELS[o.status as OrderStatus] ?? o.status}
-                      </Badge>
+                      {o.manual ? (
+                        <Badge variant="secondary">
+                          Venda manual
+                          {o.payment_method
+                            ? ` · ${MANUAL_PAYMENT_LABELS[o.payment_method as ManualPaymentMethod] ?? o.payment_method}`
+                            : ""}
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">
+                          {STATUS_LABELS[o.status as OrderStatus] ?? o.status}
+                        </Badge>
+                      )}
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {new Date(o.created_at).toLocaleDateString("pt-BR", {
@@ -221,6 +234,7 @@ function PedidosPanel() {
                   </div>
                 </div>
 
+                {!o.manual && (
                 <div className="mt-5 grid gap-4 border-t border-border pt-5 sm:grid-cols-[200px_1fr_1fr_auto] sm:items-end">
                   <div>
                     <Label className="text-xs tracking-[0.12em] uppercase">Status</Label>
@@ -275,6 +289,7 @@ function PedidosPanel() {
                     {saving ? "Salvando…" : "Salvar"}
                   </Button>
                 </div>
+                )}
               </div>
             );
           })
