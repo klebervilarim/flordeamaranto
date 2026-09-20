@@ -81,6 +81,16 @@ function AccountPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (mode === "up") {
+      if (!passwordOk) {
+        toast.error("A senha não atende a todos os requisitos abaixo.");
+        return;
+      }
+      if (!confirmOk) {
+        toast.error("A confirmação de senha não confere.");
+        return;
+      }
+    }
     setBusy(true);
     try {
       if (mode === "up") {
