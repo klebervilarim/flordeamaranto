@@ -148,6 +148,11 @@ function Dashboard({ data }: { data: AdminDashboard }) {
               <Package className="mr-2 h-4 w-4" /> Estoque
             </Link>
           </Button>
+          <Button asChild variant="outlineInk" size="pill">
+            <Link to="/estoque/venda-manual">
+              <ShoppingBag className="mr-2 h-4 w-4" /> Venda manual
+            </Link>
+          </Button>
         </div>
       </div>
 
