@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,12 +30,28 @@ export const Route = createFileRoute("/minha-conta")({
   component: AccountPage,
 });
 
+const PASSWORD_RULES = [
+  { key: "length", label: "Mínimo 8 dígitos", test: (p: string) => p.length >= 8 },
+  { key: "upper", label: "Pelo menos 1 letra maiúscula", test: (p: string) => /[A-Z]/.test(p) },
+  { key: "lower", label: "Pelo menos 1 letra minúscula", test: (p: string) => /[a-z]/.test(p) },
+  { key: "number", label: "Pelo menos 1 número", test: (p: string) => /[0-9]/.test(p) },
+  {
+    key: "special",
+    label: "Pelo menos 1 caractere especial",
+    test: (p: string) => /[^A-Za-z0-9]/.test(p),
+  },
+];
+
 function AccountPage() {
   const { user, loading, signOut } = useAuth();
   const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [busy, setBusy] = useState(false);
+
+  const passwordOk = PASSWORD_RULES.every((r) => r.test(password));
+  const confirmOk = confirmPassword.length > 0 && confirmPassword === password;
 
   if (loading) {
     return (
