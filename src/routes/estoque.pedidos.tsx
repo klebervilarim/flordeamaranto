@@ -24,6 +24,10 @@ import {
   type AdminOrder,
   type OrderStatus,
 } from "@/lib/orders.functions";
+import {
+  MANUAL_PAYMENT_LABELS,
+  type ManualPaymentMethod,
+} from "@/lib/manual-sales.functions";
 
 export const Route = createFileRoute("/estoque/pedidos")({
   head: () => ({
@@ -285,6 +289,7 @@ function PedidosPanel() {
                     {saving ? "Salvando…" : "Salvar"}
                   </Button>
                 </div>
+                )}
               </div>
             );
           })
