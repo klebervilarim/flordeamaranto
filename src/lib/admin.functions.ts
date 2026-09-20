@@ -43,7 +43,16 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const [ordersRes, itemsRes, productsRes, customersRes, lowStockCandidatesRes, movementsRes] =
+    const [
+      ordersRes,
+      itemsRes,
+      productsRes,
+      customersRes,
+      lowStockCandidatesRes,
+      movementsRes,
+      manualSalesRes,
+      manualItemsRes,
+    ] =
       await Promise.all([
         supabaseAdmin
           .from("orders")
@@ -74,6 +83,15 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
           )
           .order("created_at", { ascending: false })
           .limit(8),
+        supabaseAdmin
+          .from("manual_sales")
+          .select("id, sale_number, total, payment_method, created_at")
+          .order("created_at", { ascending: false })
+          .limit(2000),
+        supabaseAdmin
+          .from("manual_sale_items")
+          .select("product_name, quantity, total")
+          .limit(4000),
       ]);
 
     const orders = ordersRes.data ?? [];
