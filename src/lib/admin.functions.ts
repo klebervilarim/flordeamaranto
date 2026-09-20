@@ -209,8 +209,11 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
       customersWithOrders: orderCountByUser.size,
       returningCustomers,
       productsActive: productsRes.count ?? 0,
-      byStatus: countBy(orders.map((o) => o.status)),
-      byPayment: countBy(valid.map((o) => o.payment_method ?? "outro")),
+      byStatus: countBy([...orders.map((o) => o.status), ...manualSales.map(() => "paid")]),
+      byPayment: countBy([
+        ...valid.map((o) => o.payment_method ?? "outro"),
+        ...manualSales.map((s) => s.payment_method ?? "outro"),
+      ]),
       byState: [...stateMap.entries()]
         .map(([label, v]) => ({ label, ...v }))
         .sort((a, b) => b.value - a.value)
