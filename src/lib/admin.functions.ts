@@ -43,7 +43,16 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const [ordersRes, itemsRes, productsRes, customersRes, lowStockCandidatesRes, movementsRes] =
+    const [
+      ordersRes,
+      itemsRes,
+      productsRes,
+      customersRes,
+      lowStockCandidatesRes,
+      movementsRes,
+      manualSalesRes,
+      manualItemsRes,
+    ] =
       await Promise.all([
         supabaseAdmin
           .from("orders")
@@ -74,12 +83,24 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
           )
           .order("created_at", { ascending: false })
           .limit(8),
+        supabaseAdmin
+          .from("manual_sales")
+          .select("id, sale_number, total, payment_method, created_at")
+          .order("created_at", { ascending: false })
+          .limit(2000),
+        supabaseAdmin
+          .from("manual_sale_items")
+          .select("product_name, quantity, total")
+          .limit(4000),
       ]);
 
     const orders = ordersRes.data ?? [];
     const valid = orders.filter((o) => o.status !== "cancelled");
-    const revenue = valid.reduce((s, o) => s + Number(o.total ?? 0), 0);
-    const ordersCount = valid.length;
+    const manualSales = manualSalesRes.data ?? [];
+    const revenue =
+      valid.reduce((s, o) => s + Number(o.total ?? 0), 0) +
+      manualSales.reduce((s, s2) => s + Number(s2.total ?? 0), 0);
+    const ordersCount = valid.length + manualSales.length;
 
     const countBy = <K extends string>(rows: K[]): { label: string; value: number }[] => {
       const map = new Map<string, number>();
@@ -113,6 +134,14 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
         cur.orders += 1;
       }
     }
+    for (const s of manualSales) {
+      const d = String(s.created_at).slice(0, 10);
+      const cur = dayMap.get(d);
+      if (cur) {
+        cur.revenue += Number(s.total ?? 0);
+        cur.orders += 1;
+      }
+    }
     for (const [date, v] of dayMap) days.push({ date, ...v });
 
     const prodMap = new Map<
@@ -123,6 +152,14 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
     for (const it of itemsRes.data ?? []) {
       const key = it.product_name;
       const cur = prodMap.get(key) ?? { name: key, brand: it.brand_name, qty: 0, revenue: 0 };
+      cur.qty += it.quantity;
+      cur.revenue += Number(it.total ?? 0);
+      itemsSold += it.quantity;
+      prodMap.set(key, cur);
+    }
+    for (const it of manualItemsRes.data ?? []) {
+      const key = it.product_name;
+      const cur = prodMap.get(key) ?? { name: key, brand: null, qty: 0, revenue: 0 };
       cur.qty += it.quantity;
       cur.revenue += Number(it.total ?? 0);
       itemsSold += it.quantity;
@@ -172,8 +209,11 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
       customersWithOrders: orderCountByUser.size,
       returningCustomers,
       productsActive: productsRes.count ?? 0,
-      byStatus: countBy(orders.map((o) => o.status)),
-      byPayment: countBy(valid.map((o) => o.payment_method ?? "outro")),
+      byStatus: countBy([...orders.map((o) => o.status), ...manualSales.map(() => "paid")]),
+      byPayment: countBy([
+        ...valid.map((o) => o.payment_method ?? "outro"),
+        ...manualSales.map((s) => s.payment_method ?? "outro"),
+      ]),
       byState: [...stateMap.entries()]
         .map(([label, v]) => ({ label, ...v }))
         .sort((a, b) => b.value - a.value)

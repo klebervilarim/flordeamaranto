@@ -34,6 +34,7 @@ const PAYMENT_LABELS: Record<string, string> = {
   pix: "Pix",
   cartao: "Cartão",
   boleto: "Boleto",
+  dinheiro: "Dinheiro",
 };
 
 function AdminPage() {
