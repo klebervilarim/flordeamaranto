@@ -13,11 +13,7 @@ import { isValidCpfCnpj } from "@/lib/brazil-document";
 import { applyCouponToOrder } from "@/lib/coupons.functions";
 import { brl } from "@/lib/format";
 import { FREE_INSTALLMENTS_THRESHOLD, maxInstallments } from "@/lib/installments";
-import {
-  checkOrderPayment,
-  getMercadoPagoPublicConfig,
-  processDirectPayment,
-} from "@/lib/payments.functions";
+import { checkOrderPayment, processDirectPayment } from "@/lib/payments.functions";
 
 export const Route = createFileRoute("/pagamento/$id")({
   head: () => ({
@@ -61,19 +57,6 @@ type PixData = {
   expires_at: string | null;
 };
 
-type MercadoPagoCardToken = { id: string };
-type MercadoPagoMethod = { id: string; issuer?: { id?: string | number } };
-type MercadoPagoClient = {
-  createCardToken: (data: Record<string, string>) => Promise<MercadoPagoCardToken>;
-  getPaymentMethods: (data: { bin: string }) => Promise<{ results?: MercadoPagoMethod[] }>;
-};
-
-declare global {
-  interface Window {
-    MercadoPago?: new (publicKey: string, options?: { locale?: string }) => MercadoPagoClient;
-  }
-}
-
 function maskDoc(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 14);
   if (digits.length <= 11) {
@@ -102,33 +85,10 @@ function maskExpiry(value: string) {
   return digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
 }
 
-async function loadMercadoPagoSdk() {
-  if (window.MercadoPago) return;
-  await new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(
-      'script[src="https://sdk.mercadopago.com/js/v2"]',
-    );
-    if (existing) {
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("SDK indisponível")), {
-        once: true,
-      });
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = "https://sdk.mercadopago.com/js/v2";
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("SDK indisponível"));
-    document.head.appendChild(script);
-  });
-}
-
 function PaymentPage() {
   const { id } = Route.useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const getPublicConfig = useServerFn(getMercadoPagoPublicConfig);
   const payDirect = useServerFn(processDirectPayment);
   const checkPayment = useServerFn(checkOrderPayment);
   const [order, setOrder] = useState<OrderRow | null>(null);
@@ -219,7 +179,7 @@ function PaymentPage() {
           return;
         }
         if (!result.data.pix?.qr_code && !result.data.pix?.ticket_url) {
-          throw new Error("O Mercado Pago não retornou o código Pix. Tente novamente.");
+          throw new Error("O sistema de pagamento não retornou o código Pix. Tente novamente.");
         }
         setPix(result.data.pix ?? null);
         toast.success("Pix gerado com sucesso");
@@ -227,40 +187,24 @@ function PaymentPage() {
       }
 
       if (!cardIsValid) return;
-      await loadMercadoPagoSdk();
-      const config = await getPublicConfig();
-      const MercadoPago = window.MercadoPago;
-      if (!MercadoPago) throw new Error("Não foi possível carregar o pagamento seguro.");
-      const mp = new MercadoPago(config.publicKey, { locale: "pt-BR" });
-      const number = cardNumber.replace(/\D/g, "");
-      const expiry = cardExpiry.split("/");
-      const methods = await mp.getPaymentMethods({ bin: number.slice(0, 6) });
-      const paymentMethod = methods.results?.[0];
-      if (!paymentMethod) throw new Error("Bandeira do cartão não reconhecida.");
-      const token = await mp.createCardToken({
-        cardNumber: number,
-        cardholderName: cardHolder.trim(),
-        cardExpirationMonth: expiry[0] ?? "",
-        cardExpirationYear: `20${expiry[1] ?? ""}`,
-        securityCode: cardCvv,
-        identificationType: payerDoc.replace(/\D/g, "").length > 11 ? "CNPJ" : "CPF",
-        identificationNumber: payerDoc.replace(/\D/g, ""),
-      });
       const result = await payDirect({
         data: {
           orderId: order.id,
           method: "card",
           payer,
-          token: token.id,
-          paymentMethodId: paymentMethod.id,
-          issuerId: paymentMethod.issuer?.id ? String(paymentMethod.issuer.id) : undefined,
+          card: {
+            number: cardNumber,
+            holder: cardHolder.trim(),
+            exp: cardExpiry,
+            cvv: cardCvv,
+          },
           installments: Math.min(installmentCount, maxInstallments(total)),
         },
       });
       if (!result.ok) throw new Error(result.error);
       if (result.data.status === "approved") {
         await navigate({ to: "/pagamento/sucesso/$id", params: { id } });
-      } else if (result.data.status === "in_process" || result.data.status === "pending") {
+      } else if (result.data.status === "pending") {
         toast.success("Pagamento em análise", {
           description: "A confirmação será atualizada automaticamente.",
         });
@@ -441,7 +385,7 @@ function PaymentPage() {
                     </div>
                   </div>
                   <p className="mt-4 text-xs text-muted-foreground">
-                    Os dados do cartão são tokenizados pelo Mercado Pago e não ficam armazenados na
+                    Os dados do cartão são enviados com segurança ao Asaas e não ficam armazenados na
                     loja.
                   </p>
                 </TabsContent>
@@ -506,7 +450,7 @@ function PaymentPage() {
             </Button>
           )}
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            Pagamento processado com segurança pelo Mercado Pago.
+            Pagamento processado com segurança pelo Asaas.
           </p>
         </aside>
       </div>

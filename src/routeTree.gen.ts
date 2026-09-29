@@ -47,6 +47,7 @@ import { Route as PagamentoIdRouteImport } from './routes/pagamento.$id'
 import { Route as PerfumesIndexRouteImport } from './routes/perfumes.index'
 import { Route as PerfumesFiltroRouteImport } from './routes/perfumes.$filtro'
 import { Route as ProdutoSlugRouteImport } from './routes/produto.$slug'
+import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
 import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api/public/mercadopago-webhook'
 import { Route as EstoqueProdutoIdRouteImport } from './routes/estoque.produto.$id'
 import { Route as EstoqueProdutoNovoRouteImport } from './routes/estoque.produto.novo'
@@ -244,6 +245,11 @@ const ProdutoSlugRoute = ProdutoSlugRouteImport.update({
   path: '/produto/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
+  id: '/api/public/asaas-webhook',
+  path: '/api/public/asaas-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicMercadopagoWebhookRoute =
   ApiPublicMercadopagoWebhookRouteImport.update({
     id: '/api/public/mercadopago-webhook',
@@ -317,6 +323,7 @@ export interface FileRoutesByFullPath {
   '/estoque/': typeof EstoqueIndexRoute
   '/marcas/': typeof MarcasIndexRoute
   '/perfumes/': typeof PerfumesIndexRoute
+  '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
   '/estoque/produto/novo': typeof EstoqueProdutoNovoRoute
@@ -362,6 +369,7 @@ export interface FileRoutesByTo {
   '/estoque': typeof EstoqueIndexRoute
   '/marcas': typeof MarcasIndexRoute
   '/perfumes': typeof PerfumesIndexRoute
+  '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
   '/estoque/produto/novo': typeof EstoqueProdutoNovoRoute
@@ -409,6 +417,7 @@ export interface FileRoutesById {
   '/estoque/': typeof EstoqueIndexRoute
   '/marcas/': typeof MarcasIndexRoute
   '/perfumes/': typeof PerfumesIndexRoute
+  '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
   '/estoque/produto/novo': typeof EstoqueProdutoNovoRoute
@@ -457,6 +466,7 @@ export interface FileRouteTypes {
     | '/estoque/'
     | '/marcas/'
     | '/perfumes/'
+    | '/api/public/asaas-webhook'
     | '/api/public/mercadopago-webhook'
     | '/estoque/produto/$id'
     | '/estoque/produto/novo'
@@ -502,6 +512,7 @@ export interface FileRouteTypes {
     | '/estoque'
     | '/marcas'
     | '/perfumes'
+    | '/api/public/asaas-webhook'
     | '/api/public/mercadopago-webhook'
     | '/estoque/produto/$id'
     | '/estoque/produto/novo'
@@ -548,6 +559,7 @@ export interface FileRouteTypes {
     | '/estoque/'
     | '/marcas/'
     | '/perfumes/'
+    | '/api/public/asaas-webhook'
     | '/api/public/mercadopago-webhook'
     | '/estoque/produto/$id'
     | '/estoque/produto/novo'
@@ -585,6 +597,7 @@ export interface RootRouteChildren {
   ColecoesIndexRoute: typeof ColecoesIndexRoute
   MarcasIndexRoute: typeof MarcasIndexRoute
   PerfumesIndexRoute: typeof PerfumesIndexRoute
+  ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
   ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
   PagamentoSucessoIdRoute: typeof PagamentoSucessoIdRoute
   ApiPublicProductImageSplatRoute: typeof ApiPublicProductImageSplatRoute
@@ -859,6 +872,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProdutoSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/asaas-webhook': {
+      id: '/api/public/asaas-webhook'
+      path: '/api/public/asaas-webhook'
+      fullPath: '/api/public/asaas-webhook'
+      preLoaderRoute: typeof ApiPublicAsaasWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/mercadopago-webhook': {
       id: '/api/public/mercadopago-webhook'
       path: '/api/public/mercadopago-webhook'
@@ -966,6 +986,7 @@ const rootRouteChildren: RootRouteChildren = {
   ColecoesIndexRoute: ColecoesIndexRoute,
   MarcasIndexRoute: MarcasIndexRoute,
   PerfumesIndexRoute: PerfumesIndexRoute,
+  ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
   ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
   PagamentoSucessoIdRoute: PagamentoSucessoIdRoute,
   ApiPublicProductImageSplatRoute: ApiPublicProductImageSplatRoute,
