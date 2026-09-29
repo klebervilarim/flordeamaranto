@@ -163,7 +163,7 @@ export const processDirectPayment = createServerFn({ method: "POST" })
       return {
         ok: true as const,
         data: {
-          status: paid ? "approved" : data.method === "card" ? "rejected" : "pending",
+          status: paid ? "approved" : "pending",
           statusDetail: status,
           pix,
         },
@@ -282,12 +282,33 @@ export const checkOrderPayment = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: order } = await supabase
       .from("orders")
-      .select("id, user_id, payment_id, payment_status")
+      .select("id, user_id, payment_id, payment_status, payment_provider")
       .eq("id", data.orderId)
       .maybeSingle();
     if (!order || order.user_id !== userId) return { status: "unknown" as const };
     if (order.payment_status === "paid") return { status: "paid" as const };
     if (!order.payment_id) return { status: order.payment_status as string };
+
+    if (order.payment_provider === "asaas") {
+      const asaas = await import("./asaas.server");
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const p = await asaas.getAsaasPayment(order.payment_id);
+      if (!p) return { status: order.payment_status as string };
+      if (asaas.isAsaasPaid(p.status)) {
+        await supabaseAdmin
+          .from("orders")
+          .update({ payment_status: "paid", status: "paid" })
+          .eq("id", order.id);
+        const { notifyPaymentConfirmed } = await import("./order-notifications.server");
+        await notifyPaymentConfirmed(order.id);
+        return { status: "paid" as const };
+      }
+      if (asaas.isAsaasFailed(p.status)) {
+        await supabaseAdmin.from("orders").update({ payment_status: "failed" }).eq("id", order.id);
+        return { status: "failed" as const };
+      }
+      return { status: "pending" as const };
+    }
 
     const { getMercadoPagoPayment } = await import("./mercadopago.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
