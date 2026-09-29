@@ -148,13 +148,38 @@ export async function quoteForCep(
     return { ok: false, error: "CEP inválido. Informe os 8 dígitos." };
   }
 
-  let via: ViaCepResponse;
-  try {
-    const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`, {
-      signal: AbortSignal.timeout(8000),
-    });
-    via = (await res.json()) as ViaCepResponse;
-  } catch {
+  const headers = { Accept: "application/json", "User-Agent": "FlorDeAmaranto/1.0" };
+  const providers: Array<() => Promise<ViaCepResponse>> = [
+    async () => {
+      const r = await fetch(`https://viacep.com.br/ws/${digits}/json/`, { headers, signal: AbortSignal.timeout(5000) });
+      if (!r.ok) throw new Error(String(r.status));
+      return (await r.json()) as ViaCepResponse;
+    },
+    async () => {
+      const r = await fetch(`https://brasilapi.com.br/api/cep/v1/${digits}`, { headers, signal: AbortSignal.timeout(5000) });
+      if (r.status === 404) return { erro: true };
+      if (!r.ok) throw new Error(String(r.status));
+      const d = (await r.json()) as { street?: string; neighborhood?: string; city?: string; state?: string };
+      return { logradouro: d.street, bairro: d.neighborhood, localidade: d.city, uf: d.state };
+    },
+    async () => {
+      const r = await fetch(`https://opencep.com/v1/${digits}`, { headers, signal: AbortSignal.timeout(5000) });
+      if (r.status === 404) return { erro: true };
+      if (!r.ok) throw new Error(String(r.status));
+      return (await r.json()) as ViaCepResponse;
+    },
+  ];
+  let via: ViaCepResponse | null = null;
+  for (const p of providers) {
+    try {
+      const res = await p();
+      if (res.uf) { via = res; break; }
+      if (!via) via = res;
+    } catch {
+      /* tenta o próximo */
+    }
+  }
+  if (!via) {
     return { ok: false, error: "Não foi possível consultar o CEP. Tente novamente." };
   }
   if (via.erro || !via.uf) {
