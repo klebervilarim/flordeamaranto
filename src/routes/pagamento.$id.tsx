@@ -204,7 +204,7 @@ function PaymentPage() {
       if (!result.ok) throw new Error(result.error);
       if (result.data.status === "approved") {
         await navigate({ to: "/pagamento/sucesso/$id", params: { id } });
-      } else if (result.data.status === "in_process" || result.data.status === "pending") {
+      } else if (result.data.status === "pending") {
         toast.success("Pagamento em análise", {
           description: "A confirmação será atualizada automaticamente.",
         });
