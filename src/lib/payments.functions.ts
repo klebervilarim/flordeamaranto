@@ -28,9 +28,12 @@ export const processDirectPayment = createServerFn({ method: "POST" })
           orderId: z.string().uuid(),
           method: z.literal("card"),
           payer: payerSchema,
-          token: z.string().min(10).max(500),
-          paymentMethodId: z.string().min(1).max(80),
-          issuerId: z.string().max(80).optional(),
+          card: z.object({
+            number: z.string().regex(/^[\d ]{13,23}$/),
+            holder: z.string().trim().min(3).max(120),
+            exp: z.string().regex(/^\d{2}\/\d{2,4}$/),
+            cvv: z.string().regex(/^\d{3,4}$/),
+          }),
           installments: z.number().int().min(1).max(3),
         }),
       ])
@@ -40,7 +43,7 @@ export const processDirectPayment = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: order, error } = await supabase
       .from("orders")
-      .select("id, order_number, shipping, discount, payment_status, user_id")
+      .select("id, order_number, shipping, discount, payment_status, user_id, shipping_address")
       .eq("id", data.orderId)
       .maybeSingle();
     if (error || !order || order.user_id !== userId) {
@@ -79,49 +82,78 @@ export const processDirectPayment = createServerFn({ method: "POST" })
     }
 
     try {
-      const { createMercadoPagoPayment } = await import("./mercadopago.server");
+      const asaas = await import("./asaas.server");
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const payment = await createMercadoPagoPayment({
-        amount:
-          data.method === "card" ? cardChargeAmount(total, data.installments) : total,
-        description: `Pedido ${order.order_number} — Flor de Amaranto`,
-        externalReference: order.id,
-        notificationUrl: `${process.env["PUBLIC_SITE_URL"] ?? "https://flordeamaranto.lovable.app"}/api/public/mercadopago-webhook`,
-        payer: data.payer,
-        method: data.method,
-        ...(data.method === "card"
-          ? {
-              cardToken: data.token,
-              paymentMethodId: data.paymentMethodId,
-              issuerId: data.issuerId,
-              installments: data.installments,
-            }
-          : {}),
-        metadata: { order_id: order.id },
+      const addr = (order.shipping_address ?? {}) as Record<string, string>;
+      const customer = await asaas.findOrCreateCustomer({
+        name: data.payer.name,
+        email: data.payer.email,
+        document: data.payer.document,
+        phone: addr["phone"],
       });
+      const description = `Pedido ${order.order_number} — Flor de Amaranto`;
 
-      const paid = payment.status === "approved";
-      const failed = payment.status === "rejected" || payment.status === "cancelled";
+      let paymentId: string;
+      let status: string;
+      let pix: Awaited<ReturnType<typeof asaas.createPixPayment>>["pix"] | undefined;
+      if (data.method === "pix") {
+        const res = await asaas.createPixPayment({
+          customer,
+          amount: total,
+          description,
+          externalReference: order.id,
+        });
+        paymentId = res.payment.id;
+        status = res.payment.status;
+        pix = res.pix;
+      } else {
+        const { getRequestHeader } = await import("@tanstack/react-start/server");
+        const remoteIp =
+          getRequestHeader("cf-connecting-ip") ??
+          getRequestHeader("x-forwarded-for")?.split(",")[0]?.trim() ??
+          "127.0.0.1";
+        const res = await asaas.createCardPayment({
+          customer,
+          amount: cardChargeAmount(total, data.installments),
+          installments: data.installments,
+          description,
+          externalReference: order.id,
+          remoteIp,
+          card: data.card,
+          holderInfo: {
+            name: data.payer.name,
+            email: data.payer.email,
+            document: data.payer.document,
+            postalCode: addr["zip"] ?? "",
+            addressNumber: addr["number"] ?? "0",
+            phone: addr["phone"] ?? "",
+          },
+        });
+        paymentId = res.id;
+        status = res.status;
+      }
+
+      const paid = asaas.isAsaasPaid(status);
       await supabaseAdmin
         .from("orders")
         .update({
-          payment_id: payment.id,
-          payment_provider: "mercadopago",
+          payment_id: paymentId,
+          payment_provider: "asaas",
           payment_method: data.method === "pix" ? "pix" : "card",
-          payment_status: paid ? "paid" : failed ? "failed" : "pending",
+          payment_status: paid ? "paid" : "pending",
           status: paid ? "paid" : "pending",
           installments: data.method === "card" ? data.installments : null,
           total,
-          pix_qr_code: payment.pix?.qr_code ?? null,
-          pix_qr_code_base64: payment.pix?.qr_code_base64 ?? null,
-          pix_ticket_url: payment.pix?.ticket_url ?? null,
-          pix_expires_at: payment.pix?.expires_at ?? null,
+          pix_qr_code: pix?.qr_code ?? null,
+          pix_qr_code_base64: pix?.qr_code_base64 ?? null,
+          pix_ticket_url: null,
+          pix_expires_at: pix?.expires_at ?? null,
         })
         .eq("id", order.id);
 
-      if (data.method === "pix" && payment.pix) {
+      if (pix) {
         const { notifyPixGenerated } = await import("./order-notifications.server");
-        await notifyPixGenerated(order.id, { qr_code: payment.pix.qr_code });
+        await notifyPixGenerated(order.id, { qr_code: pix.qr_code });
       }
       if (paid) {
         const { notifyPaymentConfirmed } = await import("./order-notifications.server");
@@ -131,9 +163,9 @@ export const processDirectPayment = createServerFn({ method: "POST" })
       return {
         ok: true as const,
         data: {
-          status: payment.status,
-          statusDetail: payment.status_detail,
-          pix: payment.pix,
+          status: paid ? "approved" : data.method === "card" ? "rejected" : "pending",
+          statusDetail: status,
+          pix,
         },
       };
     } catch (err) {
