@@ -131,11 +131,11 @@ async function getOriginCep(): Promise<string> {
 }
 
 type ViaCepResponse = {
-  erro?: boolean;
-  logradouro?: string;
-  bairro?: string;
-  localidade?: string;
-  uf?: string;
+  erro?: boolean | undefined;
+  logradouro?: string | undefined;
+  bairro?: string | undefined;
+  localidade?: string | undefined;
+  uf?: string | undefined;
 };
 
 export async function quoteForCep(
