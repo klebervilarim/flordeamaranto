@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { CouponInput } from "@/components/cart/CouponInput";
@@ -118,6 +118,8 @@ function CheckoutPage() {
     form.city.trim() !== "" &&
     form.state.trim() !== "";
 
+  const numberInputRef = useRef<HTMLInputElement | null>(null);
+
   const onCepChange = (value: string) => {
     const masked = maskCep(value);
     setCep(masked);
@@ -134,6 +136,7 @@ function CheckoutPage() {
           city: res.address.city || prev.city,
           state: res.address.state || prev.state,
         }));
+        setTimeout(() => numberInputRef.current?.focus(), 50);
       });
     }
   };
@@ -340,6 +343,7 @@ function CheckoutPage() {
                     onChange={onCepChange}
                     placeholder="00000-000"
                     inputMode="numeric"
+                    hint={quoting ? "Buscando endereço..." : undefined}
                   />
                   <Field
                     name="street"
@@ -354,6 +358,7 @@ function CheckoutPage() {
                     value={form.number}
                     onChange={(v) => updateField("number", v)}
                     error={errors["number"]}
+                    inputRef={numberInputRef}
                   />
                   <Field
                     name="complement"
@@ -571,6 +576,8 @@ function Field({
   placeholder,
   inputMode,
   error,
+  hint,
+  inputRef,
 }: {
   name: string;
   label: string;
@@ -580,6 +587,8 @@ function Field({
   placeholder?: string | undefined;
   inputMode?: "numeric" | "text" | undefined;
   error?: string | undefined;
+  hint?: string | undefined;
+  inputRef?: React.RefObject<HTMLInputElement | null> | undefined;
 }) {
   return (
     <div>
@@ -594,8 +603,10 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         inputMode={inputMode}
+        ref={inputRef}
         className="mt-2"
       />
+      {hint && !error && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
       {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
     </div>
   );
