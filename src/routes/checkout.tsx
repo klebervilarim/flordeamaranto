@@ -603,8 +603,10 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         inputMode={inputMode}
+        ref={inputRef}
         className="mt-2"
       />
+      {hint && !error && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
       {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
     </div>
   );
