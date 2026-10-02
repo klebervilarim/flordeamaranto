@@ -343,6 +343,7 @@ function CheckoutPage() {
                     onChange={onCepChange}
                     placeholder="00000-000"
                     inputMode="numeric"
+                    hint={quoting ? "Buscando endereço..." : undefined}
                   />
                   <Field
                     name="street"
@@ -357,6 +358,7 @@ function CheckoutPage() {
                     value={form.number}
                     onChange={(v) => updateField("number", v)}
                     error={errors["number"]}
+                    inputRef={numberInputRef}
                   />
                   <Field
                     name="complement"
