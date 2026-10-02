@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { CouponInput } from "@/components/cart/CouponInput";
@@ -117,6 +117,8 @@ function CheckoutPage() {
     form.number.trim() !== "" &&
     form.city.trim() !== "" &&
     form.state.trim() !== "";
+
+  const numberInputRef = useRef<HTMLInputElement | null>(null);
 
   const onCepChange = (value: string) => {
     const masked = maskCep(value);
