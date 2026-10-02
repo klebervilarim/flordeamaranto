@@ -136,6 +136,7 @@ function CheckoutPage() {
           city: res.address.city || prev.city,
           state: res.address.state || prev.state,
         }));
+        setTimeout(() => numberInputRef.current?.focus(), 50);
       });
     }
   };
