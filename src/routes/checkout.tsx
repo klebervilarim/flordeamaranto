@@ -576,6 +576,8 @@ function Field({
   placeholder,
   inputMode,
   error,
+  hint,
+  inputRef,
 }: {
   name: string;
   label: string;
@@ -585,6 +587,8 @@ function Field({
   placeholder?: string | undefined;
   inputMode?: "numeric" | "text" | undefined;
   error?: string | undefined;
+  hint?: string | undefined;
+  inputRef?: React.RefObject<HTMLInputElement | null> | undefined;
 }) {
   return (
     <div>
