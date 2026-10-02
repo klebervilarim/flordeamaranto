@@ -81,7 +81,10 @@ function maskCard(value: string) {
 }
 
 function maskExpiry(value: string) {
-  const digits = value.replace(/\D/g, "").slice(0, 4);
+  let digits = value.replace(/\D/g, "");
+  // Preenchimento automático costuma enviar MM/AAAA — usa só os 2 últimos dígitos do ano.
+  if (digits.length >= 6) digits = digits.slice(0, 2) + digits.slice(4, 6);
+  digits = digits.slice(0, 4);
   return digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
 }
 
@@ -160,11 +163,21 @@ function PaymentPage() {
     payerName.trim().length >= 3 &&
     /\S+@\S+\.\S+/.test(payerEmail.trim()) &&
     isValidCpfCnpj(payerDoc);
-  const cardIsValid =
-    cardNumber.replace(/\D/g, "").length >= 13 &&
-    cardHolder.trim().length >= 3 &&
-    /^\d{2}\/\d{2}$/.test(cardExpiry) &&
-    cardCvv.replace(/\D/g, "").length >= 3;
+  const expiryMonth = Number(cardExpiry.slice(0, 2));
+  const expiryOk = /^\d{2}\/\d{2}$/.test(cardExpiry) && expiryMonth >= 1 && expiryMonth <= 12;
+  const cardChecks = [
+    { ok: cardNumber.replace(/\D/g, "").length >= 13, label: "Número do cartão" },
+    { ok: cardHolder.trim().length >= 3, label: "Nome impresso no cartão" },
+    { ok: expiryOk, label: "Validade no formato MM/AA" },
+    { ok: cardCvv.replace(/\D/g, "").length >= 3, label: "Código de segurança (CVV)" },
+  ];
+  const cardIsValid = cardChecks.every((check) => check.ok);
+  const missingFields = [
+    ...(payerName.trim().length >= 3 ? [] : ["Nome do pagador"]),
+    ...(/\S+@\S+\.\S+/.test(payerEmail.trim()) ? [] : ["E-mail do pagador"]),
+    ...(isValidCpfCnpj(payerDoc) ? [] : ["CPF/CNPJ válido do pagador"]),
+    ...(method === "card" ? cardChecks.filter((c) => !c.ok).map((c) => c.label) : []),
+  ];
 
   const onPay = async () => {
     if (!order || !payerIsValid) return;
@@ -448,6 +461,16 @@ function PaymentPage() {
             >
               {submitting ? "Processando..." : method === "pix" ? "Gerar Pix" : "Pagar com cartão"}
             </Button>
+          )}
+          {!pix && !submitting && missingFields.length > 0 && (
+            <div className="mt-3 border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+              <p className="font-medium text-foreground">Para continuar, confira:</p>
+              <ul className="mt-1 list-disc space-y-0.5 pl-4">
+                {missingFields.map((field) => (
+                  <li key={field}>{field}</li>
+                ))}
+              </ul>
+            </div>
           )}
           <p className="mt-3 text-center text-xs text-muted-foreground">
             Pagamento processado com segurança pelo Asaas.
