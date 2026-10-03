@@ -27,7 +27,7 @@ export const Route = createFileRoute("/estoque/planilha")({
   ),
 });
 
-const PRODUCT_HEADERS = ["Código", "Descrição", "Valor", "Quantidade"];
+const PRODUCT_HEADERS = ["Código", "Descrição", "Valor", "Custo", "Quantidade"];
 const SUPPLIER_HEADERS = ["Código", "Descrição", "Fornecedor", "Quantidade"];
 
 function num(value: unknown): number | undefined {
