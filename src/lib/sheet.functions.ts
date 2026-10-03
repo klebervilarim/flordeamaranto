@@ -78,6 +78,16 @@ export const exportStockSheet = createServerFn({ method: "GET" })
     },
   );
 
+function slugify(value: string): string {
+  return value
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 120) || "produto";
+}
+
 const importSchema = z.object({
   products: z
     .array(
@@ -85,6 +95,7 @@ const importSchema = z.object({
         sku: z.string().trim().min(1),
         name: z.string().trim().max(200).optional(),
         price: z.number().nonnegative().optional(),
+        cost: z.number().nonnegative().optional(),
         quantity: z.number().int().min(0).optional(),
       }),
     )
@@ -163,12 +174,64 @@ export const importStockSheet = createServerFn({ method: "POST" })
       totals.set(key, (totals.get(key) ?? 0) + row.quantity);
     }
 
-    // 2. Produtos
+    // 2. Produtos: atualiza os existentes (pelo SKU) e cadastra os novos
+    let created = 0;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     for (const row of data.products) {
       const key = row.sku.trim().toUpperCase();
       const product = bySku.get(key);
       if (!product) {
-        errors.push(`Produto não encontrado: ${row.sku}`);
+        if (!row.name) {
+          errors.push(`Produto novo sem descrição: ${row.sku}`);
+          continue;
+        }
+        if (row.price == null || row.price <= 0) {
+          errors.push(`Produto novo sem valor de venda: ${row.sku}`);
+          continue;
+        }
+        const stock = totals.has(key) ? totals.get(key)! : (row.quantity ?? 0);
+        const slug = `${slugify(row.name)}-${key.toLowerCase()}`.slice(0, 180);
+        const { data: inserted, error: insertError } = await supabaseAdmin
+          .from("products")
+          .insert({
+            sku: row.sku.trim(),
+            name: row.name,
+            slug,
+            product_type: "perfume",
+            price: row.price,
+            stock,
+            purchase_location: "Brasil",
+            status: "active",
+          })
+          .select("id")
+          .maybeSingle();
+        if (insertError || !inserted) {
+          errors.push(`Falha ao cadastrar ${row.sku}.`);
+          continue;
+        }
+        bySku.set(key, {
+          id: inserted.id,
+          sku: row.sku.trim(),
+          name: row.name,
+          price: row.price,
+          stock,
+        });
+        created += 1;
+        if (stock > 0) {
+          await recordStockMovement(supabase, {
+            productId: inserted.id,
+            previousQuantity: 0,
+            newQuantity: stock,
+            createdBy: context.userId,
+            note: "Cadastro por importação de planilha",
+          });
+        }
+        if (row.cost != null) {
+          await supabaseAdmin.from("product_costs").upsert(
+            { product_id: inserted.id, cost_price: row.cost, updated_at: new Date().toISOString() },
+            { onConflict: "product_id" },
+          );
+        }
         continue;
       }
       const patch: Database["public"]["Tables"]["products"]["Update"] = {};
@@ -177,24 +240,31 @@ export const importStockSheet = createServerFn({ method: "POST" })
         patch["price"] = row.price;
       const nextStock = totals.has(key) ? totals.get(key)! : row.quantity;
       if (nextStock != null && nextStock !== product.stock) patch["stock"] = nextStock;
-      if (Object.keys(patch).length === 0) continue;
-      const { error: updateError } = await supabase
-        .from("products")
-        .update(patch)
-        .eq("id", product.id);
-      if (updateError) {
-        errors.push(`Falha ao atualizar ${row.sku}.`);
-        continue;
+      if (Object.keys(patch).length > 0) {
+        const { error: updateError } = await supabase
+          .from("products")
+          .update(patch)
+          .eq("id", product.id);
+        if (updateError) {
+          errors.push(`Falha ao atualizar ${row.sku}.`);
+          continue;
+        }
+        updated += 1;
+        if (patch["stock"] != null) {
+          await recordStockMovement(supabase, {
+            productId: product.id,
+            previousQuantity: product.stock,
+            newQuantity: nextStock!,
+            createdBy: context.userId,
+            note: "Importação de planilha",
+          });
+        }
       }
-      updated += 1;
-      if (patch["stock"] != null) {
-        await recordStockMovement(supabase, {
-          productId: product.id,
-          previousQuantity: product.stock,
-          newQuantity: nextStock!,
-          createdBy: context.userId,
-          note: "Importação de planilha",
-        });
+      if (row.cost != null) {
+        await supabaseAdmin.from("product_costs").upsert(
+          { product_id: product.id, cost_price: row.cost, updated_at: new Date().toISOString() },
+          { onConflict: "product_id" },
+        );
       }
     }
 
@@ -214,5 +284,5 @@ export const importStockSheet = createServerFn({ method: "POST" })
       updated += 1;
     }
 
-    return { updated, supplierLinks, errors: errors.slice(0, 30), errorCount: errors.length };
+    return { updated, created, supplierLinks, errors: errors.slice(0, 30), errorCount: errors.length };
   });
