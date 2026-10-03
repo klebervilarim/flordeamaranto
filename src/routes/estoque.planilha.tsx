@@ -84,8 +84,14 @@ function SheetPanel() {
         (wb.SheetNames[1] ? wb.Sheets[wb.SheetNames[1]] : undefined);
       if (!productSheet) throw new Error("A planilha não tem a aba de produtos.");
 
+      const headerRow = (
+        XLSX.utils.sheet_to_json<unknown[]>(productSheet, { header: 1, range: 0 })[0] ?? []
+      ).map((h) => String(h ?? "").trim());
+      const productHeaders = headerRow.includes("Custo")
+        ? PRODUCT_HEADERS
+        : ["Código", "Descrição", "Valor", "Quantidade"];
       const rawProducts = XLSX.utils.sheet_to_json<Record<string, unknown>>(productSheet, {
-        header: PRODUCT_HEADERS,
+        header: productHeaders,
         range: 1,
         defval: "",
       });
