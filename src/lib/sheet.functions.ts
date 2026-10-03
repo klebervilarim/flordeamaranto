@@ -85,6 +85,7 @@ const importSchema = z.object({
         sku: z.string().trim().min(1),
         name: z.string().trim().max(200).optional(),
         price: z.number().nonnegative().optional(),
+        cost: z.number().nonnegative().optional(),
         quantity: z.number().int().min(0).optional(),
       }),
     )
