@@ -17,6 +17,7 @@ export type SheetSupplierRow = {
   name: string;
   supplier: string;
   quantity: number;
+  cost: number | null;
 };
 
 export const exportStockSheet = createServerFn({ method: "GET" })
