@@ -55,10 +55,10 @@ export function parseNumber(value: unknown): number | undefined {
 
 export type ParsedProduct = {
   sku: string;
-  name?: string;
-  price?: number;
-  cost?: number;
-  quantity?: number;
+  name?: string | undefined;
+  price?: number | undefined;
+  cost?: number | undefined;
+  quantity?: number | undefined;
 };
 
 export type ParsedSupplier = { sku: string; supplier: string; quantity: number };
