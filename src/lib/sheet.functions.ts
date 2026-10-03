@@ -78,6 +78,16 @@ export const exportStockSheet = createServerFn({ method: "GET" })
     },
   );
 
+function slugify(value: string): string {
+  return value
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 120) || "produto";
+}
+
 const importSchema = z.object({
   products: z
     .array(
@@ -274,5 +284,5 @@ export const importStockSheet = createServerFn({ method: "POST" })
       updated += 1;
     }
 
-    return { updated, supplierLinks, errors: errors.slice(0, 30), errorCount: errors.length };
+    return { updated, created, supplierLinks, errors: errors.slice(0, 30), errorCount: errors.length };
   });
