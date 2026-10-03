@@ -27,7 +27,7 @@ export const Route = createFileRoute("/estoque/planilha")({
   ),
 });
 
-const PRODUCT_HEADERS = ["Código", "Descrição", "Valor", "Quantidade"];
+const PRODUCT_HEADERS = ["Código", "Descrição", "Valor", "Custo", "Quantidade"];
 const SUPPLIER_HEADERS = ["Código", "Descrição", "Fornecedor", "Quantidade"];
 
 function num(value: unknown): number | undefined {
@@ -59,9 +59,9 @@ function SheetPanel() {
     const wb = XLSX.utils.book_new();
     const products = XLSX.utils.aoa_to_sheet([
       PRODUCT_HEADERS,
-      ...data.products.map((p) => [p.sku, p.name, p.price, p.stock]),
+      ...data.products.map((p) => [p.sku, p.name, p.price, p.cost ?? "", p.stock]),
     ]);
-    products["!cols"] = [{ wch: 18 }, { wch: 56 }, { wch: 12 }, { wch: 12 }];
+    products["!cols"] = [{ wch: 18 }, { wch: 56 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
     XLSX.utils.book_append_sheet(wb, products, "Produtos");
 
     const suppliers = XLSX.utils.aoa_to_sheet([
@@ -84,8 +84,14 @@ function SheetPanel() {
         (wb.SheetNames[1] ? wb.Sheets[wb.SheetNames[1]] : undefined);
       if (!productSheet) throw new Error("A planilha não tem a aba de produtos.");
 
+      const headerRow = (
+        XLSX.utils.sheet_to_json<unknown[]>(productSheet, { header: 1, range: 0 })[0] ?? []
+      ).map((h) => String(h ?? "").trim());
+      const productHeaders = headerRow.includes("Custo")
+        ? PRODUCT_HEADERS
+        : ["Código", "Descrição", "Valor", "Quantidade"];
       const rawProducts = XLSX.utils.sheet_to_json<Record<string, unknown>>(productSheet, {
-        header: PRODUCT_HEADERS,
+        header: productHeaders,
         range: 1,
         defval: "",
       });
@@ -133,9 +139,9 @@ function SheetPanel() {
       <h1 className="mt-2 font-display text-3xl sm:text-4xl">Exportar / Importar planilha</h1>
       <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
         A planilha padrão tem duas abas: <strong>Produtos</strong> (Código, Descrição, Valor,
-        Quantidade) e <strong>Produto por Fornecedor</strong> (Código, Descrição, Fornecedor,
-        Quantidade). Quando um produto aparece na aba de fornecedores, a quantidade final é a soma
-        das quantidades de todos os fornecedores.
+        Custo, Quantidade) e <strong>Produto por Fornecedor</strong> (Código, Descrição,
+        Fornecedor, Quantidade). Quando um produto aparece na aba de fornecedores, a quantidade
+        final é a soma das quantidades de todos os fornecedores.
       </p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
