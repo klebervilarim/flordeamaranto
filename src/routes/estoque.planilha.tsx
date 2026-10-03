@@ -59,9 +59,9 @@ function SheetPanel() {
     const wb = XLSX.utils.book_new();
     const products = XLSX.utils.aoa_to_sheet([
       PRODUCT_HEADERS,
-      ...data.products.map((p) => [p.sku, p.name, p.price, p.stock]),
+      ...data.products.map((p) => [p.sku, p.name, p.price, p.cost ?? "", p.stock]),
     ]);
-    products["!cols"] = [{ wch: 18 }, { wch: 56 }, { wch: 12 }, { wch: 12 }];
+    products["!cols"] = [{ wch: 18 }, { wch: 56 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
     XLSX.utils.book_append_sheet(wb, products, "Produtos");
 
     const suppliers = XLSX.utils.aoa_to_sheet([
