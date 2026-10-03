@@ -8,6 +8,7 @@ export type SheetProductRow = {
   sku: string;
   name: string;
   price: number;
+  cost: number | null;
   stock: number;
 };
 
