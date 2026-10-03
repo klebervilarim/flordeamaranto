@@ -86,43 +86,10 @@ function SheetPanel() {
         (wb.SheetNames[1] ? wb.Sheets[wb.SheetNames[1]] : undefined);
       if (!productSheet) throw new Error("A planilha não tem a aba de produtos.");
 
-      const headerRow = (
-        XLSX.utils.sheet_to_json<unknown[]>(productSheet, { header: 1, range: 0 })[0] ?? []
-      ).map((h) => String(h ?? "").trim());
-      const productHeaders = headerRow.includes("Custo")
-        ? PRODUCT_HEADERS
-        : ["Código", "Descrição", "Valor", "Quantidade"];
-      const rawProducts = XLSX.utils.sheet_to_json<Record<string, unknown>>(productSheet, {
-        header: productHeaders,
-        range: 1,
-        defval: "",
-      });
-      const products = rawProducts
-        .filter((r) => String(r["Código"] ?? "").trim())
-        .map((r) => ({
-          sku: String(r["Código"]).trim(),
-          name: String(r["Descrição"] ?? "").trim() || undefined,
-          price: num(r["Valor"]),
-          cost: num(r["Custo"]),
-          quantity: num(r["Quantidade"]) != null ? Math.round(num(r["Quantidade"])!) : undefined,
-        }));
-
-      const rawSuppliers = supplierSheet
-        ? XLSX.utils.sheet_to_json<Record<string, unknown>>(supplierSheet, {
-            header: SUPPLIER_HEADERS,
-            range: 1,
-            defval: "",
-          })
-        : [];
-      const suppliers = rawSuppliers
-        .filter(
-          (r) => String(r["Código"] ?? "").trim() && String(r["Fornecedor"] ?? "").trim(),
-        )
-        .map((r) => ({
-          sku: String(r["Código"]).trim(),
-          supplier: String(r["Fornecedor"]).trim(),
-          quantity: Math.round(num(r["Quantidade"]) ?? 0),
-        }));
+      const toRows = (sheet: XLSX.WorkSheet) =>
+        XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: "", raw: true });
+      const products = parseProductRows(toRows(productSheet));
+      const suppliers = supplierSheet ? parseSupplierRows(toRows(supplierSheet)) : [];
 
       if (products.length === 0 && suppliers.length === 0)
         throw new Error("Nenhuma linha válida encontrada na planilha.");
