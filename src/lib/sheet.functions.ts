@@ -60,6 +60,7 @@ export const exportStockSheet = createServerFn({ method: "GET" })
           sku: p.sku,
           name: p.name,
           price: Number(p.price),
+          cost: costMap.get(p.id) ?? null,
           stock: p.stock,
         })),
         suppliers: (links ?? [])
