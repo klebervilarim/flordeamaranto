@@ -141,7 +141,10 @@ function StockPanel() {
         "Estoque atual": p.stock,
         "Estoque mínimo": p.min_stock,
         Status: stockStatus(p).label,
+        "Preço de custo": p.cost_price ?? "",
         "Preço de venda": price,
+        "Custo total em estoque":
+          p.cost_price != null ? Math.round(p.cost_price * p.stock * 100) / 100 : "",
         "Valor total em estoque": Math.round(price * p.stock * 100) / 100,
       };
     });
@@ -154,6 +157,8 @@ function StockPanel() {
       { wch: 14 },
       { wch: 12 },
       { wch: 16 },
+      { wch: 16 },
+      { wch: 22 },
       { wch: 20 },
     ];
     const wb = XLSX.utils.book_new();
