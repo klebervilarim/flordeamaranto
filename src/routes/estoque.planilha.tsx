@@ -42,6 +42,7 @@ function SheetPanel() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [result, setResult] = useState<{
     updated: number;
+    created: number;
     supplierLinks: number;
     errors: string[];
     errorCount: number;
@@ -102,6 +103,7 @@ function SheetPanel() {
           sku: String(r["Código"]).trim(),
           name: String(r["Descrição"] ?? "").trim() || undefined,
           price: num(r["Valor"]),
+          cost: num(r["Custo"]),
           quantity: num(r["Quantidade"]) != null ? Math.round(num(r["Quantidade"])!) : undefined,
         }));
 
@@ -128,7 +130,9 @@ function SheetPanel() {
     },
     onSuccess: (res) => {
       setResult(res);
-      toast.success(`${res.updated} produto(s) atualizado(s).`);
+      toast.success(
+        `${res.updated} produto(s) atualizado(s) e ${res.created} cadastrado(s).`,
+      );
       dataQuery.refetch();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -167,7 +171,8 @@ function SheetPanel() {
         <div className="border border-border p-6">
           <h2 className="font-display text-xl">Importar</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Envie a planilha alterada (.xlsx). Os produtos são localizados pelo código (SKU).
+            Envie a planilha alterada (.xlsx). Produtos com código já existente são atualizados;
+            códigos novos são cadastrados (precisam de Descrição e Valor).
           </p>
           <input
             ref={fileRef}
@@ -201,8 +206,8 @@ function SheetPanel() {
         <div className="mt-8 border border-border p-6">
           <h2 className="font-display text-xl">Resultado da importação</h2>
           <p className="mt-2 text-sm">
-            {result.updated} produto(s) atualizado(s) · {result.supplierLinks} vínculo(s) de
-            fornecedor.
+            {result.updated} produto(s) atualizado(s) · {result.created} produto(s) novo(s)
+            cadastrado(s) · {result.supplierLinks} vínculo(s) de fornecedor.
           </p>
           {result.errorCount > 0 && (
             <div className="mt-3">
