@@ -28,7 +28,7 @@ export const Route = createFileRoute("/estoque/planilha")({
 });
 
 const PRODUCT_HEADERS = ["Código", "Descrição", "Valor", "Custo", "Quantidade"];
-const SUPPLIER_HEADERS = ["Código", "Descrição", "Fornecedor", "Quantidade"];
+const SUPPLIER_HEADERS = ["Código", "Descrição", "Fornecedor", "Quantidade", "Custo"];
 
 function num(value: unknown): number | undefined {
   if (value == null || value === "") return undefined;
@@ -50,11 +50,12 @@ function SheetPanel() {
   const dataQuery = useQuery({
     queryKey: ["stock-sheet"],
     queryFn: () => exportFn(),
+    staleTime: 0,
     retry: false,
   });
 
-  const download = () => {
-    const data = dataQuery.data;
+  const download = async () => {
+    const data = (await dataQuery.refetch()).data;
     if (!data) return;
     const wb = XLSX.utils.book_new();
     const products = XLSX.utils.aoa_to_sheet([
@@ -66,9 +67,9 @@ function SheetPanel() {
 
     const suppliers = XLSX.utils.aoa_to_sheet([
       SUPPLIER_HEADERS,
-      ...data.suppliers.map((s) => [s.sku, s.name, s.supplier, s.quantity]),
+      ...data.suppliers.map((s) => [s.sku, s.name, s.supplier, s.quantity, s.cost ?? ""]),
     ]);
-    suppliers["!cols"] = [{ wch: 18 }, { wch: 56 }, { wch: 28 }, { wch: 12 }];
+    suppliers["!cols"] = [{ wch: 18 }, { wch: 56 }, { wch: 28 }, { wch: 12 }, { wch: 12 }];
     XLSX.utils.book_append_sheet(wb, suppliers, "Produto por Fornecedor");
 
     XLSX.writeFile(wb, `estoque-flor-de-amaranto-${new Date().toISOString().slice(0, 10)}.xlsx`);
