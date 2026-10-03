@@ -17,6 +17,7 @@ export type SheetSupplierRow = {
   name: string;
   supplier: string;
   quantity: number;
+  cost: number | null;
 };
 
 export const exportStockSheet = createServerFn({ method: "GET" })
@@ -51,7 +52,7 @@ export const exportStockSheet = createServerFn({ method: "GET" })
 
       const { data: links } = await context.supabase
         .from("product_suppliers")
-        .select("product_id, supplier_id, quantity");
+        .select("product_id, supplier_id, quantity, cost_price");
 
       const productMap = new Map((products ?? []).map((p) => [p.id, p]));
 
@@ -70,6 +71,7 @@ export const exportStockSheet = createServerFn({ method: "GET" })
             name: productMap.get(l.product_id)!.name,
             supplier: supplierMap.get(l.supplier_id) ?? "",
             quantity: l.quantity,
+            cost: l.cost_price ?? costMap.get(l.product_id) ?? null,
           })),
         supplierNames: (suppliers ?? []).map((s) => s.name),
       };
