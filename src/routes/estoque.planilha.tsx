@@ -8,6 +8,7 @@ import * as XLSX from "xlsx";
 import { StockGate } from "@/components/stock/StockGate";
 import { Button } from "@/components/ui/button";
 import { exportStockSheet, importStockSheet } from "@/lib/sheet.functions";
+import { parseProductRows, parseSupplierRows } from "@/lib/sheet-parse";
 
 export const Route = createFileRoute("/estoque/planilha")({
   head: () => ({
@@ -29,12 +30,6 @@ export const Route = createFileRoute("/estoque/planilha")({
 
 const PRODUCT_HEADERS = ["Código", "Descrição", "Valor", "Custo", "Quantidade"];
 const SUPPLIER_HEADERS = ["Código", "Descrição", "Fornecedor", "Quantidade", "Custo"];
-
-function num(value: unknown): number | undefined {
-  if (value == null || value === "") return undefined;
-  const parsed = Number(String(value).replace(/[^0-9,.-]/g, "").replace(",", "."));
-  return Number.isFinite(parsed) ? parsed : undefined;
-}
 
 function SheetPanel() {
   const exportFn = useServerFn(exportStockSheet);
