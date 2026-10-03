@@ -139,9 +139,9 @@ function SheetPanel() {
       <h1 className="mt-2 font-display text-3xl sm:text-4xl">Exportar / Importar planilha</h1>
       <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
         A planilha padrão tem duas abas: <strong>Produtos</strong> (Código, Descrição, Valor,
-        Quantidade) e <strong>Produto por Fornecedor</strong> (Código, Descrição, Fornecedor,
-        Quantidade). Quando um produto aparece na aba de fornecedores, a quantidade final é a soma
-        das quantidades de todos os fornecedores.
+        Custo, Quantidade) e <strong>Produto por Fornecedor</strong> (Código, Descrição,
+        Fornecedor, Quantidade). Quando um produto aparece na aba de fornecedores, a quantidade
+        final é a soma das quantidades de todos os fornecedores.
       </p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
