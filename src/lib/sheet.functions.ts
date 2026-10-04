@@ -94,6 +94,7 @@ const importSchema = z.object({
       z.object({
         sku: z.string().trim().min(1),
         name: z.string().trim().max(200).optional(),
+        brand: z.string().trim().max(120).optional(),
         price: z.number().nonnegative().optional(),
         cost: z.number().nonnegative().optional(),
         quantity: z.number().int().min(0).optional(),
@@ -129,6 +130,25 @@ export const importStockSheet = createServerFn({ method: "POST" })
     const supplierByName = new Map(
       (supplierRows ?? []).map((s) => [s.name.trim().toLowerCase(), s.id]),
     );
+
+    const { data: brandRows } = await supabase.from("brands").select("id, name");
+    const brandByName = new Map(
+      (brandRows ?? []).map((b) => [b.name.trim().toLowerCase(), b.id]),
+    );
+    const resolveBrandId = async (brandName: string): Promise<string | null> => {
+      const key = brandName.trim().toLowerCase();
+      const existing = brandByName.get(key);
+      if (existing) return existing;
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: created, error: brandError } = await supabaseAdmin
+        .from("brands")
+        .insert({ name: brandName.trim(), slug: slugify(brandName) })
+        .select("id")
+        .maybeSingle();
+      if (brandError || !created) return null;
+      brandByName.set(key, created.id);
+      return created.id;
+    };
 
     const errors: string[] = [];
     let updated = 0;
