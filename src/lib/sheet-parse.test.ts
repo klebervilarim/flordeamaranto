@@ -8,7 +8,7 @@ describe("importação da planilha de estoque", () => {
       ["LAT-0001", "Khamrah", "Lattafa", 5, 1, "OK", 150, 299.9],
     ];
     expect(parseProductRows(rows)).toEqual([
-      { sku: "LAT-0001", name: "Khamrah", price: 299.9, cost: 150, quantity: 5 },
+      { sku: "LAT-0001", name: "Khamrah", brand: "Lattafa", price: 299.9, cost: 150, quantity: 5 },
     ]);
   });
 
