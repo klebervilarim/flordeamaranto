@@ -399,6 +399,49 @@ export const createProduct = createServerFn({ method: "POST" })
     return { ok: true, id: row.id as string };
   });
 
+const productIdSchema = z.object({ id: z.string().uuid() });
+
+export const deleteProduct = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => productIdSchema.parse(input))
+  .handler(async ({ data, context }): Promise<{ ok: boolean; archived?: boolean }> => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Remove registros ligados ao produto antes do produto em si.
+    await supabaseAdmin.from("product_costs").delete().eq("product_id", data.id);
+    await supabaseAdmin.from("product_images").delete().eq("product_id", data.id);
+    await supabaseAdmin.from("product_suppliers").delete().eq("product_id", data.id);
+    await supabaseAdmin.from("favorites").delete().eq("product_id", data.id);
+    await supabaseAdmin.from("cart_items").delete().eq("product_id", data.id);
+    await supabaseAdmin.from("kit_items").delete().eq("product_id", data.id);
+    await supabaseAdmin.from("inventory_movements").delete().eq("product_id", data.id);
+    const { data: reviewIds } = await supabaseAdmin
+      .from("reviews")
+      .select("id")
+      .eq("product_id", data.id);
+    if (reviewIds && reviewIds.length > 0) {
+      await supabaseAdmin
+        .from("review_images")
+        .delete()
+        .in("review_id", reviewIds.map((r) => r.id));
+      await supabaseAdmin.from("reviews").delete().eq("product_id", data.id);
+    }
+
+    const { error } = await supabaseAdmin.from("products").delete().eq("id", data.id);
+    if (error) {
+      // Produtos com vendas registradas (order_items) não podem ser apagados:
+      // arquivar para sair das listas sem perder o histórico de pedidos.
+      const { error: archiveError } = await supabaseAdmin
+        .from("products")
+        .update({ status: "archived" })
+        .eq("id", data.id);
+      if (archiveError) throw new Error("Não foi possível excluir o produto.");
+      return { ok: true, archived: true };
+    }
+    return { ok: true };
+  });
+
 const imageUploadSchema = z.object({
   productId: z.string().uuid(),
   fileName: z.string().min(1).max(120),

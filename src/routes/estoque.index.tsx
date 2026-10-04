@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   ShoppingBag,
   Ticket,
+  Trash2,
   Truck,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -27,8 +28,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import placeholder from "@/assets/product-placeholder.jpg";
-import { listStock, updateStockItem, type StockItem } from "@/lib/stock.functions";
+import {
+  deleteProduct,
+  listStock,
+  updateStockItem,
+  type StockItem,
+} from "@/lib/stock.functions";
 
 export const Route = createFileRoute("/estoque/")({
   head: () => ({
@@ -80,6 +97,20 @@ function StockPanel() {
         delete next[v.id];
         return next;
       });
+      queryClient.invalidateQueries({ queryKey: ["stock-list"] });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const deleteFn = useServerFn(deleteProduct);
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteFn({ data: { id } }),
+    onSuccess: (r) => {
+      toast.success(
+        r.archived
+          ? "Produto ocultado do estoque — há vendas registradas nele."
+          : "Produto excluído.",
+      );
       queryClient.invalidateQueries({ queryKey: ["stock-list"] });
     },
     onError: (e) => toast.error(e.message),
@@ -372,6 +403,35 @@ function StockPanel() {
                           <Pencil className="h-3.5 w-3.5" />
                         </Link>
                       </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={deleteMutation.isPending}
+                            aria-label={`Excluir ${p.name}`}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir {p.name}?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              O produto sai do estoque e das telas da loja. Essa ação não pode
+                              ser desfeita.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteMutation.mutate(p.id)}
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </td>
                 </tr>
