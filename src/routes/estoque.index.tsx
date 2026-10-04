@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   ShoppingBag,
   Ticket,
+  Trash2,
   Truck,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -27,8 +28,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import placeholder from "@/assets/product-placeholder.jpg";
-import { listStock, updateStockItem, type StockItem } from "@/lib/stock.functions";
+import {
+  deleteProduct,
+  listStock,
+  updateStockItem,
+  type StockItem,
+} from "@/lib/stock.functions";
 
 export const Route = createFileRoute("/estoque/")({
   head: () => ({
