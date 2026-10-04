@@ -1,7 +1,7 @@
 // Leitura das planilhas de estoque pelo NOME das colunas (com sinônimos),
 // para aceitar tanto a planilha padrão quanto a exportação da tela de Estoque.
 
-export type ProductField = "sku" | "name" | "price" | "cost" | "quantity";
+export type ProductField = "sku" | "name" | "price" | "cost" | "quantity" | "brand";
 export type SupplierField = "sku" | "name" | "supplier" | "quantity" | "cost";
 
 function norm(value: unknown): string {
@@ -19,6 +19,7 @@ const PRODUCT_ALIASES: Record<ProductField, string[]> = {
   price: ["valor", "preco de venda", "preco", "valor de venda", "venda"],
   cost: ["custo", "preco de custo", "valor de custo", "custo unitario"],
   quantity: ["quantidade", "estoque atual", "estoque", "qtd", "qtde"],
+  brand: ["marca", "brand"],
 };
 
 const SUPPLIER_ALIASES: Record<SupplierField, string[]> = {
@@ -56,6 +57,7 @@ export function parseNumber(value: unknown): number | undefined {
 export type ParsedProduct = {
   sku: string;
   name?: string | undefined;
+  brand?: string | undefined;
   price?: number | undefined;
   cost?: number | undefined;
   quantity?: number | undefined;
@@ -81,6 +83,7 @@ export function parseProductRows(rows: unknown[][]): ParsedProduct[] {
       return {
         sku: String(get(row, "sku") ?? "").trim(),
         name: String(get(row, "name") ?? "").trim() || undefined,
+        brand: String(get(row, "brand") ?? "").trim() || undefined,
         price: parseNumber(get(row, "price")),
         cost: parseNumber(get(row, "cost")),
         quantity: qty != null ? Math.max(0, Math.round(qty)) : undefined,
