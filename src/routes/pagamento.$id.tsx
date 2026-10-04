@@ -398,8 +398,8 @@ function PaymentPage() {
                     </div>
                   </div>
                   <p className="mt-4 text-xs text-muted-foreground">
-                    Os dados do cartão são enviados com segurança ao Asaas e não ficam armazenados na
-                    loja.
+                    Os dados do cartão são enviados com segurança ao Mercado Pago e não ficam
+                    armazenados na loja.
                   </p>
                 </TabsContent>
               </Tabs>
@@ -473,7 +473,7 @@ function PaymentPage() {
             </div>
           )}
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            Pagamento processado com segurança pelo Asaas.
+            Pagamento processado com segurança pelo Mercado Pago.
           </p>
         </aside>
       </div>

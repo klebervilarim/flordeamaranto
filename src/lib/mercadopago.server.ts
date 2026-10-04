@@ -72,6 +72,21 @@ export async function createCardToken(
   return json.id;
 }
 
+export async function detectPaymentMethod(cardNumber: string): Promise<string> {
+  const bin = cardNumber.replace(/\D/g, "").slice(0, 6);
+  const res = await fetch(
+    `${MP_API}/v1/payment_methods/search?public_key=${encodeURIComponent(ensurePublicKey())}&bin=${bin}`,
+  );
+  const json = (await res.json()) as {
+    results?: Array<{ id?: string; payment_type_id?: string }>;
+  };
+  const method = json.results?.find((r) => r.payment_type_id === "credit_card") ?? json.results?.[0];
+  if (!res.ok || !method?.id) {
+    throw new Error("Não foi possível identificar a bandeira do cartão.");
+  }
+  return method.id;
+}
+
 export type PreferenceResult = {
   id: string;
   init_point: string;
