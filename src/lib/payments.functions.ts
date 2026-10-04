@@ -82,71 +82,72 @@ export const processDirectPayment = createServerFn({ method: "POST" })
     }
 
     try {
-      const asaas = await import("./asaas.server");
+      const mp = await import("./mercadopago.server");
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const addr = (order.shipping_address ?? {}) as Record<string, string>;
-      const customer = await asaas.findOrCreateCustomer({
-        name: data.payer.name,
-        email: data.payer.email,
-        document: data.payer.document,
-        phone: addr["phone"],
-      });
       const description = `Pedido ${order.order_number} — Flor de Amaranto`;
+      const origin = process.env["PUBLIC_SITE_URL"] ?? "https://flordeamaranto.lovable.app";
+      const notificationUrl = `${origin}/api/public/mercadopago-webhook`;
 
       let paymentId: string;
       let status: string;
-      let pix: Awaited<ReturnType<typeof asaas.createPixPayment>>["pix"] | undefined;
+      let statusDetail: string;
+      let pix:
+        | {
+            qr_code: string | null;
+            qr_code_base64: string | null;
+            ticket_url: string | null;
+            expires_at: string | null;
+          }
+        | undefined;
       if (data.method === "pix") {
-        const res = await asaas.createPixPayment({
-          customer,
+        const res = await mp.createMercadoPagoPayment({
           amount: total,
           description,
           externalReference: order.id,
-        });
-        paymentId = res.payment.id;
-        status = res.payment.status;
-        pix = res.pix;
-      } else {
-        const { getRequestHeader } = await import("@tanstack/react-start/server");
-        const remoteIp =
-          getRequestHeader("cf-connecting-ip") ??
-          getRequestHeader("x-forwarded-for")?.split(",")[0]?.trim() ??
-          "127.0.0.1";
-        const res = await asaas.createCardPayment({
-          customer,
-          amount: cardChargeAmount(total, data.installments),
-          installments: data.installments,
-          description,
-          externalReference: order.id,
-          remoteIp,
-          card: data.card,
-          holderInfo: {
-            name: data.payer.name,
-            email: data.payer.email,
-            document: data.payer.document,
-            postalCode: addr["zip"] ?? "",
-            addressNumber: addr["number"] ?? "0",
-            phone: addr["phone"] ?? "",
-          },
+          notificationUrl,
+          payer: data.payer,
+          method: "pix",
+          metadata: { order_id: order.id },
         });
         paymentId = res.id;
         status = res.status;
+        statusDetail = res.status_detail;
+        pix = res.pix;
+      } else {
+        const cardToken = await mp.createCardToken(data.card, data.payer.document);
+        const paymentMethodId = await mp.detectPaymentMethod(data.card.number);
+        const res = await mp.createMercadoPagoPayment({
+          amount: cardChargeAmount(total, data.installments),
+          description,
+          externalReference: order.id,
+          notificationUrl,
+          payer: data.payer,
+          method: "card",
+          cardToken,
+          paymentMethodId,
+          installments: data.installments,
+          metadata: { order_id: order.id },
+        });
+        paymentId = res.id;
+        status = res.status;
+        statusDetail = res.status_detail;
       }
 
-      const paid = asaas.isAsaasPaid(status);
+      const paid = status === "approved";
+      const failed = status === "rejected" || status === "cancelled";
       await supabaseAdmin
         .from("orders")
         .update({
           payment_id: paymentId,
-          payment_provider: "asaas",
+          payment_provider: "mercadopago",
           payment_method: data.method === "pix" ? "pix" : "card",
-          payment_status: paid ? "paid" : "pending",
+          payment_status: paid ? "paid" : failed ? "failed" : "pending",
           status: paid ? "paid" : "pending",
           installments: data.method === "card" ? data.installments : null,
           total,
           pix_qr_code: pix?.qr_code ?? null,
           pix_qr_code_base64: pix?.qr_code_base64 ?? null,
-          pix_ticket_url: null,
+          pix_ticket_url: pix?.ticket_url ?? null,
           pix_expires_at: pix?.expires_at ?? null,
         })
         .eq("id", order.id);
@@ -163,8 +164,8 @@ export const processDirectPayment = createServerFn({ method: "POST" })
       return {
         ok: true as const,
         data: {
-          status: paid ? "approved" : "pending",
-          statusDetail: status,
+          status: paid ? "approved" : failed ? "rejected" : "pending",
+          statusDetail,
           pix,
         },
       };
