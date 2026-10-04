@@ -115,7 +115,7 @@ function FilteredPerfumes() {
     <CatalogPage
       title={preset.title}
       subtitle={preset.subtitle}
-      base={preset.base}
+      base={{ ...preset.base, withPhotos: true }}
       facets={["genders", "origins", "families", "brandSlugs", "longevity", "sillage"]}
     />
   );
