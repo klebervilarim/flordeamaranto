@@ -211,13 +211,16 @@ export const importStockSheet = createServerFn({ method: "POST" })
         }
         const stock = totals.has(key) ? totals.get(key)! : (row.quantity ?? 0);
         const slug = `${slugify(row.name)}-${key.toLowerCase()}`.slice(0, 180);
+        const brandId = row.brand ? await resolveBrandId(row.brand) : null;
         const { data: inserted, error: insertError } = await supabaseAdmin
           .from("products")
           .insert({
             sku: row.sku.trim(),
             name: row.name,
             slug,
+            brand_id: brandId,
             product_type: "perfume",
+            origin: "arabe",
             price: row.price,
             stock,
             purchase_location: "Brasil",
@@ -254,8 +257,12 @@ export const importStockSheet = createServerFn({ method: "POST" })
         }
         continue;
       }
-      const patch: Database["public"]["Tables"]["products"]["Update"] = {};
+      const patch: Database["public"]["Tables"]["products"]["Update"] = { origin: "arabe" };
       if (row.name && row.name !== product.name) patch["name"] = row.name;
+      if (row.brand) {
+        const brandId = await resolveBrandId(row.brand);
+        if (brandId) patch["brand_id"] = brandId;
+      }
       if (row.price != null && row.price > 0 && Number(row.price) !== Number(product.price))
         patch["price"] = row.price;
       const nextStock = totals.has(key) ? totals.get(key)! : row.quantity;
