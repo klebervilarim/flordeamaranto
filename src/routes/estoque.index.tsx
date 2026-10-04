@@ -102,6 +102,20 @@ function StockPanel() {
     onError: (e) => toast.error(e.message),
   });
 
+  const deleteFn = useServerFn(deleteProduct);
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteFn({ data: { id } }),
+    onSuccess: (r) => {
+      toast.success(
+        r.archived
+          ? "Produto ocultado do estoque — há vendas registradas nele."
+          : "Produto excluído.",
+      );
+      queryClient.invalidateQueries({ queryKey: ["stock-list"] });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
   const items = stockQuery.data ?? [];
 
   const typeOptions = useMemo(() => {
