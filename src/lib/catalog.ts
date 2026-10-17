@@ -71,6 +71,7 @@ const SELECT = "*, brands(name, slug)";
 
 export type CatalogFilters = {
   productTypes?: string[] | undefined;
+  decantVolumes?: string[] | undefined;
   genders?: string[] | undefined;
   origins?: string[] | undefined;
   brandSlugs?: string[] | undefined;
@@ -118,6 +119,10 @@ export async function fetchProducts(filters: CatalogFilters = {}): Promise<Produ
 
   if (productIds) query = query.in("id", productIds);
   if (filters.productTypes?.length) query = query.in("product_type", filters.productTypes);
+  if (filters.decantVolumes?.length) {
+    const volumes = filters.decantVolumes.flatMap((v) => [v, v.replace("ml", " ml"), v.toUpperCase()]);
+    query = query.eq("product_type", "decant").in("volume", volumes);
+  }
   if (filters.genders?.length) query = query.in("gender", filters.genders);
   if (filters.origins?.length) query = query.in("origin", filters.origins);
   if (filters.categorySlugs?.length) query = query.in("category_slug", filters.categorySlugs);
@@ -244,6 +249,7 @@ export async function fetchCollections(): Promise<Collection[]> {
 }
 
 export const PRODUCT_TYPE_LABELS: Record<string, string> = {
+  decant: "Decant",
   perfume: "Perfume",
   miniatura: "Miniatura",
   "body-splash": "Body Splash",

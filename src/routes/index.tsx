@@ -32,6 +32,8 @@ export const Route = createFileRoute("/")({
         content: "Perfumes, beleza e autocuidado selecionados para transformar sua experiência.",
       },
       { property: "og:url", content: "/" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "/" }],
   }),

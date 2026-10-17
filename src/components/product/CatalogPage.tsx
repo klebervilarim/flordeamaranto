@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { brl } from "@/lib/format";
+import { DECANT_VOLUMES, decantCatalogFilter } from "@/lib/decants";
 
 export type FacetKey =
   | "genders"
@@ -27,6 +28,7 @@ export type FacetKey =
   | "skinTypes"
   | "goals"
   | "finishes";
+// Decants is a combined type-and-volume facet, not a general volume filter.
 
 const FAMILIES = [
   "Amadeirado",
@@ -66,17 +68,20 @@ export function CatalogPage({
   subtitle,
   base,
   facets,
+  showDecants = false,
 }: {
   title: string;
   subtitle?: string;
   base: CatalogFilters;
   facets: FacetKey[];
+  showDecants?: boolean;
 }) {
   const [selections, setSelections] = useState<Selections>({});
   const [maxPrice, setMaxPrice] = useState(900);
   const [onlyOffers, setOnlyOffers] = useState(false);
   const [inStock, setInStock] = useState(false);
   const [sort, setSort] = useState("relevance");
+  const [decantVolumes, setDecantVolumes] = useState<string[]>([]);
 
   const { data: brands = [] } = useQuery({ queryKey: ["brands"], queryFn: fetchBrands });
 
@@ -84,12 +89,13 @@ export function CatalogPage({
     () => ({
       ...base,
       ...selections,
+      ...decantCatalogFilter(decantVolumes),
       maxPrice: maxPrice < 900 ? maxPrice : undefined,
       onlyOffers: onlyOffers || base.onlyOffers,
       inStock,
       sort,
     }),
-    [base, selections, maxPrice, onlyOffers, inStock, sort],
+    [base, selections, decantVolumes, maxPrice, onlyOffers, inStock, sort],
   );
 
   const { data: products = [], isLoading } = useQuery<Product[]>({
@@ -143,6 +149,21 @@ export function CatalogPage({
 
   const FilterPanel = (
     <div className="space-y-7">
+      {showDecants && (
+        <div>
+          <p className="eyebrow text-muted-foreground">Decants</p>
+          <div className="mt-3 space-y-2.5">
+            {DECANT_VOLUMES.map((volume) => (
+              <div key={volume} className="flex items-center gap-2.5">
+                <Checkbox id={`decant-${volume}`} checked={decantVolumes.includes(volume)}
+                  onCheckedChange={(checked) => setDecantVolumes((prev) => checked
+                    ? [...prev, volume] : prev.filter((v) => v !== volume))} />
+                <Label htmlFor={`decant-${volume}`} className="cursor-pointer text-sm font-normal">{volume}</Label>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {facets.map((key) => {
         const cfg = facetConfig[key];
         if (!cfg.options.length) return null;

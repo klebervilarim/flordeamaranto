@@ -12,6 +12,8 @@ export const Route = createFileRoute("/perfumes/")({
       },
       { property: "og:title", content: "Perfumes | Flor de Amaranto" },
       { property: "og:description", content: "Perfumes árabes, de nicho, importados e nacionais." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: "/perfumes" },
     ],
     links: [{ rel: "canonical", href: "/perfumes" }],
@@ -20,7 +22,7 @@ export const Route = createFileRoute("/perfumes/")({
     <CatalogPage
       title="Perfumes"
       subtitle="Árabes, de nicho, importados e nacionais — masculinos, femininos e unissex."
-      base={{ productTypes: ["perfume", "miniatura"], withPhotos: true }}
+      base={{ productTypes: ["perfume", "miniatura", "decant"], withPhotos: true }}
       facets={["genders", "origins", "families", "brandSlugs", "longevity", "sillage"]}
     />
   ),

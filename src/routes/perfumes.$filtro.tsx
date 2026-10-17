@@ -8,7 +8,7 @@ const PRESETS: Record<string, Preset> = {
   arabes: {
     title: "Perfumes Árabes",
     subtitle: "Oud, âmbar, resinas e especiarias: a assinatura do Oriente Médio.",
-    base: { productTypes: ["perfume", "miniatura"], origins: ["arabe"] },
+    base: { productTypes: ["perfume", "miniatura", "decant"], origins: ["arabe"] },
   },
   miniaturas: {
     title: "Miniaturas",
@@ -99,6 +99,8 @@ export const Route = createFileRoute("/perfumes/$filtro")({
         { name: "description", content: subtitle },
         { property: "og:title", content: `${title} | Flor de Amaranto` },
         { property: "og:description", content: subtitle },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
         { property: "og:url", content: `/perfumes/${params.filtro}` },
       ],
       links: [{ rel: "canonical", href: `/perfumes/${params.filtro}` }],
@@ -116,6 +118,7 @@ function FilteredPerfumes() {
       title={preset.title}
       subtitle={preset.subtitle}
       base={{ ...preset.base, withPhotos: true }}
+      showDecants={Route.useParams().filtro === "arabes"}
       facets={["genders", "origins", "families", "brandSlugs", "longevity", "sillage"]}
     />
   );

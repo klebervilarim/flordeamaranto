@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { Download, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -19,6 +19,10 @@ export const Route = createFileRoute("/estoque/planilha")({
         content: "Exporte e importe a planilha padrão de produtos e fornecedores.",
       },
       { name: "robots", content: "noindex, nofollow" },
+      { property: "og:title", content: "Planilha de estoque — Flor de Amaranto" },
+      { property: "og:description", content: "Produtos, custos e decants da Flor de Amaranto." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: () => (
@@ -28,10 +32,11 @@ export const Route = createFileRoute("/estoque/planilha")({
   ),
 });
 
-const PRODUCT_HEADERS = ["Código", "Descrição", "Valor", "Custo", "Quantidade"];
+const PRODUCT_HEADERS = ["Código", "Descrição", "Valor", "Custo", "Quantidade", "Marca", "Tipo de produto", "Volume"];
 const SUPPLIER_HEADERS = ["Código", "Descrição", "Fornecedor", "Quantidade", "Custo"];
 
 function SheetPanel() {
+  const queryClient = useQueryClient();
   const exportFn = useServerFn(exportStockSheet);
   const importFn = useServerFn(importStockSheet);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -56,9 +61,9 @@ function SheetPanel() {
     const wb = XLSX.utils.book_new();
     const products = XLSX.utils.aoa_to_sheet([
       PRODUCT_HEADERS,
-      ...data.products.map((p) => [p.sku, p.name, p.price, p.cost ?? "", p.stock]),
+      ...data.products.map((p) => [p.sku, p.name, p.price, p.cost ?? "", p.stock, p.brand, p.productType, p.volume ?? ""]),
     ]);
-    products["!cols"] = [{ wch: 18 }, { wch: 56 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
+    products["!cols"] = [{ wch: 24 }, { wch: 56 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 24 }, { wch: 20 }, { wch: 12 }];
     XLSX.utils.book_append_sheet(wb, products, "Produtos");
 
     const suppliers = XLSX.utils.aoa_to_sheet([
@@ -75,7 +80,8 @@ function SheetPanel() {
     mutationFn: async (file: File) => {
       const buffer = await file.arrayBuffer();
       const wb = XLSX.read(buffer, { type: "array" });
-      const productSheet = wb.Sheets["Produtos"] ?? wb.Sheets[wb.SheetNames[0]!];
+      const firstSheet = wb.SheetNames[0];
+      const productSheet = wb.Sheets["Produtos"] ?? (firstSheet ? wb.Sheets[firstSheet] : undefined);
       const supplierSheet =
         wb.Sheets["Produto por Fornecedor"] ??
         (wb.SheetNames[1] ? wb.Sheets[wb.SheetNames[1]] : undefined);
@@ -96,6 +102,8 @@ function SheetPanel() {
         `${res.updated} produto(s) atualizado(s) e ${res.created} cadastrado(s).`,
       );
       dataQuery.refetch();
+      queryClient.invalidateQueries({ queryKey: ["stock-list"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });

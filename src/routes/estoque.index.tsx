@@ -53,6 +53,10 @@ export const Route = createFileRoute("/estoque/")({
       { title: "Estoque — Flor de Amaranto" },
       { name: "description", content: "Painel de estoque restrito da Flor de Amaranto." },
       { name: "robots", content: "noindex, nofollow" },
+      { property: "og:title", content: "Estoque — Flor de Amaranto" },
+      { property: "og:description", content: "Gestão dos produtos e decants da Flor de Amaranto." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: EstoquePage,
@@ -177,6 +181,8 @@ function StockPanel() {
         "Custo total em estoque":
           p.cost_price != null ? Math.round(p.cost_price * p.stock * 100) / 100 : "",
         "Valor total em estoque": Math.round(price * p.stock * 100) / 100,
+        "Tipo de produto": p.product_type,
+        Volume: p.volume ?? "",
       };
     });
     const ws = XLSX.utils.json_to_sheet(rows);
@@ -192,6 +198,7 @@ function StockPanel() {
       { wch: 22 },
       { wch: 20 },
     ];
+    ws["!cols"].push({ wch: 20 }, { wch: 12 });
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Estoque");
     const date = new Date().toISOString().slice(0, 10);

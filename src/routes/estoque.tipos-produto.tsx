@@ -15,6 +15,11 @@ export const Route = createFileRoute("/estoque/tipos-produto")({
   head: () => ({
     meta: [
       { title: "Tipos de produto — Flor de Amaranto" },
+      { name: "description", content: "Cadastro de tipos de produto da Flor de Amaranto, incluindo Decants." },
+      { property: "og:title", content: "Tipos de produto — Flor de Amaranto" },
+      { property: "og:description", content: "Cadastro de tipos de produto da Flor de Amaranto, incluindo Decants." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
