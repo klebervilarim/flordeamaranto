@@ -1,7 +1,9 @@
 // Leitura das planilhas de estoque pelo NOME das colunas (com sinônimos),
 // para aceitar tanto a planilha padrão quanto a exportação da tela de Estoque.
 
-export type ProductField = "sku" | "name" | "price" | "cost" | "quantity" | "brand";
+import { normalizeVolume } from "./decants";
+
+export type ProductField = "sku" | "name" | "price" | "cost" | "quantity" | "brand" | "productType" | "volume" | "decant";
 export type SupplierField = "sku" | "name" | "supplier" | "quantity" | "cost";
 
 function norm(value: unknown): string {
@@ -20,6 +22,9 @@ const PRODUCT_ALIASES: Record<ProductField, string[]> = {
   cost: ["custo", "preco de custo", "valor de custo", "custo unitario"],
   quantity: ["quantidade", "estoque atual", "estoque", "qtd", "qtde"],
   brand: ["marca", "brand"],
+  productType: ["tipo", "tipo de produto", "tipo do produto", "product_type"],
+  volume: ["volume", "volumetria", "ml", "tamanho"],
+  decant: ["decant", "decants"],
 };
 
 const SUPPLIER_ALIASES: Record<SupplierField, string[]> = {
@@ -61,6 +66,8 @@ export type ParsedProduct = {
   price?: number | undefined;
   cost?: number | undefined;
   quantity?: number | undefined;
+  productType?: string | undefined;
+  volume?: string | undefined;
 };
 
 export type ParsedSupplier = { sku: string; supplier: string; quantity: number };
@@ -69,7 +76,7 @@ export type ParsedSupplier = { sku: string; supplier: string; quantity: number }
 export function parseProductRows(rows: unknown[][]): ParsedProduct[] {
   const [header = [], ...body] = rows;
   let cols = mapHeaders(header, PRODUCT_ALIASES);
-  if (cols.sku == null) {
+  if (cols.sku == null && cols.name == null) {
     // Planilha antiga sem cabeçalho reconhecível: Código, Descrição, Valor, Quantidade
     cols = { sku: 0, name: 1, price: 2, quantity: 3 };
   }
@@ -80,16 +87,27 @@ export function parseProductRows(rows: unknown[][]): ParsedProduct[] {
   return body
     .map((row) => {
       const qty = parseNumber(get(row, "quantity"));
+      const name = String(get(row, "name") ?? "").trim();
+      const type = norm(get(row, "productType"));
+      const decant = norm(get(row, "decant"));
+      const isDecant = type === "decant" || type === "decants" ||
+        (decant !== "" && !["nao", "false", "0"].includes(decant)) || /\bdecants?\b/i.test(name);
+      const volume = normalizeVolume(get(row, "volume")) ??
+        (isDecant ? normalizeVolume(decant.match(/\d+\s*(?:ml)?/)?.[0] ?? name.match(/\b(?:5|10)\s*ml\b/i)?.[0]) : undefined);
       return {
         sku: String(get(row, "sku") ?? "").trim(),
-        name: String(get(row, "name") ?? "").trim() || undefined,
+        name: name || undefined,
         brand: String(get(row, "brand") ?? "").trim() || undefined,
         price: parseNumber(get(row, "price")),
         cost: parseNumber(get(row, "cost")),
         quantity: qty != null ? Math.max(0, Math.round(qty)) : undefined,
+        ...(isDecant ? { productType: "decant", volume } : {
+          ...(type ? { productType: type } : {}),
+          ...(volume ? { volume } : {}),
+        }),
       };
     })
-    .filter((p) => p.sku);
+    .filter((p) => p.sku || (p.productType === "decant" && p.name));
 }
 
 export function parseSupplierRows(rows: unknown[][]): ParsedSupplier[] {
