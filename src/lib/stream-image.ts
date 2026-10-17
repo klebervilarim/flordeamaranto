@@ -3,6 +3,16 @@ import { flushSync } from "react-dom";
 
 type ImagePayload = { type?: string; b64_json?: string; error?: { message?: string } };
 
+async function imageResponseError(response: Response): Promise<Error> {
+  const text = await response.text().catch(() => "");
+  try {
+    const payload = JSON.parse(text) as { message?: string; error?: { message?: string } };
+    return new Error(payload.message ?? payload.error?.message ?? `Falha ao gerar imagem (${response.status}).`);
+  } catch {
+    return new Error(text || `Falha ao gerar imagem (${response.status}).`);
+  }
+}
+
 export async function streamImage(
   endpoint: string,
   input: Record<string, unknown> | FormData,
@@ -31,7 +41,7 @@ export async function streamImage(
   };
   const res = await send(true);
   if (!res.ok || !res.body) {
-    throw new Error(`Image generation failed: ${res.status} ${await res.text().catch(() => "")}`);
+    throw await imageResponseError(res);
   }
 
   let sawCompleted = false;
@@ -47,10 +57,11 @@ export async function streamImage(
       }
       if (event.event === "error" || payload?.type === "error") {
         sawAnyEvent = true;
-        streamError = payload?.error?.message ?? "Image generation failed";
+        streamError = payload?.error?.message ?? "A IA não conseguiu gerar a imagem.";
         return;
       }
-      const type = event.event || payload?.type;
+      if (streamError) return;
+      const type = event.event && event.event !== "message" ? event.event : payload?.type;
       if (
         type !== "image_generation.partial_image" &&
         type !== "image_generation.completed" &&
@@ -91,7 +102,7 @@ export async function streamImage(
   if (!sawAnyEvent) {
     const replay = await send(false);
     if (!replay.ok) {
-      throw new Error(`Image generation failed: ${replay.status} ${await replay.text().catch(() => "")}`);
+      throw await imageResponseError(replay);
     }
     const json = (await replay.json()) as { data?: { b64_json?: string }[] };
     const b64 = json.data?.[0]?.b64_json;
