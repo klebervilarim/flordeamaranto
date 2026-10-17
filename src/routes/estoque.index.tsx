@@ -295,10 +295,10 @@ function StockPanel() {
         <p className="py-20 text-center text-sm text-destructive">{stockQuery.error.message}</p>
       ) : (
         <div className="mt-6 overflow-x-auto">
-          <table className="w-full min-w-[900px] text-sm">
+          <table className="w-full min-w-[1160px] text-sm">
             <thead>
               <tr className="border-b border-border text-left text-[0.65rem] tracking-[0.16em] text-muted-foreground uppercase">
-                <th className="py-3 pr-3">Produto</th>
+                <th className="w-[380px] min-w-[380px] py-3 pr-6">Produto</th>
                 <th className="py-3 pr-3">Local de compra</th>
                 <th className="py-3 pr-3">Estoque</th>
                 <th className="py-3 pr-3">Status</th>
@@ -310,31 +310,31 @@ function StockPanel() {
             </thead>
             <tbody>
               {filtered.map((p) => (
-                <tr key={p.id} className="border-b border-border/60">
-                  <td className="py-3 pr-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex gap-1">
+                <tr key={p.id} className="border-b border-border/60 transition-colors hover:bg-muted/40">
+                  <td className="w-[380px] min-w-[380px] py-4 pr-6 align-middle">
+                    <div className="flex items-center gap-4">
+                      <div className="grid w-[100px] shrink-0 grid-cols-2 gap-1.5">
                         <img
                           src={p.image_url ?? placeholder}
                           alt={p.name}
-                          width={44}
-                          height={44}
+                          width={47}
+                          height={56}
                           loading="lazy"
-                          className="h-11 w-11 object-cover"
+                          className="h-14 w-full rounded border border-border/60 bg-muted/30 object-contain"
                         />
                         <img
                           src={p.secondary_image_url ?? placeholder}
                           alt={`${p.name} — Fragrantica`}
-                          width={44}
-                          height={44}
+                          width={47}
+                          height={56}
                           loading="lazy"
                           title="2ª foto (Fragrantica)"
-                          className={`h-11 w-11 object-cover ${p.secondary_image_url ? "" : "opacity-30"}`}
+                          className={`h-14 w-full rounded border border-border/60 bg-muted/30 object-contain ${p.secondary_image_url ? "" : "opacity-30"}`}
                         />
                       </div>
-                      <div>
-                        <p className="font-medium">{p.name}</p>
-                        <p className="text-xs text-muted-foreground">
+                      <div className="min-w-0 flex-1">
+                        <p className="break-words font-medium leading-snug">{p.name}</p>
+                        <p className="mt-1 break-words text-xs leading-relaxed text-muted-foreground">
                           {p.sku}
                           {p.brands?.name ? ` · ${p.brands.name}` : ""}
                         </p>
