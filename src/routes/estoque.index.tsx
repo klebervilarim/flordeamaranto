@@ -305,7 +305,7 @@ function StockPanel() {
                 <th className="py-3 pr-3">Custo</th>
                 <th className="py-3 pr-3">Sugerido (+40%)</th>
                 <th className="py-3 pr-3">Preço de venda</th>
-                <th className="py-3" />
+                <th className="sticky right-0 bg-background py-3 pl-3 text-right">Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -389,7 +389,7 @@ function StockPanel() {
                       onChange={(e) => setEdit(p.id, "price", e.target.value)}
                     />
                   </td>
-                  <td className="py-3 text-right">
+                  <td className="sticky right-0 border-l border-border/60 bg-background py-3 pl-3 text-right">
                     <div className="flex items-center justify-end gap-2">
                       {isDirty(p.id) && (
                         <Button
@@ -406,6 +406,7 @@ function StockPanel() {
                           to="/estoque/produto/$id"
                           params={{ id: p.id }}
                           aria-label={`Editar ${p.name}`}
+                          title={`Editar ${p.name}`}
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </Link>
