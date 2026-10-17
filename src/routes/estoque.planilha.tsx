@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { Download, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -36,6 +36,7 @@ const PRODUCT_HEADERS = ["Código", "Descrição", "Valor", "Custo", "Quantidade
 const SUPPLIER_HEADERS = ["Código", "Descrição", "Fornecedor", "Quantidade", "Custo"];
 
 function SheetPanel() {
+  const queryClient = useQueryClient();
   const exportFn = useServerFn(exportStockSheet);
   const importFn = useServerFn(importStockSheet);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -101,6 +102,8 @@ function SheetPanel() {
         `${res.updated} produto(s) atualizado(s) e ${res.created} cadastrado(s).`,
       );
       dataQuery.refetch();
+      queryClient.invalidateQueries({ queryKey: ["stock-list"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
