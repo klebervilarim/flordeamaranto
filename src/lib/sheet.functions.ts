@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
 import { assertAdmin, recordStockMovement } from "./stock.server";
+import { DECANT_VOLUMES, generateDecantSku, normalizeVolume } from "./decants";
 
 export type SheetProductRow = {
   sku: string;
@@ -10,6 +11,9 @@ export type SheetProductRow = {
   price: number;
   cost: number | null;
   stock: number;
+  productType: string;
+  volume: string | null;
+  brand: string;
 };
 
 export type SheetSupplierRow = {
@@ -33,7 +37,7 @@ export const exportStockSheet = createServerFn({ method: "GET" })
       await assertAdmin(context.supabase, context.userId);
       const { data: products, error } = await context.supabase
         .from("products")
-        .select("id, sku, name, price, stock")
+        .select("id, sku, name, price, stock, product_type, volume, brands(name)")
         .neq("status", "archived")
         .order("name")
         .limit(2000);
@@ -63,6 +67,9 @@ export const exportStockSheet = createServerFn({ method: "GET" })
           price: Number(p.price),
           cost: costMap.get(p.id) ?? null,
           stock: p.stock,
+          productType: p.product_type,
+          volume: p.volume,
+          brand: p.brands?.name ?? "",
         })),
         suppliers: (links ?? [])
           .filter((l) => productMap.has(l.product_id))
@@ -88,16 +95,18 @@ function slugify(value: string): string {
     .slice(0, 120) || "produto";
 }
 
-const importSchema = z.object({
+export const importSchema = z.object({
   products: z
     .array(
       z.object({
-        sku: z.string().trim().min(1),
+        sku: z.string().trim().default(""),
         name: z.string().trim().max(200).optional(),
         brand: z.string().trim().max(120).optional(),
         price: z.number().nonnegative().optional(),
         cost: z.number().nonnegative().optional(),
         quantity: z.number().int().min(0).optional(),
+        productType: z.string().trim().max(60).optional(),
+        volume: z.string().trim().max(40).optional(),
       }),
     )
     .max(3000),
@@ -118,6 +127,18 @@ export const importStockSheet = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     const supabase = context.supabase;
+    const products = data.products.map((row) => {
+      const productType = row.productType?.toLowerCase();
+      const volume = normalizeVolume(row.volume);
+      if (productType === "decant" && !DECANT_VOLUMES.some((v) => v === volume)) {
+        throw new Error(`Informe o volume 5ml ou 10ml para o decant ${row.name ?? row.sku}.`);
+      }
+      if (!row.sku && (productType !== "decant" || !row.name || !volume)) {
+        throw new Error("Produtos sem SKU precisam ser Decants com descrição e volume.");
+      }
+      return { ...row, productType, volume,
+        sku: row.sku || generateDecantSku(row.name ?? "", row.brand, volume ?? "") };
+    });
 
     const { data: allProducts, error } = await supabase
       .from("products")
@@ -197,7 +218,7 @@ export const importStockSheet = createServerFn({ method: "POST" })
     // 2. Produtos: atualiza os existentes (pelo SKU) e cadastra os novos
     let created = 0;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    for (const row of data.products) {
+    for (const row of products) {
       const key = row.sku.trim().toUpperCase();
       const product = bySku.get(key);
       if (!product) {
@@ -209,7 +230,7 @@ export const importStockSheet = createServerFn({ method: "POST" })
           errors.push(`Produto novo sem valor de venda: ${row.sku}`);
           continue;
         }
-        const stock = totals.has(key) ? totals.get(key)! : (row.quantity ?? 0);
+        const stock = totals.get(key) ?? row.quantity ?? 0;
         const slug = `${slugify(row.name)}-${key.toLowerCase()}`.slice(0, 180);
         const brandId = row.brand ? await resolveBrandId(row.brand) : null;
         const { data: inserted, error: insertError } = await supabaseAdmin
@@ -219,7 +240,8 @@ export const importStockSheet = createServerFn({ method: "POST" })
             name: row.name,
             slug,
             brand_id: brandId,
-            product_type: "perfume",
+            product_type: row.productType ?? "perfume",
+            volume: row.volume ?? null,
             origin: "arabe",
             price: row.price,
             stock,
@@ -258,6 +280,8 @@ export const importStockSheet = createServerFn({ method: "POST" })
         continue;
       }
       const patch: Database["public"]["Tables"]["products"]["Update"] = { origin: "arabe" };
+      if (row.productType) patch["product_type"] = row.productType;
+      if (row.volume) patch["volume"] = row.volume;
       if (row.name && row.name !== product.name) patch["name"] = row.name;
       if (row.brand) {
         const brandId = await resolveBrandId(row.brand);
@@ -265,7 +289,7 @@ export const importStockSheet = createServerFn({ method: "POST" })
       }
       if (row.price != null && row.price > 0 && Number(row.price) !== Number(product.price))
         patch["price"] = row.price;
-      const nextStock = totals.has(key) ? totals.get(key)! : row.quantity;
+      const nextStock = totals.get(key) ?? row.quantity;
       if (nextStock != null && nextStock !== product.stock) patch["stock"] = nextStock;
       if (Object.keys(patch).length > 0) {
         const { error: updateError } = await supabase
@@ -277,11 +301,11 @@ export const importStockSheet = createServerFn({ method: "POST" })
           continue;
         }
         updated += 1;
-        if (patch["stock"] != null) {
+        if (patch["stock"] != null && nextStock != null) {
           await recordStockMovement(supabase, {
             productId: product.id,
             previousQuantity: product.stock,
-            newQuantity: nextStock!,
+            newQuantity: nextStock,
             createdBy: context.userId,
             note: "Importação de planilha",
           });
@@ -297,7 +321,7 @@ export const importStockSheet = createServerFn({ method: "POST" })
 
     // 3. Produtos que só apareceram na aba de fornecedores
     for (const [key, total] of totals) {
-      if (data.products.some((p) => p.sku.trim().toUpperCase() === key)) continue;
+      if (products.some((p) => p.sku.trim().toUpperCase() === key)) continue;
       const product = bySku.get(key);
       if (!product || product.stock === total) continue;
       await supabase.from("products").update({ stock: total }).eq("id", product.id);
