@@ -1,3 +1,6 @@
 - [x] Adicionar filtro Decants 5ml/10ml aos perfumes árabes.
 - [x] Cadastrar tipo Decant e adaptar importação/exportação e edição.
 - [x] Testar filtros e importação com SKU automático.
+- [x] Corrigir a edição dos perfumes no estoque e verificar o salvamento.
+- [x] Adicionar geração de foto com IA OpenAI a partir de exemplo para o perfume editado.
+- [x] Verificar geração, aplicação da foto e acesso exclusivo de administrador.

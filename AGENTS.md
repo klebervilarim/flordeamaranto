@@ -11,3 +11,4 @@
 
 - Store decants as a product type plus normalized volume using the existing products fields; this keeps catalog, editing and spreadsheets interoperable.
 - Generate missing decant SKUs deterministically from name, brand and volume using src/lib/decants.ts; repeated imports must update the same product rather than create duplicates.
+- Product image AI uses an admin-verified streaming server route, with ordered style and optional real-product references; generated photos are uploaded and applied only after explicit review, never creating a catalog record.

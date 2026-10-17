@@ -49,6 +49,7 @@ import { Route as PerfumesFiltroRouteImport } from './routes/perfumes.$filtro'
 import { Route as ProdutoSlugRouteImport } from './routes/produto.$slug'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
 import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api/public/mercadopago-webhook'
+import { Route as ApiPublicProductImageAiRouteImport } from './routes/api/public/product-image-ai'
 import { Route as EstoqueProdutoIdRouteImport } from './routes/estoque.produto.$id'
 import { Route as EstoqueProdutoNovoRouteImport } from './routes/estoque.produto.novo'
 import { Route as PagamentoSucessoIdRouteImport } from './routes/pagamento.sucesso.$id'
@@ -256,6 +257,11 @@ const ApiPublicMercadopagoWebhookRoute =
     path: '/api/public/mercadopago-webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicProductImageAiRoute = ApiPublicProductImageAiRouteImport.update({
+  id: '/api/public/product-image-ai',
+  path: '/api/public/product-image-ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EstoqueProdutoIdRoute = EstoqueProdutoIdRouteImport.update({
   id: '/produto/$id',
   path: '/produto/$id',
@@ -325,6 +331,7 @@ export interface FileRoutesByFullPath {
   '/perfumes/': typeof PerfumesIndexRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
+  '/api/public/product-image-ai': typeof ApiPublicProductImageAiRoute
   '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
   '/estoque/produto/novo': typeof EstoqueProdutoNovoRoute
   '/pagamento/sucesso/$id': typeof PagamentoSucessoIdRoute
@@ -371,6 +378,7 @@ export interface FileRoutesByTo {
   '/perfumes': typeof PerfumesIndexRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
+  '/api/public/product-image-ai': typeof ApiPublicProductImageAiRoute
   '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
   '/estoque/produto/novo': typeof EstoqueProdutoNovoRoute
   '/pagamento/sucesso/$id': typeof PagamentoSucessoIdRoute
@@ -419,6 +427,7 @@ export interface FileRoutesById {
   '/perfumes/': typeof PerfumesIndexRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
+  '/api/public/product-image-ai': typeof ApiPublicProductImageAiRoute
   '/estoque/produto/$id': typeof EstoqueProdutoIdRoute
   '/estoque/produto/novo': typeof EstoqueProdutoNovoRoute
   '/pagamento/sucesso/$id': typeof PagamentoSucessoIdRoute
@@ -468,6 +477,7 @@ export interface FileRouteTypes {
     | '/perfumes/'
     | '/api/public/asaas-webhook'
     | '/api/public/mercadopago-webhook'
+    | '/api/public/product-image-ai'
     | '/estoque/produto/$id'
     | '/estoque/produto/novo'
     | '/pagamento/sucesso/$id'
@@ -514,6 +524,7 @@ export interface FileRouteTypes {
     | '/perfumes'
     | '/api/public/asaas-webhook'
     | '/api/public/mercadopago-webhook'
+    | '/api/public/product-image-ai'
     | '/estoque/produto/$id'
     | '/estoque/produto/novo'
     | '/pagamento/sucesso/$id'
@@ -561,6 +572,7 @@ export interface FileRouteTypes {
     | '/perfumes/'
     | '/api/public/asaas-webhook'
     | '/api/public/mercadopago-webhook'
+    | '/api/public/product-image-ai'
     | '/estoque/produto/$id'
     | '/estoque/produto/novo'
     | '/pagamento/sucesso/$id'
@@ -599,6 +611,7 @@ export interface RootRouteChildren {
   PerfumesIndexRoute: typeof PerfumesIndexRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
   ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
+  ApiPublicProductImageAiRoute: typeof ApiPublicProductImageAiRoute
   PagamentoSucessoIdRoute: typeof PagamentoSucessoIdRoute
   ApiPublicProductImageSplatRoute: typeof ApiPublicProductImageSplatRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -886,6 +899,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicMercadopagoWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/product-image-ai': {
+      id: '/api/public/product-image-ai'
+      path: '/api/public/product-image-ai'
+      fullPath: '/api/public/product-image-ai'
+      preLoaderRoute: typeof ApiPublicProductImageAiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/estoque/produto/$id': {
       id: '/estoque/produto/$id'
       path: '/produto/$id'
@@ -988,6 +1008,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerfumesIndexRoute: PerfumesIndexRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
   ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
+  ApiPublicProductImageAiRoute: ApiPublicProductImageAiRoute,
   PagamentoSucessoIdRoute: PagamentoSucessoIdRoute,
   ApiPublicProductImageSplatRoute: ApiPublicProductImageSplatRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,

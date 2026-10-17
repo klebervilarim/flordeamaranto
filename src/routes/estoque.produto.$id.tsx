@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { brl } from "@/lib/format";
 import { GENDER_LABELS, ORIGIN_LABELS, PRODUCT_TYPE_LABELS } from "@/lib/catalog";
 import { StockGate } from "@/components/stock/StockGate";
+import { ProductImageAI } from "@/components/stock/ProductImageAI";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +33,11 @@ export const Route = createFileRoute("/estoque/produto/$id")({
   head: () => ({
     meta: [
       { title: "Editar produto — Flor de Amaranto" },
+      { name: "description", content: "Edição de perfumes, estoque e fotos de produtos da Flor de Amaranto." },
+      { property: "og:title", content: "Editar produto — Flor de Amaranto" },
+      { property: "og:description", content: "Gestão de perfumes e imagens da Flor de Amaranto." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -142,6 +148,7 @@ function ProductEditor({
   const [bestseller, setBestseller] = useState(product.bestseller);
   const [isNew, setIsNew] = useState(product.is_new);
   const [uploading, setUploading] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
 
   const cost = num(costPrice);
   const suggested = cost != null ? Math.round(cost * 1.4 * 100) / 100 : null;
@@ -182,6 +189,7 @@ function ProductEditor({
       toast.success("Produto salvo.");
       queryClient.removeQueries({ queryKey: ["stock-product", product.id] });
       queryClient.invalidateQueries({ queryKey: ["stock-list"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       navigate({ to: "/estoque" });
     },
     onError: (e) => toast.error(e.message),
@@ -333,6 +341,15 @@ function ProductEditor({
               />
             </div>
           </div>
+          <ProductImageAI
+            productId={product.id}
+            name={name}
+            brand={brands.find(b => b.id === brandId)?.name ?? ""}
+            volume={volume}
+            productType={productType}
+            onApply={setImageUrl}
+            onBusyChange={setAiBusy}
+          />
         </div>
 
         <div className="space-y-6">
@@ -496,7 +513,7 @@ function ProductEditor({
             <Button
               variant="gold"
               size="pill"
-              disabled={saveMutation.isPending || uploading}
+              disabled={saveMutation.isPending || uploading || aiBusy}
               onClick={() => saveMutation.mutate()}
             >
               {saveMutation.isPending ? "Salvando…" : "Salvar alterações"}
