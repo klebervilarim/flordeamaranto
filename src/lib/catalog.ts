@@ -177,6 +177,24 @@ export async function fetchProducts(filters: CatalogFilters = {}): Promise<Produ
   if (filters.brandSlugs?.length) {
     rows = rows.filter((p) => p.brands && filters.brandSlugs!.includes(p.brands.slug));
   }
+
+  // Um único card por perfume: decants 5ml/10ml do mesmo nome viram um só,
+  // sempre com o menor preço (o de 5ml). Com filtro de volume, mantém o volume escolhido.
+  if (!filters.decantVolumes?.length) {
+    const best = new Map<string, Product>();
+    const rest: Product[] = [];
+    for (const p of rows) {
+      if (p.product_type !== "decant") {
+        rest.push(p);
+        continue;
+      }
+      const key = decantBaseName(p.name) || p.id;
+      const current = best.get(key);
+      const price = p.sale_price ?? p.price;
+      if (!current || price < (current.sale_price ?? current.price)) best.set(key, p);
+    }
+    rows = [...rest, ...best.values()];
+  }
   return rows;
 }
 
