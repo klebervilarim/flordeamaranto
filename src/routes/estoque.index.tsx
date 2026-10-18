@@ -299,6 +299,7 @@ function StockPanel() {
             <thead>
               <tr className="border-b border-border text-left text-[0.65rem] tracking-[0.16em] text-muted-foreground uppercase">
                 <th className="w-[380px] min-w-[380px] py-3 pr-6">Produto</th>
+                <th className="py-3 pr-3">Volume</th>
                 <th className="py-3 pr-3">Local de compra</th>
                 <th className="py-3 pr-3">Estoque</th>
                 <th className="py-3 pr-3">Status</th>
@@ -340,6 +341,15 @@ function StockPanel() {
                         </p>
                       </div>
                     </div>
+                  </td>
+                  <td className="py-3 pr-3">
+                    {p.volume ? (
+                      <span className="inline-flex items-center rounded-full border border-gold/50 bg-gold/10 px-2.5 py-0.5 text-xs font-medium text-ink">
+                        {p.volume}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
                   </td>
                   <td className="py-3 pr-3">
                     <Select
