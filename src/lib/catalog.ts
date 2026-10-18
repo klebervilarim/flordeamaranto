@@ -113,9 +113,8 @@ export async function fetchProducts(filters: CatalogFilters = {}): Promise<Produ
 
   let query = supabase.from("products").select(SELECT).eq("status", "active").gt("price", 0);
 
-  if (filters.withPhotos) {
-    query = query.not("image_url", "is", null).neq("image_url", "");
-  }
+  // withPhotos é aplicado depois do agrupamento de decants (o 5ml sem foto
+  // ainda precisa entrar no grupo para o card mostrar o menor preço).
 
   if (productIds) query = query.in("id", productIds);
   if (filters.productTypes?.length) query = query.in("product_type", filters.productTypes);
