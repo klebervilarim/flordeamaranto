@@ -206,6 +206,49 @@ export async function fetchProductImages(productId: string): Promise<ProductImag
 
 
 
+export type DecantOption = {
+  slug: string;
+  volume: string;
+  price: number;
+  sale_price: number | null;
+  stock: number;
+};
+
+/** Nome base do decant sem o prefixo "Decant" e sem o volume, para agrupar 5ml/10ml do mesmo perfume. */
+export function decantBaseName(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/decant/g, " ")
+    .replace(/[-–—]?\s*\d+(?:[.,]\d+)?\s*ml\b/g, " ")
+    .replace(/[-–—|]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export async function fetchDecantOptions(name: string): Promise<DecantOption[]> {
+  const base = decantBaseName(name);
+  if (!base) return [];
+  const { data, error } = await supabase
+    .from("products")
+    .select("slug, volume, price, sale_price, stock, name")
+    .eq("product_type", "decant")
+    .eq("status", "active")
+    .gt("price", 0)
+    .limit(1000);
+  if (error) throw error;
+  return (data ?? [])
+    .filter((d) => decantBaseName(d.name) === base)
+    .map((d) => ({
+      slug: d.slug,
+      volume: d.volume ?? "",
+      price: d.price,
+      sale_price: d.sale_price,
+      stock: d.stock,
+    }));
+}
+
 export async function fetchBrands(): Promise<Brand[]> {
   const { data, error } = await supabase
     .from("brands")
