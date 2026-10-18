@@ -113,6 +113,17 @@ function ProductPage() {
     queryFn: () => fetchProducts({ productTypes: [product.product_type], sort: "rating" }),
   });
 
+  const isDecant = product.product_type === "decant";
+  const { data: decantOptions = [] } = useQuery({
+    queryKey: ["decant-options", product.name],
+    queryFn: () => fetchDecantOptions(product.name),
+    enabled: isDecant,
+  });
+  const currentVolume = normalizeVolume(product.volume);
+  const optionByVolume = new Map(
+    decantOptions.map((o) => [normalizeVolume(o.volume), o] as const),
+  );
+
   const specs: [string, string][] = [
     ["Marca", product.brands?.name ?? "—"],
     ["Tipo", product.product_type],
