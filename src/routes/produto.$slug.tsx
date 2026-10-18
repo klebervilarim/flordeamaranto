@@ -13,12 +13,14 @@ import {
 } from "@/components/ui/accordion";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import {
+  fetchDecantOptions,
   fetchProductBySlug,
   fetchProductImages,
   fetchProducts,
   GENDER_LABELS,
   ORIGIN_LABELS,
 } from "@/lib/catalog";
+import { DECANT_VOLUMES, normalizeVolume } from "@/lib/decants";
 import { brl, discountPercent, installments, stockLabel } from "@/lib/format";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
