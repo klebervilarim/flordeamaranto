@@ -1,7 +1,13 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { SlidersHorizontal } from "lucide-react";
-import { fetchBrands, fetchProducts, type CatalogFilters, type Product } from "@/lib/catalog";
+import {
+  fetchBrands,
+  fetchDecantVolumeCounts,
+  fetchProducts,
+  type CatalogFilters,
+  type Product,
+} from "@/lib/catalog";
 import { ProductGrid } from "./ProductGrid";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -84,6 +90,11 @@ export function CatalogPage({
   const [decantVolumes, setDecantVolumes] = useState<string[]>([]);
 
   const { data: brands = [] } = useQuery({ queryKey: ["brands"], queryFn: fetchBrands });
+  const { data: decantCounts = {} } = useQuery({
+    queryKey: ["decant-volume-counts"],
+    queryFn: fetchDecantVolumeCounts,
+    enabled: showDecants,
+  });
 
   const filters: CatalogFilters = useMemo(
     () => ({
@@ -158,10 +169,19 @@ export function CatalogPage({
                 <Checkbox id={`decant-${volume}`} checked={decantVolumes.includes(volume)}
                   onCheckedChange={(checked) => setDecantVolumes((prev) => checked
                     ? [...prev, volume] : prev.filter((v) => v !== volume))} />
-                <Label htmlFor={`decant-${volume}`} className="cursor-pointer text-sm font-normal">{volume}</Label>
+                <Label
+                  htmlFor={`decant-${volume}`}
+                  className="flex flex-1 cursor-pointer items-baseline justify-between gap-2 text-sm font-normal"
+                >
+                  <span>{volume}</span>
+                  <span className="text-xs text-muted-foreground">{decantCounts[volume] ?? 0}</span>
+                </Label>
               </div>
             ))}
           </div>
+          <p className="mt-2 text-[0.68rem] leading-relaxed text-muted-foreground">
+            Escolha um tamanho para ver apenas os decants daquele volume.
+          </p>
         </div>
       )}
       {facets.map((key) => {
