@@ -201,6 +201,9 @@ export async function fetchProducts(filters: CatalogFilters = {}): Promise<Produ
     });
     rows = [...rest, ...cards];
   }
+  if (filters.withPhotos) {
+    rows = rows.filter((p) => p.image_url != null && p.image_url !== "");
+  }
   return rows;
 }
 
