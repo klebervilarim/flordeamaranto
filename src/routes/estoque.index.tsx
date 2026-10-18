@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner";
 import { brl } from "@/lib/format";
 import { PRODUCT_TYPE_LABELS } from "@/lib/catalog";
+import { DECANT_VOLUMES, normalizeVolume } from "@/lib/decants";
 import { StockGate } from "@/components/stock/StockGate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,6 +77,7 @@ function StockPanel() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [volumeFilter, setVolumeFilter] = useState<string>("all");
   const [edits, setEdits] = useState<
     Record<string, { stock?: number; price?: number; costPrice?: number }>
   >({});
@@ -131,10 +133,15 @@ function StockPanel() {
     const term = search.trim().toLowerCase();
     return items.filter((p) => {
       if (typeFilter !== "all" && p.product_type !== typeFilter) return false;
+      if (
+        volumeFilter !== "all" &&
+        (p.product_type !== "decant" || normalizeVolume(p.volume) !== volumeFilter)
+      )
+        return false;
       if (!term) return true;
       return p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term);
     });
-  }, [items, search, typeFilter]);
+  }, [items, search, typeFilter, volumeFilter]);
 
   const totals = useMemo(() => {
     let units = 0;
@@ -285,6 +292,21 @@ function StockPanel() {
             ))}
           </SelectContent>
         </Select>
+        <div className="flex items-center gap-1.5">
+          <span className="mr-1 text-[0.6rem] tracking-[0.16em] text-muted-foreground uppercase">
+            Decant
+          </span>
+          {(["all", ...DECANT_VOLUMES] as const).map((v) => (
+            <Button
+              key={v}
+              size="sm"
+              variant={volumeFilter === v ? "gold" : "outlineInk"}
+              onClick={() => setVolumeFilter(v)}
+            >
+              {v === "all" ? "Todos" : v}
+            </Button>
+          ))}
+        </div>
       </div>
 
       {stockQuery.isLoading ? (
