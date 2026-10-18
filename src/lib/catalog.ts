@@ -281,13 +281,15 @@ export async function fetchDecantOptions(name: string): Promise<DecantOption[]> 
 export async function fetchDecantVolumeCounts(): Promise<DecantVolumeCounts> {
   const { data, error } = await supabase
     .from("products")
-    .select("product_type, volume")
+    .select("product_type, volume, image_url")
     .eq("product_type", "decant")
     .eq("status", "active")
     .gt("price", 0)
     .limit(1000);
   if (error) throw error;
-  return countDecantVolumes((data ?? []) as { product_type?: string; volume?: string }[]);
+  return countDecantVolumes(
+    (data ?? []) as { product_type?: string; volume?: string; image_url?: string }[],
+  );
 }
 
 export async function fetchBrands(): Promise<Brand[]> {
