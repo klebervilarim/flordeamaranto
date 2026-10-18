@@ -113,9 +113,8 @@ export async function fetchProducts(filters: CatalogFilters = {}): Promise<Produ
 
   let query = supabase.from("products").select(SELECT).eq("status", "active").gt("price", 0);
 
-  if (filters.withPhotos) {
-    query = query.not("image_url", "is", null).neq("image_url", "");
-  }
+  // withPhotos é aplicado depois do agrupamento de decants (o 5ml sem foto
+  // ainda precisa entrar no grupo para o card mostrar o menor preço).
 
   if (productIds) query = query.in("id", productIds);
   if (filters.productTypes?.length) query = query.in("product_type", filters.productTypes);
@@ -177,6 +176,34 @@ export async function fetchProducts(filters: CatalogFilters = {}): Promise<Produ
   if (filters.brandSlugs?.length) {
     rows = rows.filter((p) => p.brands && filters.brandSlugs!.includes(p.brands.slug));
   }
+
+  // Um único card por perfume: decants 5ml/10ml do mesmo nome viram um só,
+  // sempre com o menor preço (o de 5ml). Com filtro de volume, mantém o volume escolhido.
+  if (!filters.decantVolumes?.length) {
+    const groups = new Map<string, Product[]>();
+    const rest: Product[] = [];
+    for (const p of rows) {
+      if (p.product_type !== "decant") {
+        rest.push(p);
+        continue;
+      }
+      const key = decantBaseName(p.name) || p.id;
+      groups.set(key, [...(groups.get(key) ?? []), p]);
+    }
+    const cards = [...groups.values()].map((group) => {
+      // Card preferindo foto; o preço exibido é sempre o menor do grupo (o de 5ml).
+      const withPhoto = group.filter((p) => p.image_url != null && p.image_url !== "");
+      const rep = (withPhoto.length ? withPhoto : group).reduce((a, b) =>
+        (a.sale_price ?? a.price) <= (b.sale_price ?? b.price) ? a : b,
+      );
+      const minPrice = Math.min(...group.map((p) => p.sale_price ?? p.price));
+      return { ...rep, price: minPrice, sale_price: null };
+    });
+    rows = [...rest, ...cards];
+  }
+  if (filters.withPhotos) {
+    rows = rows.filter((p) => p.image_url != null && p.image_url !== "");
+  }
   return rows;
 }
 
@@ -222,7 +249,7 @@ export function decantBaseName(name: string): string {
     .toLowerCase()
     .replace(/decant/g, " ")
     .replace(/[-–—]?\s*\d+(?:[.,]\d+)?\s*ml\b/g, " ")
-    .replace(/[-–—|]+/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }

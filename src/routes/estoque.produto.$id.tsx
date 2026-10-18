@@ -531,7 +531,7 @@ function ProductEditor({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <Label className="text-xs tracking-[0.12em] text-muted-foreground uppercase">{label}</Label>
+      <Label className="block truncate text-xs tracking-[0.12em] text-muted-foreground uppercase" title={label}>{label}</Label>
       <div className="mt-1.5">{children}</div>
     </div>
   );
