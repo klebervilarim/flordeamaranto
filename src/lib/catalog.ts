@@ -181,7 +181,7 @@ export async function fetchProducts(filters: CatalogFilters = {}): Promise<Produ
   // Um único card por perfume: decants 5ml/10ml do mesmo nome viram um só,
   // sempre com o menor preço (o de 5ml). Com filtro de volume, mantém o volume escolhido.
   if (!filters.decantVolumes?.length) {
-    const best = new Map<string, Product>();
+    const groups = new Map<string, Product[]>();
     const rest: Product[] = [];
     for (const p of rows) {
       if (p.product_type !== "decant") {
@@ -189,14 +189,18 @@ export async function fetchProducts(filters: CatalogFilters = {}): Promise<Produ
         continue;
       }
       const key = decantBaseName(p.name) || p.id;
-      const current = best.get(key);
-      const score = (x: Product) => {
-        const hasPhoto = x.image_url != null && x.image_url !== "" ? 0 : 1;
-        return hasPhoto * 1e9 + (x.sale_price ?? x.price);
-      };
-      if (!current || score(p) < score(current)) best.set(key, p);
+      groups.set(key, [...(groups.get(key) ?? []), p]);
     }
-    rows = [...rest, ...best.values()];
+    const cards = [...groups.values()].map((group) => {
+      // Card preferindo foto; o preço exibido é sempre o menor do grupo (o de 5ml).
+      const withPhoto = group.filter((p) => p.image_url != null && p.image_url !== "");
+      const rep = (withPhoto.length ? withPhoto : group).reduce((a, b) =>
+        (a.sale_price ?? a.price) <= (b.sale_price ?? b.price) ? a : b,
+      );
+      const minPrice = Math.min(...group.map((p) => p.sale_price ?? p.price));
+      return { ...rep, price: minPrice, sale_price: null };
+    });
+    rows = [...rest, ...cards];
   }
   return rows;
 }
