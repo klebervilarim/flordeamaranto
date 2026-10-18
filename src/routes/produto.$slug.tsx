@@ -226,6 +226,54 @@ function ProductPage() {
             </p>
           )}
 
+          {isDecant && (
+            <div className="mt-7">
+              <p className="eyebrow text-muted-foreground">
+                Tamanho: <span className="text-foreground">{currentVolume ?? "—"}</span>
+              </p>
+              <div className="mt-3 flex flex-wrap gap-3">
+                {DECANT_VOLUMES.map((volume) => {
+                  const option = optionByVolume.get(volume);
+                  const selected = currentVolume === volume;
+                  const label = (
+                    <>
+                      <span className="text-sm font-medium">{volume}</span>
+                      {option && (
+                        <span
+                          className={`text-xs ${selected ? "text-ink-foreground/80" : "text-muted-foreground"}`}
+                        >
+                          {brl(option.sale_price ?? option.price)}
+                        </span>
+                      )}
+                    </>
+                  );
+                  const className = `flex min-w-[92px] flex-col items-center gap-0.5 rounded-full border px-5 py-2.5 transition ${
+                    selected
+                      ? "border-ink bg-ink text-ink-foreground"
+                      : option
+                        ? "border-border hover:border-gold"
+                        : "cursor-not-allowed border-border/50 opacity-40"
+                  }`;
+                  return option && !selected ? (
+                    <Link
+                      key={volume}
+                      to="/produto/$slug"
+                      params={{ slug: option.slug }}
+                      className={className}
+                      aria-label={`Ver decant de ${volume}`}
+                    >
+                      {label}
+                    </Link>
+                  ) : (
+                    <span key={volume} className={className} aria-current={selected}>
+                      {label}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="mt-7 border-y border-border py-6">
             <div className="flex items-baseline gap-3">
               <span className="font-display text-4xl">{brl(price)}</span>
