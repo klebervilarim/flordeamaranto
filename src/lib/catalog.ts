@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { countDecantVolumes, type DecantVolumeCounts } from "@/lib/decants";
 
 export type Brand = {
   id: string;
@@ -274,6 +275,21 @@ export async function fetchDecantOptions(name: string): Promise<DecantOption[]> 
       sale_price: d.sale_price,
       stock: d.stock,
     }));
+}
+
+/** Quantos decants ativos existem em cada volume (5ml/10ml) para o filtro do catálogo. */
+export async function fetchDecantVolumeCounts(): Promise<DecantVolumeCounts> {
+  const { data, error } = await supabase
+    .from("products")
+    .select("product_type, volume, image_url")
+    .eq("product_type", "decant")
+    .eq("status", "active")
+    .gt("price", 0)
+    .limit(1000);
+  if (error) throw error;
+  return countDecantVolumes(
+    (data ?? []) as { product_type?: string; volume?: string; image_url?: string }[],
+  );
 }
 
 export async function fetchBrands(): Promise<Brand[]> {

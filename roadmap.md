@@ -4,3 +4,5 @@
 - [x] Corrigir a edição dos perfumes no estoque e verificar o salvamento.
 - [x] Adicionar geração de foto com IA OpenAI a partir de exemplo para o perfume editado.
 - [x] Verificar geração, aplicação da foto e acesso exclusivo de administrador.
+- [x] Adicionar filtro de volume 5ml/10ml na tela de estoque.
+- [x] Adicionar filtro Decants 5ml/10ml na tela de perfumes, com contagem por volume.
