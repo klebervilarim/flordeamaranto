@@ -190,8 +190,11 @@ export async function fetchProducts(filters: CatalogFilters = {}): Promise<Produ
       }
       const key = decantBaseName(p.name) || p.id;
       const current = best.get(key);
-      const price = p.sale_price ?? p.price;
-      if (!current || price < (current.sale_price ?? current.price)) best.set(key, p);
+      const score = (x: Product) => {
+        const hasPhoto = x.image_url != null && x.image_url !== "" ? 0 : 1;
+        return hasPhoto * 1e9 + (x.sale_price ?? x.price);
+      };
+      if (!current || score(p) < score(current)) best.set(key, p);
     }
     rows = [...rest, ...best.values()];
   }
