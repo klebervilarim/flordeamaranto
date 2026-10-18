@@ -222,7 +222,7 @@ export function decantBaseName(name: string): string {
     .toLowerCase()
     .replace(/decant/g, " ")
     .replace(/[-–—]?\s*\d+(?:[.,]\d+)?\s*ml\b/g, " ")
-    .replace(/[-–—|]+/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
