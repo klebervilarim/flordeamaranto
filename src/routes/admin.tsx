@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Lock, Package, ShoppingBag, Ticket, Truck, Users, Wallet } from "lucide-react";
+import { Loader2, Lock, Package, ShoppingBag, Tags, Ticket, Truck, Users, Wallet } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { brl } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,10 @@ export const Route = createFileRoute("/admin")({
     meta: [
       { title: "Administração — Flor de Amaranto" },
       { name: "description", content: "Painel administrativo da Flor de Amaranto." },
+      { property: "og:title", content: "Administração — Flor de Amaranto" },
+      { property: "og:description", content: "Painel de gestão da Flor de Amaranto." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -133,7 +137,12 @@ function Dashboard({ data }: { data: AdminDashboard }) {
           <p className="eyebrow text-gold">Painel administrativo</p>
           <h1 className="mt-2 font-display text-4xl">Dashboard</h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <Button asChild variant="outlineInk" size="pill">
+            <Link to="/estoque/marcas">
+              <Tags className="mr-2 h-4 w-4" /> Marcas
+            </Link>
+          </Button>
           <Button asChild variant="outlineInk" size="pill">
             <Link to="/estoque/pedidos">
               <Truck className="mr-2 h-4 w-4" /> Pedidos

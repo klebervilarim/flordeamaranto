@@ -15,6 +15,11 @@ export const Route = createFileRoute("/estoque/marcas")({
   head: () => ({
     meta: [
       { title: "Marcas — Flor de Amaranto" },
+      { name: "description", content: "Cadastro e gestão das marcas da Flor de Amaranto." },
+      { property: "og:title", content: "Cadastro de marcas — Flor de Amaranto" },
+      { property: "og:description", content: "Gestão das marcas cadastradas na Flor de Amaranto." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -64,10 +69,13 @@ function BrandsPage() {
   return (
     <CadastroTable<BrandRow & FormState>
       title="Marca"
+      pageTitle="Marcas"
+      createLabel="Nova marca"
       queryKey="registrations-brands"
       fields={FIELDS}
-      items={(query.data ?? []) as (BrandRow & FormState)[]}
+      items={(query.data ?? []).map((brand) => ({ ...brand, logoUrl: brand.logo_url })) as (BrandRow & FormState)[]}
       isLoading={query.isLoading}
+      error={query.error?.message}
       onCreate={(v) => createFn({ data: toBrandInput(v) })}
       onUpdate={(id, v) => updateFn({ data: { id, ...toBrandInput(v) } })}
       onDelete={(id) => deleteFn({ data: { id } })}
