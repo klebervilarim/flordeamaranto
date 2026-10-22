@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   ShoppingBag,
   Ticket,
+  Tags,
   Trash2,
   Truck,
 } from "lucide-react";
@@ -219,7 +220,7 @@ function StockPanel() {
           <p className="eyebrow text-gold">Área do administrador</p>
           <h1 className="mt-2 font-display text-4xl">Estoque</h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Button asChild variant="gold" size="pill">
             <Link to="/estoque/produto/novo">
               <Plus className="mr-2 h-4 w-4" /> Novo produto
@@ -246,6 +247,11 @@ function StockPanel() {
           <Button asChild variant="outlineInk" size="pill">
             <Link to="/estoque/venda-manual">
               <ShoppingBag className="mr-2 h-4 w-4" /> Venda manual
+            </Link>
+          </Button>
+          <Button asChild variant="outlineInk" size="pill">
+            <Link to="/estoque/marcas">
+              <Tags className="mr-2 h-4 w-4" /> Marcas
             </Link>
           </Button>
           <Button asChild variant="outlineInk" size="pill">

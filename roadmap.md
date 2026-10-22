@@ -6,3 +6,4 @@
 - [x] Verificar geração, aplicação da foto e acesso exclusivo de administrador.
 - [x] Adicionar filtro de volume 5ml/10ml na tela de estoque.
 - [x] Adicionar filtro Decants 5ml/10ml na tela de perfumes, com contagem por volume.
+- [x] Disponibilizar cadastro de marcas no estoque e dashboard, verificar inclusão, alteração e exclusão.

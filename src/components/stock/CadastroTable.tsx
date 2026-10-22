@@ -50,19 +50,25 @@ export type FieldConfig = {
 
 export function CadastroTable<T extends { id: string } & FormState>({
   title,
+  pageTitle = title,
+  createLabel = `Novo(a) ${title.toLowerCase()}`,
   queryKey,
   fields,
   items,
   isLoading,
+  error,
   onCreate,
   onUpdate,
   onDelete,
 }: {
   title: string;
+  pageTitle?: string;
+  createLabel?: string;
   queryKey: string;
   fields: FieldConfig[];
   items: T[];
   isLoading: boolean;
+  error?: string | undefined;
   onCreate: (values: FormState) => Promise<unknown>;
   onUpdate: (id: string, values: FormState) => Promise<unknown>;
   onDelete: (id: string) => Promise<unknown>;
@@ -86,7 +92,10 @@ export function CadastroTable<T extends { id: string } & FormState>({
   });
 
   const updateMutation = useMutation({
-    mutationFn: (values: FormState) => onUpdate(editing!.id, values),
+    mutationFn: (values: FormState) => {
+      if (!editing) throw new Error("Selecione um registro para editar.");
+      return onUpdate(editing.id, values);
+    },
     onSuccess: () => {
       toast.success(`${title} salvo(a).`);
       setOpen(false);
@@ -165,12 +174,12 @@ export function CadastroTable<T extends { id: string } & FormState>({
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="eyebrow text-gold">Cadastros</p>
-          <h1 className="mt-2 font-display text-3xl sm:text-4xl">{title}</h1>
+          <h1 className="mt-2 font-display text-3xl sm:text-4xl">{pageTitle}</h1>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button variant="gold" size="pill" onClick={openCreate}>
-              <Plus className="mr-2 h-4 w-4" /> Novo(a) {title.toLowerCase()}
+              <Plus className="mr-2 h-4 w-4" /> {createLabel}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-h-[85vh] overflow-y-auto">
@@ -182,12 +191,13 @@ export function CadastroTable<T extends { id: string } & FormState>({
             <div className="space-y-4 py-2">
               {fields.map((f) => (
                 <div key={f.key}>
-                  <Label className="text-xs tracking-[0.12em] text-muted-foreground uppercase">
+                  <Label htmlFor={`cadastro-${f.key}`} className="text-xs tracking-[0.12em] text-muted-foreground uppercase">
                     {f.label}
                   </Label>
                   <div className="mt-1.5">
                     {f.type === "textarea" ? (
                       <Textarea
+                        id={`cadastro-${f.key}`}
                         value={String(form[f.key] ?? "")}
                         onChange={(e) => setField(f.key, e.target.value)}
                         rows={3}
@@ -195,18 +205,21 @@ export function CadastroTable<T extends { id: string } & FormState>({
                     ) : f.type === "boolean" ? (
                       <div className="flex h-10 items-center">
                         <Switch
+                          id={`cadastro-${f.key}`}
                           checked={Boolean(form[f.key])}
                           onCheckedChange={(v) => setField(f.key, v)}
                         />
                       </div>
                     ) : f.type === "number" ? (
                       <Input
+                        id={`cadastro-${f.key}`}
                         type="number"
                         value={String(form[f.key] ?? 0)}
                         onChange={(e) => setField(f.key, Number(e.target.value))}
                       />
                     ) : (
                       <Input
+                        id={`cadastro-${f.key}`}
                         value={String(form[f.key] ?? "")}
                         onChange={(e) => setField(f.key, e.target.value)}
                       />
@@ -232,6 +245,8 @@ export function CadastroTable<T extends { id: string } & FormState>({
           <div className="grid min-h-[30vh] place-items-center">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
+        ) : error ? (
+          <p role="alert" className="p-8 text-center text-sm text-destructive">{error}</p>
         ) : items.length === 0 ? (
           <p className="p-8 text-center text-sm text-muted-foreground">
             Nenhum registro cadastrado ainda.
@@ -264,12 +279,12 @@ export function CadastroTable<T extends { id: string } & FormState>({
                   ))}
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(item)}>
+                      <Button variant="ghost" size="icon" aria-label={`Editar ${String(item["name"] ?? title)}`} title="Editar" onClick={() => openEdit(item)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="icon" aria-label={`Excluir ${String(item["name"] ?? title)}`} title="Excluir">
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </AlertDialogTrigger>
