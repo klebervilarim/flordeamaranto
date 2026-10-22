@@ -68,7 +68,7 @@ export function CadastroTable<T extends { id: string } & FormState>({
   fields: FieldConfig[];
   items: T[];
   isLoading: boolean;
-  error?: string;
+  error?: string | undefined;
   onCreate: (values: FormState) => Promise<unknown>;
   onUpdate: (id: string, values: FormState) => Promise<unknown>;
   onDelete: (id: string) => Promise<unknown>;
@@ -279,12 +279,12 @@ export function CadastroTable<T extends { id: string } & FormState>({
                   ))}
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" aria-label={`Editar ${String(item.name ?? title)}`} title="Editar" onClick={() => openEdit(item)}>
+                      <Button variant="ghost" size="icon" aria-label={`Editar ${String(item["name"] ?? title)}`} title="Editar" onClick={() => openEdit(item)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" aria-label={`Excluir ${String(item.name ?? title)}`} title="Excluir">
+                          <Button variant="ghost" size="icon" aria-label={`Excluir ${String(item["name"] ?? title)}`} title="Excluir">
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </AlertDialogTrigger>
